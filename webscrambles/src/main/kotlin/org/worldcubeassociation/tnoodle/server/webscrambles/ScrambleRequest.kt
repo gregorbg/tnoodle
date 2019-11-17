@@ -30,6 +30,7 @@ data class ScrambleRequest(
     val title: String,
     val fmc: Boolean,
     val colorScheme: HashMap<String, SVGColor>?,
+
     // totalAttempt and attempt are useful for when we have multiple attempts split in the schedule.
     // Usually, tnoodle prints scrambles for a ScrambleRequest iterating over ScrambleRequest.scrambles.
     // So, if ScrambleRequest.scrambles.length == 3, tnoodle prints Scramble 1 of 3, Scramble 2 of 3 and Scramble 3 of 3.
@@ -93,7 +94,8 @@ data class ScrambleRequest(
 
                     val decodedTitle = URLDecoder.decode(title, "utf-8")
 
-                    val scrambler by PuzzlePlugins.PUZZLES[puzzle] ?: throw InvalidScrambleRequestException("Invalid scrambler: $puzzle")
+                    val scrambler by PuzzlePlugins.PUZZLES[puzzle]
+                        ?: throw InvalidScrambleRequestException("Invalid scrambler: $puzzle")
 
                     val scrambleCacher = SCRAMBLE_CACHERS.getOrPut(puzzle) { ScrambleCacher(scrambler) }
 
@@ -172,12 +174,12 @@ data class ScrambleRequest(
             }
         }
 
-        private fun String.toUniqueTitle(seenTitles: List<String>): String {
-            var salt = 0
-            var tempNewSafeTitle = this
+        private fun String.toUniqueTitle(seenTitles: List<String>, salt: Int = 0): String {
+            val suffix = if (salt == 0) "" else " ($salt)"
+            val tempNewSafeTitle = "$this$suffix"
 
-            while (tempNewSafeTitle in seenTitles) {
-                tempNewSafeTitle = "$this (${++salt})"
+            if (tempNewSafeTitle in seenTitles) {
+                return toUniqueTitle(seenTitles, salt + 1)
             }
 
             return tempNewSafeTitle
