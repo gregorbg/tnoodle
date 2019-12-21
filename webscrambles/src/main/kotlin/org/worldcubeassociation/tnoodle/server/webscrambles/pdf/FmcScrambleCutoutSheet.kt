@@ -1,26 +1,28 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.text.Element
-import com.itextpdf.text.Image
-import com.itextpdf.text.Rectangle
-import com.itextpdf.text.pdf.PdfWriter
+import com.itextpdf.kernel.geom.Rectangle
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfPage
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.property.TextAlignment
 import org.worldcubeassociation.tnoodle.server.webscrambles.ScrambleRequest
 import org.worldcubeassociation.tnoodle.server.webscrambles.Translate
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfDrawUtil.drawDashedLine
-import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfDrawUtil.renderSvgToPDF
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfDrawUtil.populateRect
+import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfDrawUtil.renderSvgToPDF
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
 
 class FmcScrambleCutoutSheet(request: ScrambleRequest, globalTitle: String?): FmcSheet(request, globalTitle) {
-    override fun PdfWriter.writeContents() {
+    override fun PdfDocument.writeContents() {
         for (i in scrambleRequest.scrambles.indices) {
-            addFmcScrambleCutoutSheet(scrambleRequest, title, i)
-            document.newPage()
+            this.addNewPage()
+                .addFmcScrambleCutoutSheet(scrambleRequest, title, i)
         }
     }
 
-    private fun PdfWriter.addFmcScrambleCutoutSheet(scrambleRequest: ScrambleRequest, globalTitle: String?, index: Int) {
-        val pageSize = document.pageSize
+    private fun PdfPage.addFmcScrambleCutoutSheet(scrambleRequest: ScrambleRequest, globalTitle: String?, index: Int) {
+        val pageSize = this.pageSize
         val scramble = scrambleRequest.scrambles[index]
 
         val right = (pageSize.width - LEFT).toInt()
@@ -37,7 +39,7 @@ class FmcScrambleCutoutSheet(request: ScrambleRequest, globalTitle: String?): Fm
         val dim = scrambleRequest.scrambler.getPreferredSize(availableScrambleWidth, availablePaddedScrambleHeight)
         val svg = scrambleRequest.scrambler.drawScramble(scramble, scrambleRequest.colorScheme)
 
-        val tp = directContent.renderSvgToPDF(svg, dim)
+        //val tp = directContent.renderSvgToPDF(svg, dim)
 
         val scrambleSuffix = " - Scramble ${index + 1} of ${scrambleRequest.scrambles.size}"
             .takeIf { scrambleRequest.scrambles.size > 1 } ?: ""
@@ -46,20 +48,28 @@ class FmcScrambleCutoutSheet(request: ScrambleRequest, globalTitle: String?): Fm
 
         // empty strings for space above and below
         val textList = listOf("", title, scramble, "")
-        val alignList = List(textList.size) { Element.ALIGN_LEFT }
+        val alignList = List(textList.size) { TextAlignment.LEFT } // FIXME use TextAlignment or HorizontalAlignment here?!
 
         val paddedTitleItems = textList.zip(alignList)
 
+        val foo = Document(document)
+        val canvas = PdfCanvas(this)
+
+        val pageNum = document.getPageNumber(this)
+
         for (i in 0 until SCRAMBLES_PER_SHEET) {
             val rect = Rectangle(LEFT.toFloat(), (top - i * availableScrambleHeight).toFloat(), (right - dim.width - SPACE_SCRAMBLE_IMAGE).toFloat(), (top - (i + 1) * availableScrambleHeight).toFloat())
-            directContent.populateRect(rect, paddedTitleItems, BASE_FONT, FONT_SIZE)
+            foo.populateRect(rect, pageNum, paddedTitleItems, BASE_FONT, FONT_SIZE)
 
-            directContent.addImage(Image.getInstance(tp), dim.width.toDouble(), 0.0, 0.0, dim.height.toDouble(), (right - dim.width).toDouble(), top.toDouble() - (i + 1) * availableScrambleHeight + (availableScrambleHeight - dim.getHeight()) / 2)
+            val imgX = (right - dim.width).toFloat()
+            val imgY = top.toFloat() - (i + 1) * availableScrambleHeight + (availableScrambleHeight - dim.getHeight()) / 2
 
-            directContent.drawDashedLine(LEFT, right, top - i * availableScrambleHeight)
+            canvas.renderSvgToPDF(svg, imgX, imgY)
+
+            canvas.drawDashedLine(LEFT, right, top - i * availableScrambleHeight)
         }
 
-        directContent.drawDashedLine(LEFT, right, top - SCRAMBLES_PER_SHEET * availableScrambleHeight)
+        canvas.drawDashedLine(LEFT, right, top - SCRAMBLES_PER_SHEET * availableScrambleHeight)
     }
 
     companion object {
