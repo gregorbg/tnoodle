@@ -1,31 +1,34 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.text.Document
-import com.itextpdf.text.Rectangle
-import com.itextpdf.text.pdf.PdfReader
-import com.itextpdf.text.pdf.PdfWriter
+import com.itextpdf.kernel.pdf.*
 import org.worldcubeassociation.tnoodle.server.webscrambles.ScrambleRequest
 import java.io.ByteArrayOutputStream
 
-abstract class BaseScrambleSheet(val scrambleRequest: ScrambleRequest, globalTitle: String?) : BasePdfSheet<PdfWriter>(globalTitle) {
-    override val document =
-        Document(PAGE_SIZE, 0f, 0f, 75f, 75f).apply {
-            addCreationDate()
-            addProducer()
+abstract class BaseScrambleSheet(val scrambleRequest: ScrambleRequest, globalTitle: String?) : BasePdfSheet(globalTitle) {
+    override fun openDocument(writer: PdfWriter): PdfDocument {
+        return super.openDocument(writer).apply {
+            defaultPageSize = PAGE_SIZE
+            // FIXME 0, 0, 75, 75 margins!
 
-            if (title != null) {
-                addTitle(title)
+            catalog.put(PdfName.CreationDate, PdfDate().pdfObject)
+            catalog.put(PdfName.Producer, PdfString("TNoodle")) // FIXME const
+
+            title?.let {
+                catalog.put(PdfName.Title, PdfString(it))
             }
-        }
-
-    override fun Document.getWriter(bytes: ByteArrayOutputStream): PdfWriter {
-        return PdfWriter.getInstance(document, bytes).apply {
-            setBoxSize("art", Rectangle(36f, 54f, PAGE_SIZE.width - 36, PAGE_SIZE.height - 54))
         }
     }
 
+    // FIXME this was used while opening the writer
+    //  setBoxSize("art", Rectangle(36f, 54f, PAGE_SIZE.width - 36, PAGE_SIZE.height - 54))
+
+    // FIXME is this really neccessary? Looks like effectively just creating a copy…
     override fun finalise(processedBytes: ByteArrayOutputStream, password: String?): ByteArray {
-        val pdfReader = PdfReader(processedBytes.toByteArray(), password?.toByteArray())
+        val props = ReaderProperties().apply {
+            password?.let { setPassword(it.toByteArray()) }
+        }
+
+        val pdfReader = PdfReader(processedBytes.toByteArray().inputStream(), props)
 
         val buffer = ByteArray(pdfReader.fileLength.toInt())
         pdfReader.safeFile.readFully(buffer)
