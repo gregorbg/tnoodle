@@ -1,29 +1,42 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util
 
-import com.itextpdf.text.log.CounterFactory
-import com.itextpdf.text.log.NoOpCounter
-import com.itextpdf.text.pdf.BaseFont
+import com.itextpdf.io.font.PdfEncodings
+import com.itextpdf.kernel.counter.EventCounter
+import com.itextpdf.kernel.counter.EventCounterHandler
+import com.itextpdf.kernel.counter.IEventCounterFactory
+import com.itextpdf.kernel.counter.SimpleEventCounterFactory
+import com.itextpdf.kernel.counter.event.IEvent
+import com.itextpdf.kernel.counter.event.IMetaInfo
+import com.itextpdf.kernel.font.PdfFont
+import com.itextpdf.kernel.font.PdfFontFactory
 import java.util.*
 
 object FontUtil {
-    val CJK_FONT: BaseFont = BaseFont.createFont("fonts/wqy-microhei.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
-    val MONO_FONT: BaseFont = BaseFont.createFont("fonts/LiberationMono-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
-    val NOTO_SANS_FONT: BaseFont = BaseFont.createFont("fonts/NotoSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
+    val CJK_FONT: PdfFont get() = PdfFontFactory.createFont("fonts/wqy-microhei.ttf", PdfEncodings.IDENTITY_H, true)
+    val MONO_FONT: PdfFont get() = PdfFontFactory.createFont("fonts/LiberationMono-Regular.ttf", PdfEncodings.IDENTITY_H, true)
+    val NOTO_SANS_FONT: PdfFont get() = PdfFontFactory.createFont("fonts/NotoSans-Regular.ttf", PdfEncodings.IDENTITY_H, true)
 
     const val MAX_SCRAMBLE_FONT_SIZE = 20f
     const val MINIMUM_ONE_LINE_FONT_SIZE = 12f
 
-    private val FONT_BY_LOCALE = mapOf(
-        Locale.forLanguageTag("zh-CN") to CJK_FONT,
-        Locale.forLanguageTag("zh-TW") to CJK_FONT,
-        Locale.forLanguageTag("ko") to CJK_FONT,
-        Locale.forLanguageTag("ja") to CJK_FONT
+    private val CJK_LANGUAGES = listOf(
+        Locale.forLanguageTag("zh-CN"),
+        Locale.forLanguageTag("zh-TW"),
+        Locale.forLanguageTag("ko"),
+        Locale.forLanguageTag("ja")
     )
 
     init {
         // Email agpl@itextpdf.com if you want to know what this is about =)
-        CounterFactory.getInstance().counter = NoOpCounter()
+        val counterFactory: IEventCounterFactory = SimpleEventCounterFactory(NoopCounter)
+        EventCounterHandler.getInstance().register(counterFactory)
     }
 
-    fun getFontForLocale(locale: Locale) = FONT_BY_LOCALE[locale] ?: NOTO_SANS_FONT
+    fun getFontForLocale(locale: Locale) = if (locale in CJK_LANGUAGES) CJK_FONT else NOTO_SANS_FONT
+
+    internal object NoopCounter : EventCounter() {
+        override fun onEvent(event: IEvent?, metaInfo: IMetaInfo?) {
+            // noop.
+        }
+    }
 }

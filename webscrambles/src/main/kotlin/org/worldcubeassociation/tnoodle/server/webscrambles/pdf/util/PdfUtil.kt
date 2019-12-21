@@ -1,22 +1,22 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util
 
-import com.itextpdf.text.Chunk
-import com.itextpdf.text.Font
-import com.itextpdf.text.Rectangle
+import com.itextpdf.kernel.font.PdfFont
+import com.itextpdf.kernel.geom.Rectangle
+import com.itextpdf.layout.element.Text
 
 object PdfUtil {
     const val NON_BREAKING_SPACE = '\u00A0'
     const val TEXT_PADDING_HORIZONTAL = 1
 
-    fun String.splitToLineChunks(font: Font, textColumnWidth: Float): List<Chunk> {
+    fun String.splitToLineChunks(font: PdfFont, fontSize: Float, textColumnWidth: Float): List<Text> {
         val availableTextWidth = textColumnWidth - 2 * TEXT_PADDING_HORIZONTAL
 
         return split("\n").dropLastWhile { it.isEmpty() }
-            .flatMap { it.splitLineToChunks(font, availableTextWidth) }
-            .map { it.toLineWrapChunk(font) }
+            .flatMap { it.splitLineToChunks(font, fontSize, availableTextWidth) }
+            .map { it.toLineWrapChunk(font, fontSize) }
     }
 
-    fun String.splitLineToChunks(font: Font, availableTextWidth: Float): List<String> {
+    fun String.splitLineToChunks(font: PdfFont, fontSize: Float, availableTextWidth: Float): List<String> {
         val lineChunks = mutableListOf<String>()
         val cutIndices = mutableListOf<Int>()
 
@@ -33,11 +33,11 @@ object PdfUtil {
                 continue
             }
 
-            val optimalCutIndex = optimalCutIndex(i, font, availableTextWidth)
+            val optimalCutIndex = optimalCutIndex(i, font, fontSize, availableTextWidth)
             cutIndices.add(optimalCutIndex)
 
             val substring = substring(i, optimalCutIndex).padNbsp()
-                .fillToWidthMax(NON_BREAKING_SPACE.toString(), font, availableTextWidth)
+                .fillToWidthMax(NON_BREAKING_SPACE.toString(), font, fontSize, availableTextWidth)
 
             lineChunks.add(substring)
         }
@@ -47,8 +47,8 @@ object PdfUtil {
 
     private fun String.padNbsp() = NON_BREAKING_SPACE + this + NON_BREAKING_SPACE
 
-    fun String.optimalCutIndex(startIndex: Int, font: Font, availableTextWidth: Float): Int {
-        val endIndex = longestFittingSubstringIndex(font, availableTextWidth, startIndex)
+    fun String.optimalCutIndex(startIndex: Int, font: PdfFont, fontSize: Float, availableTextWidth: Float): Int {
+        val endIndex = longestFittingSubstringIndex(font, availableTextWidth, fontSize, startIndex)
 
         // If we're not at the end of the text, make sure we're not cutting
         // a word (or turn) in half by walking backwards until we're right before a turn.
@@ -59,12 +59,12 @@ object PdfUtil {
         return endIndex
     }
 
-    fun String.longestFittingSubstringIndex(font: Font, maxWidth: Float, startIndex: Int = 0, fallback: Int = startIndex): Int {
+    fun String.longestFittingSubstringIndex(font: PdfFont, fontSize: Float, maxWidth: Float, startIndex: Int = 0, fallback: Int = startIndex): Int {
         val searchRange = startIndex..length
 
         val endpoint = searchRange.findLast {
             val substring = substring(startIndex, it).padNbsp()
-            val substringWidth = font.baseFont.getWidthPoint(substring, font.size)
+            val substringWidth = font.getWidth(substring, fontSize)
 
             substringWidth <= maxWidth
         }
@@ -95,7 +95,7 @@ object PdfUtil {
         return fallback
     }
 
-    fun String.fillToWidthMax(padding: String, font: Font, maxLength: Float): String {
+    fun String.fillToWidthMax(padding: String, font: PdfFont, fontSize: Float, maxLength: Float): String {
         val paddingList = mutableListOf<String>()
 
         // Add $padding until the substring takes up as much
@@ -106,7 +106,7 @@ object PdfUtil {
             val currentPadding = paddingList.joinToString("")
             val paddedString = this + currentPadding
 
-            val substringWidth = font.baseFont.getWidthPoint(paddedString, font.size)
+            val substringWidth = font.getWidth(paddedString, fontSize)
         } while (substringWidth <= maxLength)
 
         // substring is now too big for our line, so remove the
@@ -114,12 +114,9 @@ object PdfUtil {
         return this + paddingList.drop(1).joinToString("")
     }
 
-    fun String.toLineWrapChunk(font: Font) = Chunk(this).apply {
-        this.font = font
-
-        // Force a line wrap!
-        append("\n")
-    }
+    fun String.toLineWrapChunk(font: PdfFont, fontSize: Float) = Text("$this\n")
+        .setFont(font)
+        .setFontSize(fontSize)
 
     private val FITTEXT_FONTSIZE_PRECISION = 0.1f
 
@@ -137,16 +134,13 @@ object PdfUtil {
      *
      * @return the calculated font size that makes the text fit
      */
-    fun fitText(font: Font, text: String, rect: Rectangle, maxFontSize: Float, newlinesAllowed: Boolean, leadingMultiplier: Float): Float {
+    fun fitText(font: PdfFont, text: String, rect: Rectangle, maxFontSize: Float, newlinesAllowed: Boolean, leadingMultiplier: Float): Float {
         // ideally, we could pass the object in which our text is going to be rendered
         // as argument instead of asking leadingMultiplier, but we are currently rendering
         // text in pdfcell, columntext and others
         // it'd be painful to render lines in a common object to ask leadingMultiplier
         return estimateByAverageInterval(1f, maxFontSize, FITTEXT_FONTSIZE_PRECISION) {
-            // FIXME inplace modification is no good
-            font.size = it
-
-            val lineChunks = text.splitToLineChunks(font, rect.width)
+            val lineChunks = text.splitToLineChunks(font, it, rect.width)
 
             // The font size seems to be a pretty good estimate for how
             // much vertical space a row actually takes up.
