@@ -11,7 +11,8 @@ import configurations.ProjectVersions.tNoodleVersionOrDefault
 import dependencies.Libraries.APACHE_COMMONS_LANG3
 import dependencies.Libraries.BATIK_TRANSCODER
 import dependencies.Libraries.BOUNCYCASTLE
-import dependencies.Libraries.ITEXTPDF
+import dependencies.Libraries.ITEXT_7
+import dependencies.Libraries.ITEXT_7_SVG
 import dependencies.Libraries.KOTLIN_ARGPARSER
 import dependencies.Libraries.KTOR_WEBSOCKETS
 import dependencies.Libraries.MARKDOWNJ_CORE
@@ -56,6 +57,8 @@ dependencies {
     implementation(ZIP4J)
     implementation(MARKDOWNJ_CORE)
     implementation(ITEXTPDF)
+    implementation(ITEXT_7)
+    implementation(ITEXT_7_SVG)
     implementation(BATIK_TRANSCODER)
     implementation(SNAKEYAML)
     implementation(KOTLIN_ARGPARSER)

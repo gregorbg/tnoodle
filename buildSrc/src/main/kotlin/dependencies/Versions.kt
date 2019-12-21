@@ -7,10 +7,13 @@ object Versions {
     val KTOR = "1.5.2"
     val PROGUARD = "7.0.1"
     val KOTLESS = "0.1.6"
+    val ITEXT = "7.1.12"
 
     val MARKDOWNJ_CORE = "0.4"
     val ZIP4J = "2.7.0"
     val ITEXTPDF = "5.5.13.2"
+    val ITEXT_7 = ITEXT
+    val ITEXT_7_SVG = ITEXT
     val BATIK_TRANSCODER = BATIK
     val BATIK_CODEC = BATIK
     val SNAKEYAML = "1.28"
