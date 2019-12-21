@@ -4,7 +4,8 @@ import configurations.Languages.attachRemoteRepositories
 import dependencies.Libraries.APPLEJAVAEXTENSIONS
 import dependencies.Libraries.BATIK_TRANSCODER
 import dependencies.Libraries.BOUNCYCASTLE
-import dependencies.Libraries.ITEXTPDF
+import dependencies.Libraries.ITEXT_7
+import dependencies.Libraries.ITEXT_7_SVG
 import dependencies.Libraries.KOTLIN_ARGPARSER
 import dependencies.Libraries.NATIVE_TRAY_ADAPTER
 import dependencies.Libraries.SNAKEYAML
@@ -39,7 +40,8 @@ dependencies {
     implementation(project(":server-ktor"))
 
     implementation(ZIP4J)
-    implementation(ITEXTPDF)
+    implementation(ITEXT_7)
+    implementation(ITEXT_7_SVG)
     implementation(BATIK_TRANSCODER)
     implementation(SNAKEYAML)
     implementation(BOUNCYCASTLE)

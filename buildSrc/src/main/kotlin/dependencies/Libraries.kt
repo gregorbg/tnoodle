@@ -5,6 +5,8 @@ object Libraries {
     val MARKDOWNJ_CORE = "org.markdownj:markdownj-core:${Versions.MARKDOWNJ_CORE}"
     val ZIP4J = "net.lingala.zip4j:zip4j:${Versions.ZIP4J}"
     val ITEXTPDF = "com.itextpdf:itextpdf:${Versions.ITEXTPDF}"
+    val ITEXT_7 = "com.itextpdf:itext7-core:${Versions.ITEXT_7}"
+    val ITEXT_7_SVG = "com.itextpdf:svg:${Versions.ITEXT_7_SVG}"
     val BATIK_TRANSCODER = "org.apache.xmlgraphics:batik-transcoder:${Versions.BATIK_TRANSCODER}"
     val SNAKEYAML = "org.yaml:snakeyaml:${Versions.SNAKEYAML}"
     val NATIVE_TRAY_ADAPTER = "com.github.taksan:native-tray-adapter:${Versions.NATIVE_TRAY_ADAPTER}"
