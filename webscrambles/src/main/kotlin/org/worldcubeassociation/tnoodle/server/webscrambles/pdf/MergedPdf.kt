@@ -1,24 +1,19 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.text.Document
-import com.itextpdf.text.pdf.PdfReader
-import com.itextpdf.text.pdf.PdfSmartCopy
-import com.itextpdf.text.pdf.PdfWriter
-import java.io.ByteArrayOutputStream
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.utils.PdfMerger
 
-class MergedPdf(val toMerge: List<PdfContent>) : BasePdfSheet<PdfSmartCopy>(null) {
-    override val document = Document()
+class MergedPdf(val toMerge: List<PdfContent>) : BasePdfSheet(null) {
+    override fun PdfDocument.writeContents() {
+        val merger = PdfMerger(this)
+            .setCloseSourceDocuments(true)
 
-    override fun Document.getWriter(bytes: ByteArrayOutputStream) = PdfSmartCopy(document, bytes)
-
-    override fun PdfSmartCopy.writeContents() {
         for (content in toMerge) {
-            val contentReader = PdfReader(content.render())
+            val contentReader = PdfReader(content.render().inputStream())
+            val contentDocument = PdfDocument(contentReader)
 
-            for (pageN in 1..contentReader.numberOfPages) {
-                val page = getImportedPage(contentReader, pageN)
-                addPage(page)
-            }
+            merger.merge(contentDocument, 1, contentDocument.numberOfPages)
         }
     }
 }

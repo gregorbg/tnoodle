@@ -1,19 +1,20 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.text.Document
-import com.itextpdf.text.pdf.*
-import java.io.ByteArrayOutputStream
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfOutline
+import com.itextpdf.kernel.pdf.PdfPage
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.action.PdfAction
+import com.itextpdf.kernel.pdf.navigation.PdfExplicitDestination
+import com.itextpdf.kernel.pdf.navigation.PdfExplicitRemoteGoToDestination
+import com.itextpdf.kernel.utils.PdfMerger
 
-class MergedPdfWithOutline(val toMerge: List<PdfContent>, val configuration: List<Triple<String, String, Int>>, globalTitle: String?) : BasePdfSheet<PdfSmartCopy>(globalTitle) {
-    override val document = Document()
+class MergedPdfWithOutline(val toMerge: List<PdfContent>, val configuration: List<Triple<String, String, Int>>, globalTitle: String?) : BasePdfSheet(globalTitle) {
+    override fun PdfDocument.writeContents() {
+        val merger = PdfMerger(this)
 
-    override fun Document.getWriter(bytes: ByteArrayOutputStream): PdfSmartCopy = PdfSmartCopy(document, bytes)
-
-    override fun PdfSmartCopy.writeContents() {
-        val root = directContent.rootOutline
-
+        val root = getOutlines(true)
         val outlineByPuzzle = mutableMapOf<String, PdfOutline>()
-        val expandPuzzleLinks = false
 
         var pages = 1
 
@@ -21,27 +22,30 @@ class MergedPdfWithOutline(val toMerge: List<PdfContent>, val configuration: Lis
             val (title, group, copies) = configData
 
             val puzzleLink: PdfOutline = outlineByPuzzle.getOrPut(group) {
-                val d = PdfDestination(PdfDestination.FIT)
-
-                PdfOutline(root,
-                    PdfAction.gotoLocalPage(pages, d, this), group, expandPuzzleLinks)
-            }
-
-            val d = PdfDestination(PdfDestination.FIT)
-
-            PdfOutline(puzzleLink,
-                PdfAction.gotoLocalPage(pages, d, this), title)
-
-            val pdfReader = PdfReader(origPdf.render())
-
-            for (j in 0 until copies) {
-                for (pageN in 1..pdfReader.numberOfPages) {
-                    val page = getImportedPage(pdfReader, pageN)
-                    addPage(page)
-
-                    pages++
+                root.addOutline(group).addLinkEntry(pages).apply {
+                    setOpen(false)
                 }
             }
+
+            puzzleLink.addOutline(title).addLinkEntry(pages)
+
+            val contentReader = PdfReader(origPdf.render().inputStream())
+            val contentDocument = PdfDocument(contentReader)
+
+            for (j in 0 until copies) {
+                merger.merge(contentDocument, 1, contentDocument.numberOfPages)
+
+                pages += contentDocument.numberOfPages
+            }
+
+            contentDocument.close() // FIXME is this necessary?
         }
+    }
+
+    private fun PdfOutline.addLinkEntry(destPageNum: Int) = apply {
+        val destAction = PdfExplicitRemoteGoToDestination.createFit(destPageNum)
+        val gotoAction = PdfAction.createGoTo(destAction)
+
+        addAction(gotoAction)
     }
 }
