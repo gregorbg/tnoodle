@@ -10,6 +10,6 @@ class FmcGenericSolutionSheet(request: ScrambleRequest, globalTitle: String?, lo
         val bf = FontUtil.getFontForLocale(locale)
 
         this.addNewPage()
-            .addFmcSolutionSheet(scrambleRequest, title, -1, locale, bf)
+            .addFmcSolutionSheet(title, -1, bf)
     }
 }
