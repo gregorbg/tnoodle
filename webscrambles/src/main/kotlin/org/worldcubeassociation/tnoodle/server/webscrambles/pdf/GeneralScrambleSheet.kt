@@ -5,14 +5,10 @@ import com.itextpdf.kernel.colors.DeviceRgb
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfPage
+import com.itextpdf.layout.ColumnDocumentRenderer
 import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Cell
-import com.itextpdf.layout.element.Paragraph
-import com.itextpdf.layout.element.Table
-import com.itextpdf.layout.element.Text
-import com.itextpdf.layout.property.HorizontalAlignment
+import com.itextpdf.layout.element.*
 import com.itextpdf.layout.property.VerticalAlignment
-import com.itextpdf.layout.renderer.CellRenderer
 import com.itextpdf.svg.converter.SvgConverter
 import net.gnehzr.tnoodle.scrambles.Puzzle
 import net.gnehzr.tnoodle.svglite.Color
@@ -22,6 +18,7 @@ import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfUtil.splitToLineChunks
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.StringUtil
+import java.io.File
 import kotlin.math.log10
 import kotlin.math.min
 
@@ -58,7 +55,8 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
         val forceStdHighlighting = requiresHighlighting(availableWidth, scrambleImageSize, scrambleRequest.scrambles, STD_SCRAMBLE_PREFIX)
 
         // Also check extra scrambles for visual consistency
-        val forceExtraHighlighting = requiresHighlighting(availableWidth, scrambleImageSize, scrambleRequest.extraScrambles, EXTRA_SCRAMBLE_PREFIX)
+        val forceExtraHighlighting = scrambleRequest.extraScrambles.isNotEmpty()
+            && requiresHighlighting(availableWidth, scrambleImageSize, scrambleRequest.extraScrambles, EXTRA_SCRAMBLE_PREFIX)
 
         // Compute line lengths just to see if any scrambles require highlighting.
         val useHighlighting = forceStdHighlighting || forceExtraHighlighting
@@ -68,7 +66,7 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
 
         if (scrambleRequest.extraScrambles.isNotEmpty()) {
             val headerTable = Table(1)
-                .setWidth(availableWidth)
+                .useAllAvailableWidth()
 
             val extraScramblesHeader = Cell()
                 .add(Paragraph(TABLE_HEADING_EXTRA_SCRAMBLES))
@@ -94,7 +92,7 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
         val wideString = WIDEST_CHAR_STRING.repeat(charsWide) + "."
 
         // I don't know why we need the +5, perhaps there's some padding?
-        return fooFont.getWidth(wideString) + 5f // FIXME measurement unit?!
+        return fooFont.getWidth(wideString) * 12f / 1000f + 5f // FIXME measurement unit?!
     }
 
     fun getScrambleColumnWidth(availableWidth: Float, scrambleImageSize: Dimension, scrambles: List<String>, scrambleNumberPrefix: String): Float {
@@ -115,7 +113,7 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
         val longestAlignedScramble = scrambles.map { StringUtil.padTurnsUniformly(it, WIDEST_CHAR_STRING) }
             .maxBy { it.length } ?: longestScramble
 
-        val longestScrambleOneLine = "\n" !in longestAlignedScramble//Masked
+        val longestScrambleOneLine = "\n" !in longestAlignedScramble
 
         // I don't know how to configure ColumnText.fitText's word wrapping characters,
         // so instead, I just replace each character I don't want to wrap with M, which
@@ -149,17 +147,18 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
     }
 
     fun PdfDocument.createTable(availableWidth: Float, scrambleImageSize: Dimension, scrambles: List<String>, scrambler: Puzzle, colorScheme: HashMap<String, Color>?, scrambleNumberPrefix: String, useHighlighting: Boolean): Table {
-        // FIXME val indexColumnWidth = getIndexColumnWidth(scrambles, scrambleNumberPrefix)
-        val scrambleColumnWidth = getScrambleColumnWidth(availableWidth, scrambleImageSize, scrambles, scrambleNumberPrefix)
-
         val (scrambleFontSize, oneLine) = getFontConfiguration(availableWidth, scrambleImageSize, scrambles, scrambleNumberPrefix)
 
-        val table = Table(3).apply {
-            // FIXME setTotalWidth(floatArrayOf(indexColumnWidth, scrambleColumnWidth, (scrambleImageSize.width + 2 * SCRAMBLE_IMAGE_PADDING).toFloat()))
-        }
+        val indexColumnWidth = getIndexColumnWidth(scrambles, scrambleNumberPrefix)
+        val scrambleColumnWidth = getScrambleColumnWidth(availableWidth, scrambleImageSize, scrambles, scrambleNumberPrefix)
+
+        val table = Table(3)
+            .useAllAvailableWidth()
+            .setAutoLayout()
 
         for ((i, scramble) in scrambles.withIndex()) {
             val ch = Text("$scrambleNumberPrefix${i + 1}.")
+
             val nthscramble = Cell()
                 .add(Paragraph(ch))
                 .setVerticalAlignment(VerticalAlignment.MIDDLE)
@@ -175,6 +174,8 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
                     lineChunk.setBackgroundColor(HIGHLIGHT_COLOR)
                 }
 
+                // We carefully inserted newlines ourselves to make stuff fit, don't
+                // let itextpdf wrap lines for us.
                 scramblePhrase.add(lineChunk)
             }
 
@@ -186,26 +187,16 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
                 .setPaddingBottom(SCRAMBLE_PADDING_VERTICAL_BOTTOM.toFloat())
                 .setPaddingLeft(SCRAMBLE_PADDING_HORIZONTAL.toFloat())
                 .setPaddingRight(SCRAMBLE_PADDING_HORIZONTAL.toFloat())
-                // FIXME control line wrapping better
-                /*.apply {
-                    // We carefully inserted newlines ourselves to make stuff fit, don't
-                    // let itextpdf wrap lines for us.
-                    isNoWrap = true
-                }*/
 
             table.addCell(scrambleCell)
 
             if (scrambleImageSize.width > 0 && scrambleImageSize.height > 0) {
                 val svg = scrambler.drawScramble(scramble, colorScheme)
-                val img = SvgConverter.convertToImage(svg.toString().byteInputStream(), this)
-
-                val imgCell = Cell()
-                    .add(img)
+                val img = Image(SvgConverter.convertToXObject(svg.toString(), this))
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
-                    .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                    .setHorizontalAlignment(HorizontalAlignment.CENTER)
+                    .setAutoScale(true)
 
-                table.addCell(imgCell)
+                table.addCell(img)
             } else {
                 table.addCell(EMPTY_CELL_CONTENT)
             }
@@ -234,5 +225,25 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
         private const val MIN_LINES_TO_ALTERNATE_HIGHLIGHTING = 4
 
         private val HIGHLIGHT_COLOR = DeviceRgb(230, 230, 230)
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            println("Parsing request")
+
+            val reqMap = mapOf("fooBar" to "333*5")
+            val scrRequest = ScrambleRequest.parseScrambleRequests(reqMap, "trololol").single()
+
+            println("Generating sheet")
+
+            val sheet = GeneralScrambleSheet(scrRequest,"FMC TNoodle 2019")
+
+            println("Rendering…")
+            val sheetBytes = sheet.render()
+
+            println("Dumping to file")
+            File("/home/suushie_maniac/jvdocs/tnoodle/pdf_debug.pdf").writeBytes(sheetBytes)
+
+            System.exit(123)
+        }
     }
 }

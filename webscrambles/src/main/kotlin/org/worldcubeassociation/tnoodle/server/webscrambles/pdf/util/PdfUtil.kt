@@ -48,7 +48,7 @@ object PdfUtil {
     private fun String.padNbsp() = NON_BREAKING_SPACE + this + NON_BREAKING_SPACE
 
     fun String.optimalCutIndex(startIndex: Int, font: PdfFont, fontSize: Float, availableTextWidth: Float): Int {
-        val endIndex = longestFittingSubstringIndex(font, availableTextWidth, fontSize, startIndex)
+        val endIndex = longestFittingSubstringIndex(font, fontSize, availableTextWidth, startIndex)
 
         // If we're not at the end of the text, make sure we're not cutting
         // a word (or turn) in half by walking backwards until we're right before a turn.
