@@ -12,8 +12,11 @@ object Versions {
     val MARKDOWNJ_CORE = "0.4"
     val ZIP4J = "2.7.0"
     val ITEXTPDF = "5.5.13.2"
-    val ITEXT_7 = ITEXT
+    val ITEXT_7_KERNEL = ITEXT
+    val ITEXT_7_IO = ITEXT
+    val ITEXT_7_LAYOUT = ITEXT
     val ITEXT_7_SVG = ITEXT
+    val ITEXT_7_FONT_ASIAN = ITEXT
     val BATIK_TRANSCODER = BATIK
     val BATIK_CODEC = BATIK
     val SNAKEYAML = "1.28"
