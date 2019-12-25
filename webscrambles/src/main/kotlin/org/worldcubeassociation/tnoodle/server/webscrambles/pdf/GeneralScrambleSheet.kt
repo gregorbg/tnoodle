@@ -225,25 +225,5 @@ class GeneralScrambleSheet(scrambleRequest: ScrambleRequest, globalTitle: String
         private const val MIN_LINES_TO_ALTERNATE_HIGHLIGHTING = 4
 
         private val HIGHLIGHT_COLOR = DeviceRgb(230, 230, 230)
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            println("Parsing request")
-
-            val reqMap = mapOf("fooBar" to "333*5")
-            val scrRequest = ScrambleRequest.parseScrambleRequests(reqMap, "trololol").single()
-
-            println("Generating sheet")
-
-            val sheet = GeneralScrambleSheet(scrRequest,"FMC TNoodle 2019")
-
-            println("Rendering…")
-            val sheetBytes = sheet.render()
-
-            println("Dumping to file")
-            File("/home/suushie_maniac/jvdocs/tnoodle/pdf_debug.pdf").writeBytes(sheetBytes)
-
-            System.exit(123)
-        }
     }
 }
