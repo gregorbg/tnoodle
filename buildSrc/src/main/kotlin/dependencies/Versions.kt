@@ -12,7 +12,6 @@ object Versions {
     val GWTEXPORTER = GWT
     val MARKDOWNJ_CORE = "0.4"
     val ZIP4J = "2.2.4"
-    val ITEXTPDF = "5.5.13.1"
     val ITEXT_7_KERNEL = ITEXT
     val ITEXT_7_IO = ITEXT
     val ITEXT_7_LAYOUT = ITEXT

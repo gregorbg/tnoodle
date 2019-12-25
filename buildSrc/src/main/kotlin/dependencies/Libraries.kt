@@ -4,7 +4,6 @@ object Libraries {
     val GWTEXPORTER = "org.timepedia.exporter:gwtexporter:${Versions.GWTEXPORTER}"
     val MARKDOWNJ_CORE = "org.markdownj:markdownj-core:${Versions.MARKDOWNJ_CORE}"
     val ZIP4J = "net.lingala.zip4j:zip4j:${Versions.ZIP4J}"
-    val ITEXTPDF = "com.itextpdf:itextpdf:${Versions.ITEXTPDF}"
     val ITEXT_7_KERNEL = "com.itextpdf:kernel:${Versions.ITEXT_7_KERNEL}"
     val ITEXT_7_IO = "com.itextpdf:io:${Versions.ITEXT_7_IO}"
     val ITEXT_7_LAYOUT = "com.itextpdf:layout:${Versions.ITEXT_7_LAYOUT}"
