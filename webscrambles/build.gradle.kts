@@ -2,7 +2,6 @@ import configurations.CompilerSettings.KOTLIN_JVM_TARGET
 import configurations.Languages.attachRemoteRepositories
 
 import dependencies.Libraries.APPLEJAVAEXTENSIONS
-import dependencies.Libraries.BATIK_TRANSCODER
 import dependencies.Libraries.BOUNCYCASTLE
 import dependencies.Libraries.ITEXT_7_KERNEL
 import dependencies.Libraries.ITEXT_7_IO
@@ -48,7 +47,6 @@ dependencies {
     implementation(ITEXT_7_LAYOUT)
     implementation(ITEXT_7_SVG)
     implementation(ITEXT_7_FONT_ASIAN)
-    implementation(BATIK_TRANSCODER)
     implementation(SNAKEYAML)
     implementation(BOUNCYCASTLE)
     implementation(KOTLIN_ARGPARSER)

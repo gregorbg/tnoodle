@@ -14,12 +14,6 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import net.gnehzr.tnoodle.scrambles.PuzzleIcon
 import net.gnehzr.tnoodle.scrambles.PuzzleImageInfo
-import org.apache.batik.anim.dom.SVGDOMImplementation
-import org.apache.batik.transcoder.TranscoderInput
-import org.apache.batik.transcoder.TranscoderOutput
-import org.apache.batik.transcoder.TranscodingHints
-import org.apache.batik.transcoder.image.ImageTranscoder
-import org.apache.batik.util.SVGConstants
 import org.worldcubeassociation.tnoodle.server.RouteHandler
 import org.worldcubeassociation.tnoodle.server.RouteHandler.Companion.parseQuery
 import org.worldcubeassociation.tnoodle.server.util.GsonUtil.GSON
@@ -28,27 +22,10 @@ import org.worldcubeassociation.tnoodle.server.RouteHandler.Companion.splitNameA
 import org.worldcubeassociation.tnoodle.server.util.ServerEnvironmentConfig
 import org.worldcubeassociation.tnoodle.server.webscrambles.ScrambleRequest
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.WCIFHelper
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
 import java.util.*
-import javax.imageio.ImageIO
 
 class ScrambleViewHandler(val environmentConfig: ServerEnvironmentConfig) : RouteHandler {
     private val scramblers = PuzzlePlugins.PUZZLES
-
-    // Copied from http://bbgen.net/blog/2011/06/java-svg-to-bufferedimage/
-    internal class BufferedImageTranscoder : ImageTranscoder() {
-        var bufferedImage: BufferedImage? = null
-            private set
-
-        override fun createImage(w: Int, h: Int): BufferedImage {
-            return BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB)
-        }
-
-        override fun writeImage(img: BufferedImage, output: TranscoderOutput) {
-            this.bufferedImage = img
-        }
-    }
 
     override fun install(router: Routing) {
         router.route("/view") {
@@ -75,38 +52,7 @@ class ScrambleViewHandler(val environmentConfig: ServerEnvironmentConfig) : Rout
                             val icon = PuzzleIcon.loadPuzzleIconPng(scrambler.shortName)
 
                             call.respondBytes(icon.toByteArray(), ContentType.Image.PNG)
-                        } else {
-                            val svg = scrambler.drawScramble(scramble, colorScheme)
-                            val svgFile = svg.toString().byteInputStream()
-
-                            val (width, height) = scrambler.preferredSize.let { it.width to it.height }
-                            val imageTranscoder = BufferedImageTranscoder()
-
-                            // Copied from http://stackoverflow.com/a/6634963
-                            // with some tweaks.
-                            val impl = SVGDOMImplementation.getDOMImplementation()
-
-                            val hints = TranscodingHints().apply {
-                                this[ImageTranscoder.KEY_WIDTH] = width.toFloat()
-                                this[ImageTranscoder.KEY_HEIGHT] = height.toFloat()
-                                this[ImageTranscoder.KEY_DOM_IMPLEMENTATION] = impl
-                                this[ImageTranscoder.KEY_DOCUMENT_ELEMENT_NAMESPACE_URI] = SVGConstants.SVG_NAMESPACE_URI
-                                this[ImageTranscoder.KEY_DOCUMENT_ELEMENT_NAMESPACE_URI] = SVGConstants.SVG_NAMESPACE_URI
-                                this[ImageTranscoder.KEY_DOCUMENT_ELEMENT] = SVGConstants.SVG_SVG_TAG
-                                this[ImageTranscoder.KEY_XML_PARSER_VALIDATING] = false
-                            }
-
-                            imageTranscoder.transcodingHints = hints
-
-                            val input = TranscoderInput(svgFile)
-                            imageTranscoder.transcode(input, TranscoderOutput())
-
-                            val img = imageTranscoder.bufferedImage
-
-                            val bytes = ByteArrayOutputStream().also { ImageIO.write(img, "png", it) }
-
-                            call.respondBytes(bytes.toByteArray(), ContentType.Image.PNG)
-                        }
+                        } else call.respondText("Invalid extension: $extension")
                     }
                     "svg" -> {
                         val svg = scrambler.drawScramble(scramble, colorScheme)
