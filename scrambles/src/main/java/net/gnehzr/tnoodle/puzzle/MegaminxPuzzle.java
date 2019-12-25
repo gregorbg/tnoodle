@@ -622,11 +622,13 @@ public class MegaminxPuzzle extends Puzzle {
                 Text labelText = new Text(label, centerX, centerY);
                 // Vertically and horizontally center text
                 labelText.setAttribute("text-anchor", "middle");
+                labelText.setAttribute("font-family", "monospace");
+                labelText.setAttribute("font-weight", "bold");
                 // dominant-baseline works great on Chrome, but
                 // unfortunately isn't supported by androidsvg.
                 // See http://stackoverflow.com/q/56402 for workaround.
-                //labelText.setStyle("dominant-baseline", "central");
-                labelText.setAttribute("dy", "0.7ex");
+                labelText.setStyle("dominant-baseline", "central");
+                labelText.setAttribute("dy", "4.5em");
                 g.appendChild(labelText);
             }
         }
