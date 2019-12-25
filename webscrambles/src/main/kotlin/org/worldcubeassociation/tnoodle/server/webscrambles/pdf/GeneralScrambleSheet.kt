@@ -7,17 +7,16 @@ import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfPage
 import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Cell
-import com.itextpdf.layout.element.Paragraph
-import com.itextpdf.layout.element.Table
-import com.itextpdf.layout.element.Text
+import com.itextpdf.layout.element.*
 import com.itextpdf.layout.property.HorizontalAlignment
 import com.itextpdf.layout.property.VerticalAlignment
 import com.itextpdf.svg.converter.SvgConverter
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfUtil.splitToLineChunks
-import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.*
+import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ActivityCode
+import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.Scramble
+import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ScrambleSet
 import org.worldcubeassociation.tnoodle.svglite.Dimension
 import kotlin.math.min
 
@@ -65,7 +64,7 @@ class GeneralScrambleSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode)
         // Maybe add extra scrambles
         if (scrambleSet.extraScrambles.isNotEmpty()) {
             val headerTable = Table(1)
-                .setWidth(availableWidth)
+                .useAllAvailableWidth()
 
             val extraScramblesHeader = Cell()
                 .add(Paragraph(TABLE_HEADING_EXTRA_SCRAMBLES))
@@ -102,7 +101,9 @@ class GeneralScrambleSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode)
     }
 
     fun PdfDocument.createTable(scrambleColumnWidth: Float, indexColumnWidth: Float, scrambleFont: PdfFont, fontSize: Float, scrambleImageSize: Dimension, scrambles: List<Scramble>, scrambleNumberPrefix: String, useHighlighting: Boolean): Table {
-        val table = Table(3).apply {
+        val table = Table(3)
+            .useAllAvailableWidth()
+            .setAutoLayout().apply {
             // FIXME setTotalWidth(floatArrayOf(indexColumnWidth, scrambleColumnWidth, (scrambleImageSize.width + 2 * SCRAMBLE_IMAGE_PADDING).toFloat()))
         }
 
@@ -146,15 +147,11 @@ class GeneralScrambleSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode)
 
             if (scrambleImageSize.width > 0 && scrambleImageSize.height > 0) {
                 val svg = scramblingPuzzle.drawScramble(scramble, null)
-                val img = SvgConverter.convertToImage(svg.toString().byteInputStream(), this)
-
-                val imgCell = Cell()
-                    .add(img)
+                val img = Image(SvgConverter.convertToXObject(svg.toString(), this))
                     .setBackgroundColor(ColorConstants.LIGHT_GRAY)
-                    .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                    .setHorizontalAlignment(HorizontalAlignment.CENTER)
+                    .setAutoScale(true)
 
-                table.addCell(imgCell)
+                table.addCell(img)
             } else {
                 table.addCell(EMPTY_CELL_CONTENT)
             }
