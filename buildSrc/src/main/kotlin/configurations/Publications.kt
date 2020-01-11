@@ -21,4 +21,19 @@ object Publications {
             }
         }
     }
+
+    fun Project.addGitHubPackagesTarget() {
+        configure<PublishingExtension> {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/thewca/tnoodle")
+                    credentials {
+                        username = project.findProperty("gpr.user") as? String
+                        password = project.findProperty("gpr.key") as? String
+                    }
+                }
+            }
+        }
+    }
 }
