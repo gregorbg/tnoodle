@@ -301,6 +301,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
             val scramblePrefix = Translate.translate("fmc.scramble", locale)
             val scrambleNote = "$scramblePrefix:$NBSP$scrambleString"
+                //.replace("\\s".toRegex(), NBSP.toString())
 
             val scrambleNotePar = Paragraph(scrambleNote)
                 .setFontSize(SCRAMBLE_FONT_SIZE)
