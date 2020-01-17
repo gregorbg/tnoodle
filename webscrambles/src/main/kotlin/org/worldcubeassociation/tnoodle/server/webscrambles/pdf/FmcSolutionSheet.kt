@@ -10,6 +10,7 @@ import com.itextpdf.layout.element.*
 import com.itextpdf.layout.property.*
 import com.itextpdf.svg.converter.SvgConverter
 import org.worldcubeassociation.tnoodle.server.webscrambles.Translate
+import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontSizeRenderer
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ActivityCode
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ScrambleSet
@@ -304,6 +305,9 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
             val scrambleNotePar = Paragraph(scrambleNote)
                 .setFontSize(SCRAMBLE_FONT_SIZE)
 
+            val renderer = FontSizeRenderer(scrambleNotePar)
+            scrambleNotePar.setNextRenderer(renderer)
+
             val scrambleNoteCell = Cell(1, 2)
                 .setTextAlignment(TextAlignment.CENTER)
                 .add(scrambleNotePar)
@@ -351,7 +355,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         const val MOVES_TABLE_FONT_SIZE = 9f
         const val COMPETITOR_INFO_FONT_SIZE = 12f
         const val GRADING_FONT_SIZE = 9f
-        const val SCRAMBLE_FONT_SIZE = 14f
+        const val SCRAMBLE_FONT_SIZE = 140f
         const val SCRAMBLE_DASHES_FONT_SIZE = 18f
 
         const val SOLUTION_ROWS = 8
