@@ -372,7 +372,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
         const val TEXT_NEWLINE = "\n"
 
-        val WCA_MOVES = arrayOf("F", "R", "U", "B", "L", "D")
+        val WCA_MOVES = arrayOf("R", "U", "F", "L", "D", "B")
         val WCA_ROTATIONS = arrayOf("x", "y", "z")
 
         val WCA_DIRECTION_MODIFIERS = arrayOf("", "'", "2")
