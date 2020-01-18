@@ -2,7 +2,6 @@ package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
 import com.itextpdf.kernel.font.PdfFont
 import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfPage
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.borders.Border
 import com.itextpdf.layout.borders.SolidBorder
@@ -20,17 +19,20 @@ import com.itextpdf.layout.element.List as PdfList
 
 open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode, competitionTitle: String, locale: Locale, hasGroupID: Boolean) : FmcSheet(scrambleSet, activityCode, competitionTitle, locale, hasGroupID) {
     override fun PdfDocument.writeContents() {
+        val doc = Document(this)
+
         for (i in scrambleSet.scrambles.indices) {
-            this.addNewPage()
-                .addFmcSolutionSheet(i)
+            doc.addFmcSolutionSheet(i)
+
+            if (i < scrambleSet.scrambles.lastIndex) {
+                doc.add(AreaBreak(AreaBreakType.NEXT_PAGE))
+            }
         }
     }
 
-    protected fun PdfPage.addFmcSolutionSheet(index: Int) {
+    protected fun Document.addFmcSolutionSheet(index: Int) {
         val withScramble = index != FmcGenericSolutionSheet.INDEX_SKIP_SCRAMBLE
         val bf = FontUtil.getFontForLocale(locale)
-
-        val highLevelDocument = Document(document)
 
         val table = Table(2)
             .useAllAvailableWidth()
@@ -39,10 +41,10 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         table.addRules(bf)
         table.addCompetitorInfo(withScramble, index)
         table.addGrading()
-        table.addScramble(withScramble, index, document)
+        table.addScramble(withScramble, index, pdfDocument)
         table.addSolutionSpace(bf)
 
-        highLevelDocument.add(table)
+        this.add(table)
     }
 
     fun Table.addRules(font: PdfFont) {
@@ -301,7 +303,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
             val scramblePrefix = Translate.translate("fmc.scramble", locale)
             val scrambleNote = "$scramblePrefix:$NBSP$scrambleString"
-                //.replace("\\s".toRegex(), NBSP.toString())
+            //.replace("\\s".toRegex(), NBSP.toString())
 
             val scrambleNotePar = Paragraph(scrambleNote)
                 .setFontSize(SCRAMBLE_FONT_SIZE)
