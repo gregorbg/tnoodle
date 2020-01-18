@@ -84,8 +84,6 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
             doc.add(table)
             doc.add(dashedLineSep)
         }
-
-        doc.close()
     }
 
     companion object {
