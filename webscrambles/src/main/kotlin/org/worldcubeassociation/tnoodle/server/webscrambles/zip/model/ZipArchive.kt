@@ -44,7 +44,7 @@ class ZipArchive(val entries: List<ZipNode>) {
     }
 
     companion object {
-        val ENCODING_CHARSET = Charset.forName("IBM437")
+        val ENCODING_CHARSET = Charset.forName("IBM850")
 
         private fun defaultZipParameters(useEncryption: Boolean = false) = ZipParameters().apply {
             compressionMethod = CompressionMethod.DEFLATE
