@@ -8,6 +8,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod
 import org.worldcubeassociation.tnoodle.server.webscrambles.ScrambleRequest
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.StringUtil.toFileSafeString
 import java.io.ByteArrayOutputStream
+import java.nio.charset.Charset
 
 class ZipArchive(val entries: List<ZipNode>) {
     val allFiles: List<File>
@@ -22,8 +23,7 @@ class ZipArchive(val entries: List<ZipNode>) {
     fun directCompress(password: String?): ByteArray {
         val baosZip = ByteArrayOutputStream()
 
-        val zipOut = password?.let { ZipOutputStream(baosZip, it.toCharArray()) }
-            ?: ZipOutputStream(baosZip)
+        val zipOut = ZipOutputStream(baosZip, password?.toCharArray(), ENCODING_CHARSET)
 
         val usePassword = password != null
         val parameters = defaultZipParameters(usePassword)
@@ -44,6 +44,8 @@ class ZipArchive(val entries: List<ZipNode>) {
     }
 
     companion object {
+        val ENCODING_CHARSET = Charset.forName("IBM437")
+
         private fun defaultZipParameters(useEncryption: Boolean = false) = ZipParameters().apply {
             compressionMethod = CompressionMethod.DEFLATE
             compressionLevel = CompressionLevel.NORMAL
