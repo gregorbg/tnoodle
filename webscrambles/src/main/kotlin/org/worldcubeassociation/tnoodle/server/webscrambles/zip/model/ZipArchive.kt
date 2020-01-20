@@ -30,6 +30,7 @@ class ZipArchive(val entries: List<ZipNode>) {
 
         for (file in allFiles) {
             parameters.fileNameInZip = file.path
+                .toByteArray(Charsets.UTF_8).toString(Charsets.ISO_8859_1)
 
             zipOut.putNextEntry(parameters)
             zipOut.write(file.content)
