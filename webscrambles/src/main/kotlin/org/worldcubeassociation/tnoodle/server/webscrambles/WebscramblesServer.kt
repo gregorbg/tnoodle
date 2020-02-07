@@ -10,7 +10,8 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.commandLineEnvironment
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.server.cio.CIO
+import io.ktor.util.KtorExperimentalAPI
 import io.ktor.websocket.WebSockets
 import kotlinx.serialization.SerializationException
 import org.slf4j.LoggerFactory
@@ -80,6 +81,7 @@ class WebscramblesServer(val environmentConfig: ServerEnvironmentConfig) : Appli
             WebscramblesServer(LocalServerEnvironmentConfig).spinUp(app)
 
         @JvmStatic
+        @KtorExperimentalAPI
         fun main(args: Array<String>) {
             val parser = ArgParser(args)
 
@@ -125,7 +127,7 @@ class WebscramblesServer(val environmentConfig: ServerEnvironmentConfig) : Appli
             val ktorArgs = args + arrayOf("-port=$port")
 
             val cliEnv = commandLineEnvironment(ktorArgs)
-            embeddedServer(Netty, cliEnv).start()
+            embeddedServer(CIO, cliEnv).start()
 
             LOG.info("${LocalServerEnvironmentConfig.title} started")
 

@@ -12,7 +12,7 @@ object Libraries {
     val JUNIT_JUPITER_ENGINE = "org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT_JUPITER_ENGINE}"
     val KOTLIN_SERIALIZATION_JVM = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.KOTLIN_SERIALIZATION_JVM}"
     val KOTLIN_COROUTINES_CORE = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLIN_COROUTINES_CORE}"
-    val KTOR_SERVER_NETTY = "io.ktor:ktor-server-netty:${Versions.KTOR_SERVER_NETTY}"
+    val KTOR_SERVER_CIO = "io.ktor:ktor-server-cio:${Versions.KTOR_SERVER_CIO}"
     val KTOR_SERVER_SERVLET = "io.ktor:ktor-server-servlet:${Versions.KTOR_SERVER_SERVLET}"
     val KTOR_SERIALIZATION = "io.ktor:ktor-serialization:${Versions.KTOR_SERIALIZATION}"
     val KTOR_SERVER_HOST_COMMON = "io.ktor:ktor-server-host-common:${Versions.KTOR_SERVER_HOST_COMMON}"

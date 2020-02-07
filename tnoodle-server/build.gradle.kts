@@ -4,7 +4,7 @@ import configurations.Languages.attachRemoteRepositories
 import dependencies.Libraries.BOUNCYCASTLE
 import dependencies.Libraries.KOTLIN_COROUTINES_CORE
 import dependencies.Libraries.KTOR_SERIALIZATION
-import dependencies.Libraries.KTOR_SERVER_NETTY
+import dependencies.Libraries.KTOR_SERVER_CIO
 import dependencies.Libraries.KTOR_SERVER_HOST_COMMON
 import dependencies.Libraries.KTOR_SERVER_SERVLET
 import dependencies.Libraries.LOGBACK_CLASSIC
@@ -23,7 +23,7 @@ plugins {
 }
 
 dependencies {
-    api(KTOR_SERVER_NETTY)
+    api(KTOR_SERVER_CIO)
     api(KOTLIN_SERIALIZATION_JVM)
     api(KOTLIN_COROUTINES_CORE)
     api(TNOODLE_SCRAMBLES)
