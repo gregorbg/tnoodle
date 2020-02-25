@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 import configurations.CompilerSettings.KOTLIN_JVM_TARGET
 import configurations.FileUtils.symlink
 import configurations.Frameworks.configureJUnit5
@@ -107,11 +109,14 @@ tasks.create("registerManifest") {
     }
 }
 
-tasks.getByName("shadowJar") {
+tasks.withType<ShadowJar> {
+    minimize()
+
     doLast {
         val targetProject = project.name
+        val targetVersion = project.version
 
-        val originFile = file("$buildDir/libs/$targetProject-$version-all.jar")
+        val originFile = file("$buildDir/libs/$targetProject-$targetVersion-all.jar")
         val targetLn = rootProject.file("TNoodle-Docker-latest.jar")
 
         if (!targetLn.exists() || targetLn.delete()) {
