@@ -1,8 +1,10 @@
-<img src="./server-ktor/src/main/resources/icons/tnoodle_logo_1024.png" alt="TNoodle Logo" height="128px"/>
+<img src="./tnoodle-server/src/main/resources/icons/tnoodle_logo_1024.png" alt="TNoodle Logo" height="128px"/>
 
 # TNoodle
 
-TNoodle is a software suite that contains the official WCA scramble program. It consists of the core scrambling code (primarily written in Java) as well as a UI and server to generate a fully autonomous JAR file
+TNoodle is a software suite that contains the official WCA scramble program. This repository consists of the UI and server used to generate a fully autonomous JAR file distribution.
+
+**If you are interested in the core scrambling code (primarily written in Java), please visit [TNoodle-lib](https://github.com/thewca/tnoodle-lib)**
 
 [![Build Status](https://travis-ci.org/thewca/tnoodle.svg?branch=master)](https://travis-ci.org/thewca/tnoodle)
 
@@ -12,7 +14,7 @@ The official scramble program for the [World Cube Association](https://www.world
 
 All WCA official competitions must always use the current version of the official scramble program. This is available from <https://www.worldcubeassociation.org/regulations/scrambles/>
 
-Note that only the scramble program part of TNoodle is "official". Other TNoodle projects may be convenient for certain uses (including at official competitions), but do not have any official status.
+Note that only this scramble program part of TNoodle is "official". Other TNoodle projects may be convenient for certain uses (including at official competitions), but do not have any official status.
 
 ### "Scramble Program" vs. "Scrambler"
 
@@ -25,9 +27,11 @@ TNoodle is organised as a multi-project [Gradle](https://gradle.com) build. The 
 Every sub-project has its individual artifact configuration and `build.gradle` file. Furthermore, there is a central `buildSrc` folder,
 which is automatically sourced by Gradle. It contains common code and shared configuration setups.
 
+For detailed information on the sub-projects, please refer to the README files within the individual project folders.
+
 ### Overview
 
-Gradle is served through the use of a `Gradle wrapper` available as `gradlew` (UNIX systems) or `gradlew.bat` (DOS systems)
+Gradle is best served through the use of a `Gradle wrapper` available as `gradlew` (UNIX systems) or `gradlew.bat` (DOS systems)
 It is recommended to set up an alias to simplify task generation, along the lines of `alias gw='./gradlew --parallel'`.
 
 Get an overview of the core project tasks by executing
@@ -42,15 +46,15 @@ Gradle automagically handles all dependencies for you. You just need an Internet
 
 When you're ready to develop, run the following and then visit <http://localhost:2014/scramble/>
 
-    ./gradlew :webscrambles:runShadow
+    ./gradlew startDebugServer
 
-To build a distributable/executable `.jar` file, run:
+To build an executable `.jar` file, run: (Please note that the resulting JAR file will display warnings about not being an official WCA artifact. Join the WST if you want to learn how to create official builds.)
 
-    ./gradlew :webscrambles:shadowJar
+    ./gradlew generateDebugRelease
 
-You can run the `.jar` from the commandline using: (replace the `$VERSION` tag accordingly)
+Any executable TNoodle `.jar` can be run from the commandline using: (replace `$JARFILE` by the name of your jar file accordingly)
 
-    java -jar TNoodle-WCA-$VERSION.jar
+    java -jar $JARFILE.jar
 
 _Important note: You must never use a custom build for any official competitions._ [Contact the WCA Board and the WRC](https://www.worldcubeassociation.org/contact) if you have any questions about this.
 
