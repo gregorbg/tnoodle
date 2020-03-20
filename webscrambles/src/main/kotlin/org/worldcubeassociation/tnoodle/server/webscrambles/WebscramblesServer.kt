@@ -12,14 +12,14 @@ import org.worldcubeassociation.tnoodle.server.ApplicationHandler
 import org.worldcubeassociation.tnoodle.server.TNoodleServer
 import org.worldcubeassociation.tnoodle.server.routing.JsEnvHandler
 import org.worldcubeassociation.tnoodle.server.ServerEnvironmentConfig
-import org.worldcubeassociation.tnoodle.server.webscrambles.server.MainLauncher.NO_REEXEC_OPT
+import org.worldcubeassociation.tnoodle.server.webscrambles.platform.MainLauncher.NO_REEXEC_OPT
 import org.worldcubeassociation.tnoodle.server.webscrambles.routing.*
 import org.worldcubeassociation.tnoodle.server.webscrambles.routing.job.JobSchedulingHandler
 import org.worldcubeassociation.tnoodle.server.config.LocalServerEnvironmentConfig
 import org.worldcubeassociation.tnoodle.server.webscrambles.routing.frontend.ApplicationDataHandler
 import org.worldcubeassociation.tnoodle.server.webscrambles.routing.frontend.WcifDataHandler
-import org.worldcubeassociation.tnoodle.server.webscrambles.server.MainLauncher
-import org.worldcubeassociation.tnoodle.server.webscrambles.server.OfflineJarUtils
+import org.worldcubeassociation.tnoodle.server.webscrambles.platform.MainLauncher
+import org.worldcubeassociation.tnoodle.server.webscrambles.platform.OfflineJarUtils
 import java.io.IOException
 import java.net.URL
 

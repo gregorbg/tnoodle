@@ -1,4 +1,4 @@
-package org.worldcubeassociation.tnoodle.server.webscrambles.server
+package org.worldcubeassociation.tnoodle.server.webscrambles.platform
 
 import org.slf4j.LoggerFactory
 import org.worldcubeassociation.tnoodle.server.util.WebServerUtils

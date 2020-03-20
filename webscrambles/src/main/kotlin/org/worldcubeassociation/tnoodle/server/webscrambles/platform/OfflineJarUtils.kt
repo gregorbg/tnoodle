@@ -1,4 +1,4 @@
-package org.worldcubeassociation.tnoodle.server.webscrambles.server
+package org.worldcubeassociation.tnoodle.server.webscrambles.platform
 
 import dorkbox.systemTray.SystemTray
 import dorkbox.systemTray.MenuItem
