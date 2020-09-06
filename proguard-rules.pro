@@ -10,6 +10,7 @@
 # cf. https://github.com/ktorio/ktor-samples/tree/master/other/proguard
 -keep class org.worldcubeassociation.tnoodle.server.** { *; }
 -keep class io.ktor.server.cio.CIO { *; }
+-keep class io.ktor.utils.io.core.** { *; }
 -keep class kotlin.reflect.jvm.internal.** { *; }
 -keep class kotlin.text.RegexOption { *; }
 
@@ -18,7 +19,10 @@
 -keep class org.apache.batik.dom.** { *; }
 -keep class com.itextpdf.text.ImgTemplate { *; }
 
--keep class ch.qos.logback.core.** { *; }
+-keep class ch.qos.** { *; }
+-keep class org.slf4j.** { *; }
+-keep class javax.xml.parsers.** { *; }
+-keep class org.xml.sax.** { *; }
 
 -keep class com.sun.jna.** { *; }
 -keep class dorkbox.util.jna.** { *; }
@@ -26,7 +30,8 @@
 
 -keep,includedescriptorclasses class org.worldcubeassociation.tnoodle.server.webscrambles.**$$serializer { *; }
 
--keepattributes *Annotation
+-keepattributes *Annotation*
+-keepattributes Signature
 -keepattributes InnerClasses
 
 -keepclasseswithmembers class org.worldcubeassociation.tnoodle.server.webscrambles.** {
@@ -35,6 +40,11 @@
 
 -keepclassmembers class org.worldcubeassociation.tnoodle.server.webscrambles.** {
     *** Companion;
+}
+
+-keepclassmembers class * {
+    void $$clinit();
+    void <clinit>();
 }
 
 -keepclasseswithmembernames class * {
