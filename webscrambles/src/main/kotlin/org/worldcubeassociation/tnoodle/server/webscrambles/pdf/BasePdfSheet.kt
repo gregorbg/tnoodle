@@ -1,13 +1,13 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.text.Document
-import com.itextpdf.text.PageSize
-import com.itextpdf.text.pdf.PdfWriter
+import com.itextpdf.kernel.geom.PageSize
+import com.itextpdf.kernel.pdf.EncryptionConstants
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.pdf.WriterProperties
 import java.io.ByteArrayOutputStream
 
-abstract class BasePdfSheet<W : PdfWriter> : PdfContent {
-    open fun openDocument() = Document()
-
+abstract class BasePdfSheet : PdfContent {
     private val renderingCache by lazy { directRender(null) }
 
     override fun render(password: String?): ByteArray {
@@ -18,26 +18,32 @@ abstract class BasePdfSheet<W : PdfWriter> : PdfContent {
         return directRender(password)
     }
 
+    open fun openDocument(writer: PdfWriter) = PdfDocument(writer)
+
     private fun directRender(password: String?): ByteArray {
         val pdfBytes = ByteArrayOutputStream()
-        val pdfDocument = openDocument()
-
-        val docWriter = pdfDocument.getWriter(pdfBytes)
+        val properties = WriterProperties()
 
         if (password != null) {
-            docWriter.setEncryption(password.toByteArray(), password.toByteArray(), PdfWriter.ALLOW_PRINTING, PdfWriter.STANDARD_ENCRYPTION_128)
+            properties.setStandardEncryption(
+                password.toByteArray(),
+                password.toByteArray(),
+                EncryptionConstants.ALLOW_PRINTING,
+                EncryptionConstants.STANDARD_ENCRYPTION_128
+            )
         }
 
-        pdfDocument.open()
-        docWriter.writeContents(pdfDocument)
-        pdfDocument.close()
+        val docWriter = PdfWriter(pdfBytes, properties)
+        val document = openDocument(docWriter)
+
+        document.writeContents()
+
+        document.close()
 
         return this.finalise(pdfBytes, password)
     }
 
-    abstract fun W.writeContents(document: Document)
-
-    abstract fun Document.getWriter(bytes: ByteArrayOutputStream): W
+    abstract fun PdfDocument.writeContents()
 
     open fun finalise(processedBytes: ByteArrayOutputStream, password: String?): ByteArray = processedBytes.toByteArray()
 
