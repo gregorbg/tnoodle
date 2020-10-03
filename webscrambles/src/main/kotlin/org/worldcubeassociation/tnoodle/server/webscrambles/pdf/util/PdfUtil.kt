@@ -1,24 +1,24 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util
 
-import com.itextpdf.text.Chunk
-import com.itextpdf.text.Font
-import com.itextpdf.text.Rectangle
+import com.itextpdf.kernel.font.PdfFont
+import com.itextpdf.kernel.geom.Rectangle
+import com.itextpdf.layout.element.Text
 
 object PdfUtil {
     private const val NON_BREAKING_SPACE = '\u00A0'
     private const val TEXT_PADDING_HORIZONTAL = 1
 
-    fun String.splitToLineChunks(font: Font, textColumnWidth: Float): List<Chunk> {
+    fun String.splitToLineChunks(font: PdfFont, fontSize: Float, textColumnWidth: Float): List<Text> {
         val availableTextWidth = textColumnWidth - 2 * TEXT_PADDING_HORIZONTAL
 
         val padded = StringUtil.padTurnsUniformly(this, NON_BREAKING_SPACE.toString())
 
         return padded.split("\n").dropLastWhile { it.isEmpty() }
-            .flatMap { it.splitLineToChunks(font, availableTextWidth) }
-            .map { it.toLineWrapChunk(font) }
+            .flatMap { it.splitLineToChunks(font, fontSize, availableTextWidth) }
+            .map { it.toLineWrapChunk(font, fontSize) }
     }
 
-    private tailrec fun String.splitLineToChunks(font: Font, availableTextWidth: Float, acc: List<String> = listOf()): List<String> {
+    private tailrec fun String.splitLineToChunks(font: PdfFont, fontSize: Float, availableTextWidth: Float, acc: List<String> = listOf()): List<String> {
         if (isEmpty()) {
             return acc
         }
@@ -27,22 +27,22 @@ object PdfUtil {
         // the last line wrap we just inserted.
         if (first() == ' ') {
             return drop(1)
-                .splitLineToChunks(font, availableTextWidth, acc)
+                .splitLineToChunks(font, fontSize, availableTextWidth, acc)
         }
 
-        val optimalCutIndex = optimalCutIndex(font, availableTextWidth)
+        val optimalCutIndex = optimalCutIndex(font, fontSize, availableTextWidth)
 
         val substring = substring(0, optimalCutIndex).padNbsp()
-            .fillToWidthMax(NON_BREAKING_SPACE.toString(), font, availableTextWidth)
+            .fillToWidthMax(NON_BREAKING_SPACE.toString(), font, fontSize, availableTextWidth)
 
         return substring(optimalCutIndex)
-            .splitLineToChunks(font, availableTextWidth, acc + substring)
+            .splitLineToChunks(font, fontSize, availableTextWidth, acc + substring)
     }
 
     private fun String.padNbsp() = NON_BREAKING_SPACE + this + NON_BREAKING_SPACE
 
-    private fun String.optimalCutIndex(font: Font, availableTextWidth: Float): Int {
-        val endIndex = longestFittingSubstringIndex(font, availableTextWidth, 0)
+    private fun String.optimalCutIndex(font: PdfFont, fontSize: Float, availableTextWidth: Float): Int {
+        val endIndex = longestFittingSubstringIndex(font, fontSize, availableTextWidth, 0)
 
         // If we're not at the end of the text, make sure we're not cutting
         // a word (or turn) in half by walking backwards until we're right before a turn.
@@ -53,12 +53,12 @@ object PdfUtil {
         return endIndex
     }
 
-    private fun String.longestFittingSubstringIndex(font: Font, maxWidth: Float, fallback: Int): Int {
+    private fun String.longestFittingSubstringIndex(font: PdfFont, fontSize: Float, maxWidth: Float, fallback: Int): Int {
         val searchRange = 0..length
 
         val endpoint = searchRange.findLast {
             val substring = substring(0, it).padNbsp()
-            val substringWidth = font.baseFont.getWidthPoint(substring, font.size)
+            val substringWidth = font.getWidth(substring, fontSize)
 
             substringWidth <= maxWidth
         }
@@ -89,25 +89,22 @@ object PdfUtil {
         return fallback
     }
 
-    private tailrec fun String.fillToWidthMax(padding: String, font: Font, maxLength: Float): String {
+    private tailrec fun String.fillToWidthMax(padding: String, font: PdfFont, fontSize: Float, maxLength: Float): String {
         // Add $padding until the substring takes up as much space as is available on a line.
         val paddedString = this + padding
-        val substringWidth = font.baseFont.getWidthPoint(paddedString, font.size)
+        val substringWidth = font.getWidth(paddedString, fontSize)
 
         if (substringWidth > maxLength) {
             // substring is now too big for our line, so remove the last character.
             return this
         }
 
-        return paddedString.fillToWidthMax(padding, font, maxLength)
+        return paddedString.fillToWidthMax(padding, font, fontSize, maxLength)
     }
 
-    private fun String.toLineWrapChunk(font: Font) = Chunk(this).apply {
-        this.font = font
-
-        // Force a line wrap!
-        append("\n")
-    }
+    fun String.toLineWrapChunk(font: PdfFont, fontSize: Float) = Text("$this\n")
+        .setFont(font)
+        .setFontSize(fontSize)
 
     private const val FITTEXT_FONTSIZE_PRECISION = 0.1f
 
@@ -125,12 +122,13 @@ object PdfUtil {
      *
      * @return the calculated font size that makes the text fit
      */
-    fun fitText(font: Font, text: String, availableArea: Rectangle, maxFontSize: Float, newlinesAllowed: Boolean, leadingMultiplier: Float = 1f): Float {
+    fun fitText(font: PdfFont, text: String, availableArea: Rectangle, maxFontSize: Float, newlinesAllowed: Boolean, leadingMultiplier: Float): Float {
+        // ideally, we could pass the object in which our text is going to be rendered
+        // as argument instead of asking leadingMultiplier, but we are currently rendering
+        // text in pdfcell, columntext and others
+        // it'd be painful to render lines in a common object to ask leadingMultiplier
         return binarySearchDec(1f, maxFontSize, FITTEXT_FONTSIZE_PRECISION) {
-            // FIXME inplace modification is no good
-            font.size = it
-
-            val lineChunks = text.splitToLineChunks(font, availableArea.width)
+            val lineChunks = text.splitToLineChunks(font, it, availableArea.width)
 
             // The font size seems to be a pretty good estimate for how
             // much vertical space a row actually takes up.
