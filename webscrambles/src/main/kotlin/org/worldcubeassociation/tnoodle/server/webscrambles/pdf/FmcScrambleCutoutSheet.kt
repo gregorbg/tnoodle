@@ -33,6 +33,8 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
         val scrambleModel = scrambleSet.scrambles[index]
         val scramble = scrambleModel.allScrambleStrings.single() // we assume FMC only has one scramble
 
+        val font = FontUtil.getFontForLocale(locale)
+
         val svg = scramblingPuzzle.drawScramble(scramble, null)
 
         val substitutions = mapOf(
@@ -54,7 +56,7 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
             .setBorder(Border.NO_BORDER)
 
         val titleParagraph = Paragraph(title)
-            .setFont(BASE_FONT)
+            .setFont(font)
             .setFontSize(FONT_SIZE)
 
         val titleCell = Cell().add(titleParagraph)
@@ -69,7 +71,7 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
             .setVerticalAlignment(VerticalAlignment.MIDDLE)
 
         val scrambleParagraph = Paragraph(scramble)
-            .setFont(BASE_FONT)
+            .setFont(font)
             .setFontSize(FONT_SIZE)
 
         val scrambleStrCell = Cell().add(scrambleParagraph)
@@ -91,8 +93,6 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
     }
 
     companion object {
-        val BASE_FONT = FontUtil.getFontForLocale(Translate.DEFAULT_LOCALE)
-
         val SPACE_SCRAMBLE_IMAGE = 5f // scramble image won't touch the scramble
         val SCRAMBLE_IMAGE_PADDING = 8f // scramble image won't touch the dashed lines
 

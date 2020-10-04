@@ -1,5 +1,6 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util
 
+import com.itextpdf.io.font.FontProgramFactory
 import com.itextpdf.io.font.PdfEncodings
 import com.itextpdf.kernel.counter.EventCounter
 import com.itextpdf.kernel.counter.EventCounterHandler
@@ -12,9 +13,13 @@ import com.itextpdf.kernel.font.PdfFontFactory
 import java.util.*
 
 object FontUtil {
-    val CJK_FONT: PdfFont get() = PdfFontFactory.createFont("fonts/wqy-microhei.ttf", PdfEncodings.IDENTITY_H, true)
-    val MONO_FONT: PdfFont get() = PdfFontFactory.createFont("fonts/LiberationMono-Regular.ttf", PdfEncodings.IDENTITY_H, true)
-    val NOTO_SANS_FONT: PdfFont get() = PdfFontFactory.createFont("fonts/NotoSans-Regular.ttf", PdfEncodings.IDENTITY_H, true)
+    val CJK_FONT: PdfFont get() = PdfFontFactory.createFont(CJK_FONT_PROGRAM, PdfEncodings.IDENTITY_H, true)
+    val MONO_FONT: PdfFont get() = PdfFontFactory.createFont(MONO_FONT_PROGRAM, PdfEncodings.IDENTITY_H, true)
+    val NOTO_SANS_FONT: PdfFont get() = PdfFontFactory.createFont(NOTO_SANS_FONT_PROGRAM, PdfEncodings.IDENTITY_H, true)
+
+    val CJK_FONT_PROGRAM = FontProgramFactory.createFont("fonts/wqy-microhei.ttf", true)
+    val MONO_FONT_PROGRAM = FontProgramFactory.createFont("fonts/LiberationMono-Regular.ttf", true)
+    val NOTO_SANS_FONT_PROGRAM = FontProgramFactory.createFont("fonts/NotoSans-Regular.ttf", true)
 
     const val MAX_SCRAMBLE_FONT_SIZE = 20f
     const val MINIMUM_ONE_LINE_FONT_SIZE = 15f
