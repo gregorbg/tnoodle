@@ -11,6 +11,7 @@ import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.OutlineConf
 class MergedPdfWithOutline(val toMerge: List<PdfContent>, val configuration: List<OutlineConfiguration>) : BasePdfSheet() {
     override fun PdfDocument.writeContents() {
         val merger = PdfMerger(this)
+            .setCloseSourceDocuments(true)
 
         val root = getOutlines(true)
         val outlineByPuzzle = mutableMapOf<String, PdfOutline>()
@@ -30,8 +31,6 @@ class MergedPdfWithOutline(val toMerge: List<PdfContent>, val configuration: Lis
             for (j in 0 until config.copies) {
                 merger.merge(contentDocument, 1, contentDocument.numberOfPages)
             }
-
-            contentDocument.close() // FIXME is this necessary?
         }
     }
 

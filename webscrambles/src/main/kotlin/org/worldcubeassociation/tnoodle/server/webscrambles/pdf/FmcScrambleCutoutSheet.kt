@@ -7,7 +7,6 @@ import com.itextpdf.layout.borders.Border
 import com.itextpdf.layout.element.*
 import com.itextpdf.layout.property.AreaBreakType
 import com.itextpdf.layout.property.HorizontalAlignment
-import com.itextpdf.layout.property.UnitValue
 import com.itextpdf.layout.property.VerticalAlignment
 import com.itextpdf.svg.converter.SvgConverter
 import org.worldcubeassociation.tnoodle.server.webscrambles.Translate
@@ -43,14 +42,14 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
         )
 
         val scrambleSuffix = Translate.translate("fmc.scrambleXofY", locale, substitutions)
-            .takeIf { expectedAttemptNum > 1 } ?: ""
+            .takeIf { expectedAttemptNum > 1 }.orEmpty()
 
         val attemptTitle = activityCode.compileTitleString(locale, includeGroupID = hasGroupID)
         val title = "$competitionTitle - $attemptTitle$scrambleSuffix"
 
         val table = Table(floatArrayOf(3.75f, 1f))
-            .setWidth(UnitValue.createPercentValue(100f))
-            .setFixedLayout() // FIXME
+            .useAllAvailableWidth()
+            .setFixedLayout()
             .setVerticalBorderSpacing(SPACE_SCRAMBLE_IMAGE)
             .setHorizontalBorderSpacing(SCRAMBLE_IMAGE_PADDING)
             .setBorder(Border.NO_BORDER)
@@ -82,7 +81,7 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
         table.addCell(scrambleImgCell)
         table.addCell(scrambleStrCell)
 
-        val dashedLineSep = LineSeparator(DashedLine(2f)) // FIXME, posted on SO
+        val dashedLineSep = LineSeparator(DashedLine(1f)) // FIXME, posted on SO
 
         this.add(dashedLineSep)
 

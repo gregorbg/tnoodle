@@ -8,11 +8,14 @@ import com.itextpdf.layout.borders.SolidBorder
 import com.itextpdf.layout.element.*
 import com.itextpdf.layout.property.*
 import com.itextpdf.svg.converter.SvgConverter
+import org.worldcubeassociation.tnoodle.server.model.EventData
 import org.worldcubeassociation.tnoodle.server.webscrambles.Translate
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontSizeRenderer
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ActivityCode
+import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.Scramble
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ScrambleSet
+import java.io.File
 import java.util.*
 import kotlin.math.max
 import com.itextpdf.layout.element.List as PdfList
@@ -49,13 +52,11 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
     fun Table.addRules(font: PdfFont) {
         val rulePar = Paragraph()
-            .setHorizontalAlignment(HorizontalAlignment.CENTER)
 
         val heading = Text(Translate.translate("fmc.event", locale))
             .setBold()
             .setFont(font)
             .setFontSize(TITLE_FONT_SIZE)
-            .setTextAlignment(TextAlignment.CENTER)
 
         rulePar.add(heading)
 
@@ -72,19 +73,15 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
             val ruleTranslation = Translate.translate("fmc.rule$i", locale, substitutions)
 
             val ruleItemPar = Paragraph(ruleTranslation)
-                .setMultipliedLeading(0.7f) // FIXME
+                .setMultipliedLeading(0.7f) // TODO const
 
             val ruleListItem = ListItem()
-                .add(ruleItemPar) as ListItem
-
-            // FIXME leading for list items is dumb!
-            ruleListItem.setProperty(Property.LEADING, Leading(Leading.MULTIPLIED, 0.7f))
+                .apply { add(ruleItemPar) }
 
             listing.add(ruleListItem)
         }
 
         rulePar.add(listing)
-
         rulePar.addMovesTable(font)
 
         val ruleCell = Cell(3, 1)
@@ -188,20 +185,24 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
     }
 
     fun Table.addCompetitorInfo(withScramble: Boolean, index: Int) {
-        // FIXME newlines are nasty. use listing?!
         val infoPar = Paragraph()
 
-        val showScrambleCount = withScramble && (scrambleSet.scrambles.size > 1 || activityCode.attemptNumber != null)
+        val competitionListing = PdfList()
+            .setListSymbol("")
+            .setTextAlignment(TextAlignment.CENTER)
+        val competitorListing = PdfList()
+            .setListSymbol("")
+            .setTextAlignment(TextAlignment.LEFT)
 
         if (withScramble) {
-            infoPar.add(competitionTitle)
-            infoPar.add(TEXT_NEWLINE)
+            competitionListing.add(competitionTitle)
 
             val activityTitle = activityCode.copyParts(attemptNumber = null)
                 .compileTitleString(locale, includeGroupID = hasGroupID)
 
-            infoPar.add(activityTitle)
-            infoPar.add(TEXT_NEWLINE)
+            competitionListing.add(activityTitle)
+
+            val showScrambleCount = withScramble && (scrambleSet.scrambles.size > 1 || activityCode.attemptNumber != null)
 
             if (showScrambleCount) {
                 // this is for ordered scrambles
@@ -214,12 +215,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
                 )
 
                 val translatedInfo = Translate.translate("fmc.scrambleXofY", locale, substitutions)
-
-                val indexText = Text(translatedInfo)
-                    .setTextAlignment(TextAlignment.CENTER)
-
-                infoPar.add(indexText)
-                infoPar.add(TEXT_NEWLINE)
+                competitionListing.add(translatedInfo)
             }
         } else {
             val fillOutGaps = mapOf(
@@ -230,24 +226,23 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
             for ((key, fill) in fillOutGaps) {
                 val translatedText = Translate.translate(key, locale) + fill
-
-                val textElement = Text(translatedText)
-                    .setTextAlignment(TextAlignment.LEFT)
-
-                infoPar.add(textElement)
-                infoPar.add(TEXT_NEWLINE)
+                competitionListing.add(translatedText)
             }
+
+            competitionListing.setTextAlignment(TextAlignment.LEFT)
         }
+
+        infoPar.add(competitionListing)
 
         val competitorDesc = Translate.translate("fmc.competitor", locale) + LONG_FILL
         val registrantIdDesc = Translate.translate("fmc.registrantId", locale) + SHORT_FILL
         val wcaIdTemplate = FORM_TEMPLATE_WCA_ID.replace(' ', NBSP)
 
-        infoPar.add(Text(competitorDesc).setTextAlignment(TextAlignment.LEFT))
-        infoPar.add(TEXT_NEWLINE)
-        infoPar.add(wcaIdTemplate)
-        infoPar.add(TEXT_NEWLINE)
-        infoPar.add(registrantIdDesc)
+        competitorListing.add(competitorDesc)
+        competitorListing.add(wcaIdTemplate)
+        competitorListing.add(registrantIdDesc)
+
+        infoPar.add(competitorListing)
 
         val infoCell = Cell()
             .setTextAlignment(TextAlignment.CENTER)
@@ -258,25 +253,21 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
     }
 
     fun Table.addGrading() {
-        // FIXME newlines are nasty. Investigate!
-        val gradingPar = Paragraph()
+        val gradingPar = PdfList()
+            .setListSymbol("")
+            .setTextAlignment(TextAlignment.CENTER)
 
         val warningString = Translate.translate("fmc.warning", locale)
             .replace(' ', NBSP)
 
-        val warningText = Text(warningString)
-
-        gradingPar.add(warningText)
-        gradingPar.add(TEXT_NEWLINE)
+        gradingPar.add(warningString)
 
         val gradingStringGradedBy = Translate.translate("fmc.graded", locale) + LONG_FILL
         val gradingStringResult = Translate.translate("fmc.result", locale) + SHORT_FILL
 
         val gradingString = "$gradingStringGradedBy$NBSP$gradingStringResult"
 
-        val gradingText = Text(gradingString)
-
-        gradingPar.add(gradingText)
+        gradingPar.add(gradingString)
 
         val gradingCell = Cell()
             .setFontSize(GRADING_FONT_SIZE)
@@ -358,7 +349,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         const val MOVES_TABLE_FONT_SIZE = 9f
         const val COMPETITOR_INFO_FONT_SIZE = 12f
         const val GRADING_FONT_SIZE = 9f
-        const val SCRAMBLE_FONT_SIZE = 140f
+        const val SCRAMBLE_FONT_SIZE = 15f
         const val SCRAMBLE_DASHES_FONT_SIZE = 18f
 
         const val SOLUTION_ROWS = 8
@@ -373,16 +364,9 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         const val SHORT_FILL = ":${NBSP}____"
         const val LONG_FILL = ":${NBSP}__________________"
 
-        const val TEXT_NEWLINE = "\n"
-
         val WCA_MOVES = arrayOf("R", "U", "F", "L", "D", "B")
         val WCA_ROTATIONS = arrayOf("x", "y", "z")
 
         val WCA_DIRECTION_MODIFIERS = arrayOf("", "'", "2")
-
-        const val FMC_LINE_THICKNESS = 0.5f
-        //const val UNDERLINE_THICKNESS = 0.2f
-
-        //const val LEADING_MULTIPLIER = 1.3f
     }
 }

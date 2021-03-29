@@ -10,6 +10,8 @@ object StringUtil {
     private const val PASSCODE_DIGIT_SET = "23456789abcdefghijkmnpqrstuvwxyz"
     private const val PASSCODE_NUM_CHARS = 8
 
+    private val SECURE_RANDOM = SecureRandom()
+
     fun padTurnsUniformly(scramble: String, padding: String): String {
         val maxTurnLength = scramble.split("\\s+".toRegex()).map { it.length }.maxOrNull() ?: 0
 
@@ -33,14 +35,12 @@ object StringUtil {
         }
     }
 
-    fun String.toFileSafeString() = filter { it !in INVALID_CHARS }
+    fun String.toFileSafeString() = filterNot { it in INVALID_CHARS }
     fun List<String>.stripNewlines() = map { it.replace("\n", " ") }
 
     fun randomPasscode(): String {
-        val secureRandom = SecureRandom()
-
         return 0.until(PASSCODE_NUM_CHARS)
-            .map { secureRandom.nextInt(PASSCODE_DIGIT_SET.length) }
+            .map { SECURE_RANDOM.nextInt(PASSCODE_DIGIT_SET.length) }
             .map { PASSCODE_DIGIT_SET[it] }
             .joinToString("")
     }

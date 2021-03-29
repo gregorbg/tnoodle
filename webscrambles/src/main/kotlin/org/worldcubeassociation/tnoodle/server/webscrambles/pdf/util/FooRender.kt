@@ -3,21 +3,32 @@ package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.layout.LayoutContext
 import com.itextpdf.layout.layout.LayoutResult
+import com.itextpdf.layout.minmaxwidth.MinMaxWidthUtils
 import com.itextpdf.layout.property.Property
 import com.itextpdf.layout.property.UnitValue
+import com.itextpdf.layout.renderer.AbstractRenderer
 import com.itextpdf.layout.renderer.ParagraphRenderer
 
 class FontSizeRenderer(val content: Paragraph) : ParagraphRenderer(content) {
     override fun getNextRenderer() = FontSizeRenderer(content)
 
-    override fun layout(layoutContext: LayoutContext?): LayoutResult {
+    override fun layout(layoutContext: LayoutContext): LayoutResult {
         val currentFontSize = content.getProperty<UnitValue>(Property.FONT_SIZE).value
 
         return layoutBinarySearch(layoutContext, 1f, currentFontSize, 20)
     }
 
-    private tailrec fun layoutBinarySearch(layoutContext: LayoutContext?, minFontSize: Float, maxFontSize: Float, iterationThreshold: Int): LayoutResult {
+    private tailrec fun layoutBinarySearch(
+        layoutContext: LayoutContext,
+        minFontSize: Float,
+        maxFontSize: Float,
+        iterationThreshold: Int
+    ): LayoutResult {
         val currentLayout = super.layout(layoutContext)
+
+        if (layoutContext.area.bBox.width == MinMaxWidthUtils.getInfWidth() && layoutContext.area.bBox.height == AbstractRenderer.INF) {
+            return currentLayout
+        }
 
         if (iterationThreshold <= 0) {
             return currentLayout
