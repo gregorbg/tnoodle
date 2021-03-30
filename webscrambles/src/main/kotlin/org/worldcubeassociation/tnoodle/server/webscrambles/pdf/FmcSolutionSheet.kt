@@ -1,17 +1,15 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.kernel.font.PdfFont
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.borders.Border
-import com.itextpdf.layout.borders.SolidBorder
 import com.itextpdf.layout.element.*
 import com.itextpdf.layout.property.*
 import com.itextpdf.svg.converter.SvgConverter
 import org.worldcubeassociation.tnoodle.server.model.EventData
 import org.worldcubeassociation.tnoodle.server.webscrambles.Translate
-import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontSizeRenderer
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
+import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.PdfUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ActivityCode
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.Scramble
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ScrambleSet
@@ -20,60 +18,56 @@ import java.util.*
 import kotlin.math.max
 import com.itextpdf.layout.element.List as PdfList
 
-open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode, competitionTitle: String, locale: Locale, hasGroupID: Boolean) : FmcSheet(scrambleSet, activityCode, competitionTitle, locale, hasGroupID) {
-    override fun PdfDocument.writeContents() {
-        val doc = Document(this)
+open class FmcSolutionSheet(
+    scrambleSet: ScrambleSet,
+    activityCode: ActivityCode,
+    competitionTitle: String,
+    locale: Locale,
+    hasGroupID: Boolean
+) : FmcSheet(scrambleSet, activityCode, competitionTitle, locale, hasGroupID) {
+    override fun Document.addFmcSheet(index: Int) {
+        setMargins(SHEET_MARGIN, SHEET_MARGIN, SHEET_MARGIN, SHEET_MARGIN)
 
-        for (i in scrambleSet.scrambles.indices) {
-            doc.addFmcSolutionSheet(i)
-
-            if (i < scrambleSet.scrambles.lastIndex) {
-                doc.add(AreaBreak(AreaBreakType.NEXT_PAGE))
-            }
-        }
-    }
-
-    protected fun Document.addFmcSolutionSheet(index: Int) {
-        val withScramble = index != FmcGenericSolutionSheet.INDEX_SKIP_SCRAMBLE
-        val bf = FontUtil.getFontForLocale(locale)
+        val includeScramble = index != FmcGenericSolutionSheet.INDEX_SKIP_SCRAMBLE
 
         val table = Table(2)
             .useAllAvailableWidth()
             .setAutoLayout()
 
-        table.addRules(bf)
-        table.addCompetitorInfo(withScramble, index)
+        table.addRules()
+        table.addCompetitorInfo(includeScramble, index)
         table.addGrading()
-        table.addScramble(withScramble, index, pdfDocument)
-        table.addSolutionSpace(bf)
+        table.addScramble(includeScramble, index, pdfDocument)
+        table.addSolutionSpace()
 
         this.add(table)
     }
 
-    fun Table.addRules(font: PdfFont) {
+    fun Table.addRules() {
         val rulePar = Paragraph()
+            .setMultipliedLeading(NARROW_TEXT_LEADING)
 
         val heading = Text(Translate.translate("fmc.event", locale))
             .setBold()
-            .setFont(font)
+            .setFont(localFont)
             .setFontSize(TITLE_FONT_SIZE)
 
         rulePar.add(heading)
 
         val listing = PdfList()
             .setTextAlignment(TextAlignment.LEFT)
-            .setListSymbol("• ")
-            .setFont(font)
-            .setKeepTogether(true)
+            .setListSymbol(LIST_SYMBOL_RULES)
+            .setFont(localFont)
             .setFontSize(RULE_FONT_SIZE)
+            .setKeepTogether(true)
 
         val substitutions = mapOf("maxMoves" to WCA_MAX_MOVES_FMC.toString())
 
-        for (i in 1..6) {
+        for (i in 1..FMC_RULES_COUNT) {
             val ruleTranslation = Translate.translate("fmc.rule$i", locale, substitutions)
 
             val ruleItemPar = Paragraph(ruleTranslation)
-                .setMultipliedLeading(0.7f) // TODO const
+                .setMultipliedLeading(RULES_LISTING_LEADING)
 
             val ruleListItem = ListItem()
                 .apply { add(ruleItemPar) }
@@ -82,7 +76,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         }
 
         rulePar.add(listing)
-        rulePar.addMovesTable(font)
+        rulePar.addMovesTable()
 
         val ruleCell = Cell(3, 1)
             .setTextAlignment(TextAlignment.CENTER)
@@ -91,7 +85,7 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         addCell(ruleCell)
     }
 
-    fun Paragraph.addMovesTable(font: PdfFont) {
+    fun Paragraph.addMovesTable() {
         val directionKeys = listOf(
             "fmc.clockwise",
             "fmc.counterClockwise",
@@ -112,12 +106,12 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
             .mapKeys { Translate.translate(it.key, locale) }
 
         val maxMovesCount = tableConfig.values.sumBy { it.size }
-        val totalColWidth = maxMovesCount + 1
+        val totalColWidth = maxMovesCount + tableConfig.size + 1
 
         val movesTable = Table(totalColWidth)
             .setAutoLayout()
-            .setFont(font)
             .setFontSize(MOVES_TABLE_FONT_SIZE)
+            .setMarginTop(MOVE_TABLE_TOP_MARGIN)
 
         // blank cell in the top-right corner
         val blankCornerCell = Cell()
@@ -125,20 +119,22 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
         movesTable.addCell(blankCornerCell)
 
-        val dividerBorder = SolidBorder(1f)
-
         for ((typeHeading, typeMoves) in tableData) {
+            val verticalGapCell = Cell(directionData.size + 1, 1)
+                .setPadding(MOVE_TABLE_PADDING)
+                .setBorder(Border.NO_BORDER)
+
+            movesTable.addCell(verticalGapCell)
+
             val headingParagraph = Paragraph(typeHeading)
                 .setBold()
                 .setTextAlignment(TextAlignment.CENTER)
-                .setFont(font)
+                .setFont(localFont)
                 .setFontSize(MOVES_TABLE_FONT_SIZE)
 
             val headingCell = Cell(1, typeMoves.size)
                 .add(headingParagraph)
                 .setBorder(Border.NO_BORDER)
-                .setBorderLeft(dividerBorder)
-                .setBorderRight(dividerBorder)
 
             movesTable.addCell(headingCell)
         }
@@ -146,8 +142,9 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         for ((dirHeading, modifier) in directionData) {
             val directionNameLocal = Paragraph(dirHeading)
                 .setTextAlignment(TextAlignment.RIGHT)
-                .setFont(font)
+                .setFont(localFont)
                 .setFontSize(MOVES_TABLE_FONT_SIZE)
+                .setMultipliedLeading(NARROW_TEXT_LEADING)
 
             val directionTitleCell = Cell()
                 .add(directionNameLocal)
@@ -156,25 +153,18 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
             movesTable.addCell(directionTitleCell)
 
             for (baseMoves in tableData.values) {
-                for ((i, move) in baseMoves.withIndex()) {
+                for (move in baseMoves) {
                     val compositeMove = "$move$modifier"
 
                     val movePar = Paragraph(compositeMove)
                         .setTextAlignment(TextAlignment.CENTER)
-                        .setFont(font)
+                        .setFont(FontUtil.NOTO_SANS_FONT)
                         .setFontSize(MOVES_TABLE_FONT_SIZE)
+                        .setMultipliedLeading(NARROW_TEXT_LEADING)
 
                     val moveStringCell = Cell()
                         .add(movePar)
                         .setBorder(Border.NO_BORDER)
-
-                    if (i == 0) {
-                        moveStringCell.setBorderLeft(dividerBorder)
-                    }
-
-                    if (i == baseMoves.lastIndex) {
-                        moveStringCell.setBorderRight(dividerBorder)
-                    }
 
                     movesTable.addCell(moveStringCell)
                 }
@@ -184,17 +174,15 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         this.add(movesTable)
     }
 
-    fun Table.addCompetitorInfo(withScramble: Boolean, index: Int) {
+    fun Table.addCompetitorInfo(includeScramble: Boolean, index: Int) {
         val infoPar = Paragraph()
 
         val competitionListing = PdfList()
-            .setListSymbol("")
+            .setListSymbol(LIST_SYMBOL_BLANK)
             .setTextAlignment(TextAlignment.CENTER)
-        val competitorListing = PdfList()
-            .setListSymbol("")
-            .setTextAlignment(TextAlignment.LEFT)
+            .setMultipliedLeading(NARROW_TEXT_LEADING)
 
-        if (withScramble) {
+        if (includeScramble) {
             competitionListing.add(competitionTitle)
 
             val activityTitle = activityCode.copyParts(attemptNumber = null)
@@ -202,7 +190,8 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
             competitionListing.add(activityTitle)
 
-            val showScrambleCount = withScramble && (scrambleSet.scrambles.size > 1 || activityCode.attemptNumber != null)
+            val showScrambleCount =
+                includeScramble && (scrambleSet.scrambles.size > 1 || activityCode.attemptNumber != null)
 
             if (showScrambleCount) {
                 // this is for ordered scrambles
@@ -229,17 +218,23 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
                 competitionListing.add(translatedText)
             }
 
-            competitionListing.setTextAlignment(TextAlignment.LEFT)
+            competitionListing
+                .setTextAlignment(TextAlignment.LEFT)
+                .setMultipliedLeading(HANDWRITTEN_GAPS_LEADING)
         }
 
         infoPar.add(competitionListing)
 
+        val competitorListing = PdfList()
+            .setListSymbol(LIST_SYMBOL_BLANK)
+            .setTextAlignment(TextAlignment.LEFT)
+            .setMultipliedLeading(HANDWRITTEN_GAPS_LEADING)
+
         val competitorDesc = Translate.translate("fmc.competitor", locale) + LONG_FILL
         val registrantIdDesc = Translate.translate("fmc.registrantId", locale) + SHORT_FILL
-        val wcaIdTemplate = FORM_TEMPLATE_WCA_ID.replace(' ', NBSP)
 
         competitorListing.add(competitorDesc)
-        competitorListing.add(wcaIdTemplate)
+        competitorListing.add(FORM_TEMPLATE_WCA_ID)
         competitorListing.add(registrantIdDesc)
 
         infoPar.add(competitorListing)
@@ -254,11 +249,13 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
     fun Table.addGrading() {
         val gradingPar = PdfList()
-            .setListSymbol("")
+            .setListSymbol(LIST_SYMBOL_BLANK)
             .setTextAlignment(TextAlignment.CENTER)
+            .setFont(localFont)
+            .setFontSize(GRADING_FONT_SIZE)
+            .setMultipliedLeading(GRADING_GAPS_LEADING)
 
         val warningString = Translate.translate("fmc.warning", locale)
-            .replace(' ', NBSP)
 
         gradingPar.add(warningString)
 
@@ -270,15 +267,13 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         gradingPar.add(gradingString)
 
         val gradingCell = Cell()
-            .setFontSize(GRADING_FONT_SIZE)
-            .setTextAlignment(TextAlignment.CENTER)
             .add(gradingPar)
 
         this.addCell(gradingCell)
     }
 
-    fun Table.addScramble(withScramble: Boolean, index: Int, documentForImageRendering: PdfDocument) {
-        if (withScramble) {
+    fun Table.addScramble(includeScramble: Boolean, index: Int, documentForImageRendering: PdfDocument) {
+        if (includeScramble) {
             val scrambleModel = scrambleSet.scrambles[index]
             val scrambleString = scrambleModel.allScrambleStrings.single()
             val scrambleSvg = scramblingPuzzle.drawScramble(scrambleString, null)
@@ -292,15 +287,28 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
 
             this.addCell(imgCell)
 
-            val scramblePrefix = Translate.translate("fmc.scramble", locale)
-            val scrambleNote = "$scramblePrefix:$NBSP$scrambleString"
-            //.replace("\\s".toRegex(), NBSP.toString())
-
-            val scrambleNotePar = Paragraph(scrambleNote)
+            val scramblePrefix = "${Translate.translate("fmc.scramble", locale)}:$NBSP"
+            val scramblePrefixText = Text(scramblePrefix)
+                .setFont(localFont)
                 .setFontSize(SCRAMBLE_FONT_SIZE)
 
-            val renderer = FontSizeRenderer(scrambleNotePar)
-            scrambleNotePar.setNextRenderer(renderer)
+            val scrambleMonoString = scrambleString.replace(' ', NBSP)
+            val scrambleText = Text(scrambleMonoString)
+                .setFont(FontUtil.NOTO_SANS_FONT)
+
+            val scrambleNotePar = Paragraph()
+                .setMultipliedLeading(NARROW_TEXT_LEADING)
+                .add(scramblePrefixText)
+                .add(scrambleText)
+
+            val prefixWidth = localFont.getWidth(scramblePrefix, SCRAMBLE_FONT_SIZE)
+            val remaining = PAGE_SIZE.width - prefixWidth - 4 * SHEET_MARGIN
+
+            val idealFontSize = PdfUtil.binarySearchInc(SCRAMBLE_FONT_SIZE / 2, SCRAMBLE_FONT_SIZE * 2, 0.125f) {
+                FontUtil.NOTO_SANS_FONT.getWidth(scrambleMonoString, it) < remaining
+            }
+
+            scrambleNotePar.setFontSize(idealFontSize)
 
             val scrambleNoteCell = Cell(1, 2)
                 .setTextAlignment(TextAlignment.CENTER)
@@ -319,18 +327,17 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         }
     }
 
-    fun Table.addSolutionSpace(font: PdfFont) {
+    fun Table.addSolutionSpace() {
         val barSpacesTable = Table(SOLUTION_COLUMNS)
             .useAllAvailableWidth()
-            .setFont(font)
+            .setFont(localFont)
             .setFontSize(SCRAMBLE_DASHES_FONT_SIZE)
-            .setBorder(Border.NO_BORDER)
+            .setTextAlignment(TextAlignment.CENTER)
 
         repeat(SOLUTION_ROWS) {
             repeat(SOLUTION_COLUMNS) {
                 val spaceBarCell = Cell()
                     .add(Paragraph(SOLUTION_BAR_SPACE))
-                    .setTextAlignment(TextAlignment.CENTER)
                     .setBorder(Border.NO_BORDER)
 
                 barSpacesTable.addCell(spaceBarCell)
@@ -355,18 +362,39 @@ open class FmcSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode
         const val SOLUTION_ROWS = 8
         const val SOLUTION_COLUMNS = 10
 
+        const val SHEET_MARGIN = 36f
+
+        const val MOVE_TABLE_PADDING = 5f
+        const val MOVE_TABLE_TOP_MARGIN = 5f
+
+        const val RULES_LISTING_LEADING = 0.7f
+        const val NARROW_TEXT_LEADING = 0.9f
+        const val GRADING_GAPS_LEADING = 1.1f
+        const val HANDWRITTEN_GAPS_LEADING = 1.6f
+
+        const val LIST_SYMBOL_RULES = "• "
+        const val LIST_SYMBOL_BLANK = ""
+
         const val NBSP = Typography.nbsp
 
         const val SOLUTION_BAR_SPACE = "___"
 
-        const val FORM_TEMPLATE_WCA_ID = "WCA ID: __ __ __ __  __ __ __ __  __ __"
+        const val FORM_TEMPLATE_WCA_ID =
+            "WCA${NBSP}ID:${NBSP}__${NBSP}__${NBSP}__${NBSP}__${NBSP}${NBSP}${NBSP}__${NBSP}__${NBSP}__${NBSP}__${NBSP}${NBSP}${NBSP}__${NBSP}__"
 
         const val SHORT_FILL = ":${NBSP}____"
         const val LONG_FILL = ":${NBSP}__________________"
+
+        const val FMC_RULES_COUNT = 6
+
+        const val WCA_MAX_MOVES_FMC = 80
 
         val WCA_MOVES = arrayOf("R", "U", "F", "L", "D", "B")
         val WCA_ROTATIONS = arrayOf("x", "y", "z")
 
         val WCA_DIRECTION_MODIFIERS = arrayOf("", "'", "2")
+
+        fun PdfList.setMultipliedLeading(leading: Float) =
+            apply { setProperty(Property.LEADING, Leading(Leading.MULTIPLIED, leading)) }
     }
 }

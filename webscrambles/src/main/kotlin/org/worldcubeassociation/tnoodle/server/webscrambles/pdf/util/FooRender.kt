@@ -3,6 +3,7 @@ package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.layout.LayoutContext
 import com.itextpdf.layout.layout.LayoutResult
+import com.itextpdf.layout.minmaxwidth.MinMaxWidth
 import com.itextpdf.layout.minmaxwidth.MinMaxWidthUtils
 import com.itextpdf.layout.property.Property
 import com.itextpdf.layout.property.UnitValue
@@ -10,12 +11,18 @@ import com.itextpdf.layout.renderer.AbstractRenderer
 import com.itextpdf.layout.renderer.ParagraphRenderer
 
 class FontSizeRenderer(val content: Paragraph) : ParagraphRenderer(content) {
+    private val dummyRenderer = ParagraphRenderer(content)
+
     override fun getNextRenderer() = FontSizeRenderer(content)
 
     override fun layout(layoutContext: LayoutContext): LayoutResult {
         val currentFontSize = content.getProperty<UnitValue>(Property.FONT_SIZE).value
 
         return layoutBinarySearch(layoutContext, 1f, currentFontSize, 20)
+    }
+
+    override fun getMinMaxWidth(): MinMaxWidth {
+        return dummyRenderer.minMaxWidth
     }
 
     private tailrec fun layoutBinarySearch(

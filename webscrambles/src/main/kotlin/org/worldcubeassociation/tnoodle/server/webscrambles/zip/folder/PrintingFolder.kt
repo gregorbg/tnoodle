@@ -26,7 +26,7 @@ data class PrintingFolder(val uniqueTitles: Map<String, ScrambleDrawingData>, va
     fun assemble(generationDate: LocalDate, versionTag: String, password: String?): Folder {
         val fmcRequests = uniqueTitles.filterValues { it.isFmc }
 
-        val pseudoActivityCode = ActivityCode.compile(EventData.THREE_FM, round = 1)
+        val pseudoActivityCode = ActivityCode.compile(EventData.THREE_FM, round = 0)
         val printingCompletePdf = WCIFDataBuilder.requestsToCompletePdf(scrambleDrawingData, generationDate, versionTag, Translate.DEFAULT_LOCALE)
 
         return folder("Printing") {

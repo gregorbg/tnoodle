@@ -7,10 +7,15 @@ import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ScrambleS
 import com.itextpdf.layout.Document
 import java.util.*
 
-class FmcGenericSolutionSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode, competitionTitle: String, locale: Locale) : FmcSolutionSheet(scrambleSet, activityCode, competitionTitle, locale, true) {
+class FmcGenericSolutionSheet(
+    scrambleSet: ScrambleSet,
+    activityCode: ActivityCode,
+    competitionTitle: String,
+    locale: Locale
+) : FmcSolutionSheet(scrambleSet, activityCode, competitionTitle, locale, true) {
     override fun PdfDocument.writeContents() {
         Document(this)
-            .addFmcSolutionSheet(INDEX_SKIP_SCRAMBLE)
+            .addFmcSheet(INDEX_SKIP_SCRAMBLE)
     }
 
     companion object {

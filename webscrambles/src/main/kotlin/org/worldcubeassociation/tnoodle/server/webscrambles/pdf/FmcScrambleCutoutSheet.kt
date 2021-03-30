@@ -1,38 +1,27 @@
 package org.worldcubeassociation.tnoodle.server.webscrambles.pdf
 
-import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.canvas.draw.DashedLine
 import com.itextpdf.layout.Document
 import com.itextpdf.layout.borders.Border
 import com.itextpdf.layout.element.*
-import com.itextpdf.layout.property.AreaBreakType
 import com.itextpdf.layout.property.HorizontalAlignment
 import com.itextpdf.layout.property.VerticalAlignment
 import com.itextpdf.svg.converter.SvgConverter
 import org.worldcubeassociation.tnoodle.server.webscrambles.Translate
-import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.util.FontUtil
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ActivityCode
 import org.worldcubeassociation.tnoodle.server.webscrambles.wcif.model.ScrambleSet
 import java.util.*
 
-class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode, competitionTitle: String, locale: Locale, hasGroupID: Boolean) : FmcSheet(scrambleSet, activityCode, competitionTitle, locale, hasGroupID) {
-    override fun PdfDocument.writeContents() {
-        val doc = Document(this)
-
-        for (i in scrambleSet.scrambles.indices) {
-            doc.addFmcScrambleCutoutSheet(i)
-
-            if (i < scrambleSet.scrambles.lastIndex) {
-                doc.add(AreaBreak(AreaBreakType.NEXT_PAGE))
-            }
-        }
-    }
-
-    private fun Document.addFmcScrambleCutoutSheet(index: Int) {
+class FmcScrambleCutoutSheet(
+    scrambleSet: ScrambleSet,
+    activityCode: ActivityCode,
+    competitionTitle: String,
+    locale: Locale,
+    hasGroupID: Boolean
+) : FmcSheet(scrambleSet, activityCode, competitionTitle, locale, hasGroupID) {
+    override fun Document.addFmcSheet(index: Int) {
         val scrambleModel = scrambleSet.scrambles[index]
         val scramble = scrambleModel.allScrambleStrings.single() // we assume FMC only has one scramble
-
-        val font = FontUtil.getFontForLocale(locale)
 
         val svg = scramblingPuzzle.drawScramble(scramble, null)
 
@@ -52,10 +41,9 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
             .setFixedLayout()
             .setVerticalBorderSpacing(SPACE_SCRAMBLE_IMAGE)
             .setHorizontalBorderSpacing(SCRAMBLE_IMAGE_PADDING)
-            .setBorder(Border.NO_BORDER)
 
         val titleParagraph = Paragraph(title)
-            .setFont(font)
+            .setFont(localFont)
             .setFontSize(FONT_SIZE)
 
         val titleCell = Cell().add(titleParagraph)
@@ -70,7 +58,7 @@ class FmcScrambleCutoutSheet(scrambleSet: ScrambleSet, activityCode: ActivityCod
             .setVerticalAlignment(VerticalAlignment.MIDDLE)
 
         val scrambleParagraph = Paragraph(scramble)
-            .setFont(font)
+            .setFont(localFont)
             .setFontSize(FONT_SIZE)
 
         val scrambleStrCell = Cell().add(scrambleParagraph)

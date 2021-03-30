@@ -90,6 +90,9 @@ class GeneralScrambleSheet(scrambleSet: ScrambleSet, activityCode: ActivityCode)
 
         const val SCRAMBLE_LINE_LEADING = 1.1f
 
+        const val MAX_SCRAMBLE_FONT_SIZE = 20f
+        const val MINIMUM_ONE_LINE_FONT_SIZE = 15f
+
         private val SCRAMBLE_FONT = FontUtil.MONO_FONT
         private val HIGHLIGHT_COLOR = DeviceRgb(230, 230, 230)
     }
