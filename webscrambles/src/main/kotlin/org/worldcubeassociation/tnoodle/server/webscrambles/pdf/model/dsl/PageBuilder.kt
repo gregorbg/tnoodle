@@ -2,10 +2,10 @@ package org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.dsl
 
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.Element
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.Page
+import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.SvgImage
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.TurtleCommand
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.properties.Drawing
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.properties.Paper
-import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.properties.Paper.inchesToPixel
 import org.worldcubeassociation.tnoodle.server.webscrambles.pdf.model.properties.Paper.pixelsToInch
 
 class PageBuilder(parent: ElementBuilder?) : ElementBuilder(parent) {
@@ -21,6 +21,7 @@ class PageBuilder(parent: ElementBuilder?) : ElementBuilder(parent) {
 
     var headerLines: Pair<String, String>? = null
     var footerLine: String? = null
+    var footerImage: SvgImage? = null
 
     val availableWidthIn get() = size.widthIn - (marginLeft + marginRight).pixelsToInch
     val availableHeightIn get() = size.heightIn - (marginTop + marginBottom).pixelsToInch
@@ -51,6 +52,6 @@ class PageBuilder(parent: ElementBuilder?) : ElementBuilder(parent) {
     }
 
     fun compile(): Page {
-        return Page(size, marginTop, marginBottom, marginLeft, marginRight, headerLines, footerLine, canvas, elements)
+        return Page(size, marginTop, marginBottom, marginLeft, marginRight, headerLines, footerLine, footerImage, canvas, elements)
     }
 }

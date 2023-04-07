@@ -92,6 +92,9 @@ object IText7Engine {
             if (page.footerLine != null)
                 addedPage.showFooterCenter(page.footerLine, itextPageSize, footerHeight)
 
+            if (page.footerImage != null)
+                addedPage.showFooterImage(page.footerImage, itextPageSize, footerHeight, page.marginRight.toFloat())
+
             if (page.canvas.isNotEmpty()) {
                 val turtleCanvas = PdfCanvas(addedPage)
                     .saveState()
@@ -136,6 +139,15 @@ object IText7Engine {
         writeTextOutOfBounds(line, pageSize.width / 2, pageSize.bottom + footerHeight)
     }
 
+    private fun PdfPage.showFooterImage(image: SvgImage, pageSize: PageSize, footerHeight: Float, marginRight: Float) {
+        val horizontalPos = pageSize.width - 2 * marginRight - image.size.width / 2
+        val verticalPos = pageSize.bottom + footerHeight - image.size.height / 2
+
+        val horizontalMarginCorrection = (image.size.width / 2 - marginRight).coerceAtLeast(0f)
+
+        showSvgOutOfBounds(image, horizontalPos - horizontalMarginCorrection, verticalPos)
+    }
+
     private fun PdfPage.writeTextOutOfBounds(text: String, horizontalPos: Float, verticalPos: Float) {
         val over = PdfCanvas(newContentStreamBefore(), resources, document)
 
@@ -148,6 +160,16 @@ object IText7Engine {
                 VerticalAlignment.MIDDLE,
                 0f
             )
+    }
+
+    private fun PdfPage.showSvgOutOfBounds(image: SvgImage, horizontalPos: Float, verticalPos: Float) {
+        val over = PdfCanvas(newContentStreamBefore(), resources, document)
+
+        val pdfImage = renderImage(image, document)
+        pdfImage.setFixedPosition(horizontalPos, verticalPos)
+
+        Canvas(over, pageSize)
+            .add(pdfImage)
     }
 
     private fun PdfPage.addWatermark(watermark: String, font: PdfFont, pageNumber: Int) {

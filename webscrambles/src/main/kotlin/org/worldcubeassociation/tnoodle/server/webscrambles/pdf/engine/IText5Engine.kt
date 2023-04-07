@@ -99,6 +99,9 @@ object IText5Engine {
             if (page.footerLine != null)
                 cb.showFooterCenter(page.footerLine, itextPageSize, footerHeight)
 
+            if (page.footerImage != null)
+                cb.showFooterImage(page.footerImage, itextPageSize, footerHeight, page.marginRight.toFloat())
+
             pdfDocument.newPage()
         }
 
@@ -124,6 +127,15 @@ object IText5Engine {
         writeTextOutOfBounds(line, pageSize.width / 2, pageSize.bottom + footerHeight)
     }
 
+    private fun PdfContentByte.showFooterImage(image: SvgImage, pageSize: Rectangle, footerHeight: Float, marginRight: Float) {
+        val horizontalPos = pageSize.width - 2 * marginRight - image.size.width / 2
+        val verticalPos = pageSize.bottom + footerHeight - image.size.height / 2
+
+        val horizontalMarginCorrection = (image.size.width / 2 - marginRight).coerceAtLeast(0f)
+
+        showSvgOutOfBounds(image, horizontalPos - horizontalMarginCorrection, verticalPos)
+    }
+
     private fun PdfContentByte.writeTextOutOfBounds(text: String, horizontalPos: Float, verticalPos: Float) {
         ColumnText.showTextAligned(
             this,
@@ -133,6 +145,11 @@ object IText5Engine {
             verticalPos,
             0f
         )
+    }
+
+    private fun PdfContentByte.showSvgOutOfBounds(image: SvgImage, horizontalPos: Float, verticalPos: Float) {
+        val imageTemplate = renderImage(image, this)
+        this.addTemplate(imageTemplate.templateData, horizontalPos, verticalPos)
     }
 
     private fun PdfContentByte.addWatermark(watermark: String, font: BaseFont, pageSize: Rectangle) {
