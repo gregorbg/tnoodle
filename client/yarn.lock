@@ -2881,10 +2881,10 @@
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-color@^3.0.6":
-  version "3.0.10"
-  resolved "https://registry.yarnpkg.com/@types/react-color/-/react-color-3.0.10.tgz#f869ab3a46938fb97a5c2ee568bc6469f82b14dd"
-  integrity sha512-6K5BAn3zyd8lW8UbckIAVeXGxR82Za9jyGD2DBEynsa7fKaguLDVtjfypzs7fgEV7bULgs7uhds8A8v1wABTvQ==
+"@types/react-color@^3.0.11":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@types/react-color/-/react-color-3.0.11.tgz#65992e9fdfef70b2db939a98ce3d6a8b8456ecae"
+  integrity sha512-20m5GpzmdqwmSdnPeMs4UPPUuvkS4ESwakL6u2YN1hbo+ajWiiTwGYIMGhdcJFGeoLyAsr7TVonbZrMhU3+pdw==
   dependencies:
     "@types/react" "*"
     "@types/reactcss" "*"
