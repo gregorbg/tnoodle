@@ -3,9 +3,9 @@ package dependencies
 object Versions {
     val JUNIT_JUPITER = "5.8.2"
     val BATIK = "1.14"
-    val KOTLIN = "1.6.10"
+    val KOTLIN = "1.9.21"
     val KTOR = "1.6.1"
-    val PROGUARD = "7.2.0"
+    val PROGUARD = "7.4.1"
     val KOTLESS = "0.1.6"
 
     val MARKDOWNJ_CORE = "0.4"
@@ -31,11 +31,11 @@ object Versions {
     val WCA_I18N = "0.4.3"
     val GOOGLE_APPENGINE_GRADLE = "2.4.2"
     val GOOGLE_CLOUD_STORAGE = "2.4.1"
-    val TNOODLE_SCRAMBLES = "0.18.1"
+    val TNOODLE_SCRAMBLES = "0.19.2"
     val APACHE_COMMONS_LANG3 = "3.12.0"
     val KOTLESS_KTOR = KOTLESS
     val TESTING_MOCKK = "1.12.2"
-    val KOTLINX_ATOMICFU_GRADLE = "0.17.1"
+    val KOTLINX_ATOMICFU_GRADLE = "0.23.1"
 
     object Plugins {
         val SHADOW = "7.1.2"
