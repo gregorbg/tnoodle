@@ -186,7 +186,7 @@ const SideBar = () => {
             // For quick switching between competitions.
             let cachedObject = cachedObjects[competitionId];
 
-            if (!!cachedObject) {
+            if (!!cachedObject && cachedObject.wcif.formatVersion === backendWcifVersion) {
                 updateWcif(cachedObject.wcif);
 
                 let cachedSuggestedFmcTranslations =
@@ -221,6 +221,7 @@ const SideBar = () => {
             dispatch,
             wcif.id,
             cachedObjects,
+            backendWcifVersion,
             getAndCacheBestMbldAttempt,
             getAndCacheSuggestedFmcTranslations,
             updateWcif,
