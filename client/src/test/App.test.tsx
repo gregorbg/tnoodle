@@ -376,7 +376,7 @@ it("Logged user", async () => {
     });
 
     let competitionButtons = Array.from(
-        container.querySelectorAll("ul button"),
+        container.querySelectorAll(".btn-group-vertical button"),
     );
 
     let scrambleButton = container.querySelector("form button")!;
