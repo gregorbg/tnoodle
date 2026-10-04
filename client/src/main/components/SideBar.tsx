@@ -25,12 +25,9 @@ import { defaultWcif } from "../util/wcif.util";
 import "./SideBar.css";
 import Wcif from "../model/Wcif";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
-import Competition from "../model/Competition";
-import Person from "../model/Person";
+import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
-    const [loadingUser, setLoadingUser] = useState(false);
-    const [loadingCompetitions, setLoadingCompetitions] = useState(false);
     const [loadingCompetitionInfo, setLoadingCompetitionInfo] = useState(false);
 
     const cachedObjects = useSelector(
@@ -44,9 +41,19 @@ const SideBar = () => {
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
 
-    const [me, setMe] = useState<Person>();
-    const [upcomingCompetitions, setUpcomingCompetitions] =
-        useState<Competition[]>();
+    const { data: me, isFetching: loadingUser } = useQuery({
+        queryKey: ["me"],
+        queryFn: wcaApi.fetchMe,
+        select: (axios) => axios.data.me,
+        enabled: wcaApi.isLogged(),
+    });
+
+    const { data: upcomingCompetitions, isFetching: loadingCompetitions } = useQuery({
+        queryKey: ["upcoming-competitions"],
+        queryFn: wcaApi.getUpcomingManageableCompetitions,
+        select: (axios) => axios.data,
+        enabled: wcaApi.isLogged(),
+    });
 
     const [isOpen, setIsOpen] = useState(true);
 
@@ -60,30 +67,6 @@ const SideBar = () => {
 
         return () => window.removeEventListener("resize", handleIsOpen);
     }, [handleIsOpen]);
-
-    useEffect(() => {
-        if (!wcaApi.isLogged()) {
-            return;
-        }
-
-        if (!me) {
-            setLoadingUser(true);
-
-            wcaApi
-                .fetchMe()
-                .then((response) => setMe(response.data.me))
-                .finally(() => setLoadingUser(false));
-        }
-
-        if (!upcomingCompetitions) {
-            setLoadingCompetitions(true);
-
-            wcaApi
-                .getUpcomingManageableCompetitions()
-                .then((response) => setUpcomingCompetitions(response.data))
-                .finally(() => setLoadingCompetitions(false));
-        }
-    }, [upcomingCompetitions, me]);
 
     const competitions = useMemo(() => {
         if (
