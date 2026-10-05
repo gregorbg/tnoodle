@@ -1,8 +1,10 @@
 package org.worldcubeassociation.tnoodle.server.routing.api
 
 import io.ktor.server.application.*
+import io.ktor.server.html.respondHtml
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.html.*
 import org.worldcubeassociation.tnoodle.server.RouteHandler
 import org.worldcubeassociation.tnoodle.server.serial.api.PuzzleInfoJsonData
 import org.worldcubeassociation.tnoodle.server.model.PuzzleData
@@ -49,6 +51,31 @@ object PuzzleListHandler : RouteHandler {
                         ?: return@withPuzzleData respondText("Invalid puzzle ID: $puzzleKey")
 
                     respond(singleItem)
+                }
+            }
+
+            get("paint") {
+                call.respondHtml {
+                    body {
+                        table {
+                            thead {
+                                tr {
+                                    PuzzleData.entries.forEach {
+                                        th { +it.scrambler.longName }
+                                    }
+                                }
+                            }
+                            tbody {
+                                tr {
+                                    PuzzleData.entries.forEach {
+                                        td {
+                                            unsafe { +it.scrambler.drawScramble("", it.scrambler.defaultColorScheme).toString() }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

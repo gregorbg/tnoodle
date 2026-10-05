@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.ktor.server.servlet)
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.html.builder)
     implementation(libs.apache.commons.lang3)
     implementation(libs.bouncycastle)
     implementation(libs.snakeyaml)
