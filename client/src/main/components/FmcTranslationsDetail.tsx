@@ -37,8 +37,8 @@ const FmcTranslationsDetail = ({
     });
 
     const { data: suggestedFmcTranslations } = useQuery({
-        queryKey: ["suggestedFmcTranslations", wcif],
-        queryFn: () => tnoodleApi.fetchSuggestedFmcTranslations(wcif),
+        queryKey: ["suggestedFmcTranslations", wcif.persons],
+        queryFn: () => tnoodleApi.fetchSuggestedFmcTranslations(wcif.persons),
         select: (resp) => resp.data,
     });
 

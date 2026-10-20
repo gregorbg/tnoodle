@@ -31,8 +31,8 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
     const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: bestMbldAttempt } = useQuery({
-        queryKey: ["best-mbld-attempt", wcif],
-        queryFn: () => tnoodleApi.fetchBestMbldAttempt(wcif),
+        queryKey: ["best-mbld-attempt", wcif.persons],
+        queryFn: () => tnoodleApi.fetchBestMbldAttempt(wcif.persons),
         select: (resp) => resp.data?.attempted,
     });
 

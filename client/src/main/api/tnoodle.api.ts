@@ -7,6 +7,7 @@ import Wcif from "../model/Wcif";
 import { ScrambleClient } from "./tnoodle.socket";
 import WebsocketBlobResult from "../model/WebsocketBlobResult";
 import ScrambleAndImage from "../model/ScrambleAndImage";
+import type Person from "../model/Person";
 
 let backendUrl = new URL("http://localhost:2014");
 export const tNoodleBackend = backendUrl.toString().replace(/\/$/g, "");
@@ -32,14 +33,14 @@ class TnoodleApi {
     fetchFormats = () =>
         axios.get<Record<string, WcaFormat>>(tNoodleBackend + formatsEndpoint);
 
-    fetchSuggestedFmcTranslations = (wcif: Wcif) =>
+    fetchSuggestedFmcTranslations = (persons: Person[]) =>
         axios.post<string[]>(
             tNoodleBackend + suggestedFmcTranslationsEndpoint,
-            wcif,
+            persons,
         );
 
-    fetchBestMbldAttempt = (wcif: Wcif) =>
-        axios.post<BestMbld>(tNoodleBackend + bestMbldAttemptEndpoint, wcif);
+    fetchBestMbldAttempt = (persons: Person[]) =>
+        axios.post<BestMbld>(tNoodleBackend + bestMbldAttemptEndpoint, persons);
 
     fetchPuzzleColorScheme = (puzzleId: string) =>
         axios.get<Record<string, string>>(
