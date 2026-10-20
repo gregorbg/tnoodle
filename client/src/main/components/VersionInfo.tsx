@@ -3,16 +3,23 @@ import { useDispatch, useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import wcaApi, { isUsingStaging } from "../api/wca.api";
 import { setWcif } from "../redux/slice/WcifSlice";
-import { frontendStatusExtensionId } from "../util/wcif.util";
+import {
+    frontendStatusExtensionId,
+    useCompetitionWcif,
+} from "../util/wcif.util";
 import RootState from "../model/RootState";
 import { setExtensionLazily } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 
 const VersionInfo = () => {
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
+    );
     const isManualSelection = useSelector(
         (state: RootState) => state.informationSlice.isManualSelection,
     );
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     // WCA API response
     const { data: wcaScrambleProgram } = useQuery({

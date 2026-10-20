@@ -12,6 +12,7 @@ import {
     colorSchemeExtensionId,
     copiesExtensionId,
     getDefaultCopiesExtension,
+    useCompetitionWcif,
 } from "../util/wcif.util";
 import tnoodleApi from "../api/tnoodle.api";
 import "./EventPicker.css";
@@ -31,8 +32,8 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
-    const wcifEvents = useSelector(
-        (state: RootState) => state.wcifSlice.wcif.events,
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const isManualSelection = useSelector(
         (state: RootState) => state.informationSlice.isManualSelection,
@@ -68,6 +69,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         select: (resp) => resp.data,
         enabled: wcifEvent.rounds.length > 0,
     });
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const [showColorSchemeConfig, setShowColorSchemeConfig] =
         useState<boolean>(false);
@@ -227,7 +230,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         !!wcaFormats ? wcaFormats[str].shortName : "-";
 
     const updateForeignColorScheme = (wcaEvent: WcaEvent) => {
-        let wcifEvent = wcifEvents.find(
+        let wcifEvent = wcif.events.find(
             (wcifEvent) => wcifEvent.id === wcaEvent.id,
         );
 

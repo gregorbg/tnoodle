@@ -4,7 +4,11 @@ import RootState from "../model/RootState";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import WcifEvent from "../model/WcifEvent";
-import { buildMbldExtension, mbldCubesExtensionId } from "../util/wcif.util";
+import {
+    buildMbldExtension,
+    mbldCubesExtensionId,
+    useCompetitionWcif,
+} from "../util/wcif.util";
 import { useCallback, useEffect, useMemo } from "react";
 import {
     findExtension,
@@ -19,12 +23,14 @@ interface MbldDetailProps {
 }
 
 const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const wcif = useSelector(
-        (state: RootState) => state.wcifSlice.wcif,
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: bestMbldAttempt } = useQuery({
         queryKey: ["best-mbld-attempt", wcif],

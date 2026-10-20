@@ -5,17 +5,21 @@ import { toWcaUrl } from "../api/wca.api";
 import RootState from "../model/RootState";
 import EventPicker from "./EventPicker";
 import WcaEvent from "../model/WcaEvent";
-import { buildMbldExtension } from "../util/wcif.util";
+import { buildMbldExtension, useCompetitionWcif } from "../util/wcif.util";
 import { MBLD_DEFAULT } from "../constants/wca.constants";
 import { useQuery } from "@tanstack/react-query";
 
 const EVENTS_PER_LINE = 2;
 
 const EventPickerTable = () => {
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
+    );
     const isManualSelection = useSelector(
         (state: RootState) => state.informationSlice.isManualSelection,
     );
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: wcaEvents } = useQuery({
         queryKey: ["wcaEvents"],

@@ -1,13 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import CachedObject from "../../model/CachedObject";
 
 interface InformationState {
-    cachedObjects: Record<string, CachedObject>;
+    selectedCompetitionId?: string;
     isManualSelection: boolean;
 }
 
 const initialState: InformationState = {
-    cachedObjects: {},
+    selectedCompetitionId: undefined,
     isManualSelection: true,
 };
 
@@ -15,27 +14,16 @@ export const informationSlice = createSlice({
     name: "informationSlice",
     initialState,
     reducers: {
+        setSelectedCompetitionId: (state, action: PayloadAction<string | undefined>) => {
+            state.selectedCompetitionId = action.payload;
+        },
         setIsManualSelection: (state, action: PayloadAction<boolean>) => {
             state.isManualSelection = action.payload;
-        },
-        addCachedObject: (
-            state,
-            action: PayloadAction<{
-                competitionId: string;
-                identifier: string;
-                object: any;
-            }>,
-        ) => {
-            state.cachedObjects = {
-                ...state.cachedObjects,
-                [action.payload.competitionId]: {
-                    ...state.cachedObjects[action.payload.competitionId],
-                    [action.payload.identifier]: action.payload.object,
-                },
-            };
         },
     },
 });
 
-export const { addCachedObject, setIsManualSelection } =
-    informationSlice.actions;
+export const {
+    setIsManualSelection,
+    setSelectedCompetitionId
+} = informationSlice.actions;

@@ -1,6 +1,8 @@
 import Wcif from "../model/Wcif";
 import WcifEvent from "../model/WcifEvent";
 import { getDefaultCompetitionName } from "./competition.name.util";
+import { useQuery } from "@tanstack/react-query";
+import wcaApi from "../api/wca.api";
 
 export const copiesExtensionId =
     "org.worldcubeassociation.tnoodle.SheetCopyCount";
@@ -62,3 +64,12 @@ export const defaultWcif: Wcif = {
     schedule: { numberOfDays: 0, venues: [] },
     extensions: [],
 };
+
+export const useCompetitionWcif = (competitionId?: string) => {
+    return useQuery({
+        queryKey: ["competitionWcif", competitionId],
+        queryFn: () => wcaApi.getCompetitionJson(competitionId!).then(resp => resp.data),
+        enabled: competitionId !== undefined,
+        initialData: defaultWcif,
+    });
+}

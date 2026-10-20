@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import RootState from "../model/RootState";
 import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
 import { setCompetitionName } from "../redux/slice/WcifSlice";
+import { useCompetitionWcif } from "../util/wcif.util";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -14,12 +15,14 @@ const EntryInterface = () => {
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
-    const competitionName = useSelector(
-        (state: RootState) => state.wcifSlice.wcif.name,
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const dispatch = useDispatch();
 
@@ -53,7 +56,7 @@ const EntryInterface = () => {
                     onChange={(e) =>
                         handleCompetitionNameChange(e.target.value)
                     }
-                    value={competitionName}
+                    value={wcif.name}
                     disabled={!isManualSelection || generatingScrambles}
                     required
                 />

@@ -5,8 +5,8 @@ import wcaApi from "../api/wca.api";
 import logo from "../assets/tnoodle_logo.svg";
 import RootState from "../model/RootState";
 import {
-    addCachedObject,
     setIsManualSelection,
+    setSelectedCompetitionId,
 } from "../redux/slice/InformationSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
@@ -16,19 +16,15 @@ import {
     getQueryParameter,
     setQueryParameter,
 } from "../util/query.param.util";
-import { defaultWcif } from "../util/wcif.util";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
-import Wcif from "../model/Wcif";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
-    const [loadingCompetitionInfo, setLoadingCompetitionInfo] = useState(false);
-
-    const cachedObjects = useSelector(
-        (state: RootState) => state.informationSlice.cachedObjects,
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
@@ -50,6 +46,8 @@ const SideBar = () => {
             select: (axios) => axios.data,
             enabled: wcaApi.isLogged(),
         });
+
+    const { data: wcif, isFetching: loadingCompetitionInfo } = useCompetitionWcif(selectedCompetitionId);
 
     const [isOpen, setIsOpen] = useState(true);
 
@@ -102,71 +100,20 @@ const SideBar = () => {
         deleteParameter("competitionId");
     };
 
-    const updateWcif = useCallback(
-        (wcif: Wcif) => {
-            dispatch(setIsManualSelection(false));
-            dispatch(setWcif(wcif));
-            dispatch(setCompetitionName(wcif.name));
-            dispatch(setFileZip());
-        },
-        [dispatch],
-    );
-
-    const loadCompetition = useCallback(
-        (competitionId: string | null) => {
-            if (competitionId === null) {
-                return;
-            }
-
-            if (wcif.id === competitionId) {
-                return;
-            }
-
-            // For quick switching between competitions.
-            let cachedObject = cachedObjects[competitionId];
-
-            if (!!cachedObject) {
-                updateWcif(cachedObject.wcif);
-            } else {
-                setLoadingCompetitionInfo(true);
-
-                wcaApi
-                    .getCompetitionJson(competitionId)
-                    .then((response) => {
-                        updateWcif(response.data);
-                        dispatch(
-                            addCachedObject({
-                                competitionId,
-                                identifier: "wcif",
-                                object: response.data,
-                            }),
-                        );
-                    })
-                    .finally(() => setLoadingCompetitionInfo(false));
-            }
-        },
-        [
-            dispatch,
-            wcif.id,
-            cachedObjects,
-            updateWcif,
-        ],
-    );
-
     useEffect(() => {
         const queryParamId = getQueryParameter("competitionId");
 
-        if (wcif.id !== queryParamId) {
-            loadCompetition(queryParamId);
+        if (queryParamId !== null && wcif.id !== queryParamId) {
+            dispatch(setSelectedCompetitionId(queryParamId));
         }
-    }, [loadCompetition, wcif.id]);
+    }, [dispatch, wcif.id]);
 
     const handleCompetitionSelection = useCallback(
         (competitionId: string) => {
             setQueryParameter("competitionId", competitionId);
-            loadCompetition(competitionId);
+            dispatch(setSelectedCompetitionId(competitionId));
         },
-        [loadCompetition],
+        [dispatch],
     );
 
     const logInButton = () => {

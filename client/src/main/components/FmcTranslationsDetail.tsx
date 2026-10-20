@@ -5,7 +5,10 @@ import RootState from "../model/RootState";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import tnoodleApi from "../api/tnoodle.api";
 import WcifEvent from "../model/WcifEvent";
-import { fmcTranslationsExtensionId } from "../util/wcif.util";
+import {
+    fmcTranslationsExtensionId,
+    useCompetitionWcif,
+} from "../util/wcif.util";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { findExtension, setExtensionLazily } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
@@ -19,12 +22,14 @@ interface FmcTranslationsDetailProps {
 const FmcTranslationsDetail = ({
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const wcif = useSelector(
-        (state: RootState) => state.wcifSlice.wcif,
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: availableTranslations } = useQuery({
         queryKey: ["availableFmcTranslations"],

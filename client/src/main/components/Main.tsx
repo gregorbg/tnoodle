@@ -18,14 +18,16 @@ import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
 import WebsocketBlobResult from "../model/WebsocketBlobResult";
-import { frontendStatusExtensionId } from "../util/wcif.util";
+import { frontendStatusExtensionId, useCompetitionWcif } from "../util/wcif.util";
 
 const Main = () => {
     const [competitionNameFileZip, setCompetitionNameFileZip] = useState("");
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+    const selectedCompetitionId = useSelector(
+        (state: RootState) => state.informationSlice.selectedCompetitionId
+    );
     const isManualSelection = useSelector(
         (state: RootState) => state.informationSlice.isManualSelection,
     );
@@ -37,6 +39,8 @@ const Main = () => {
     );
 
     const interceptorRef = useRef<Interceptor>(null);
+
+    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const dispatch = useDispatch();
 
