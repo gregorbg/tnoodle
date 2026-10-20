@@ -1,4 +1,4 @@
-import { SyntheticEvent, useRef, useState } from "react";
+import { FormEvent, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import wcaApi from "../api/wca.api";
@@ -19,15 +19,15 @@ import "./Main.css";
 import VersionInfo from "./VersionInfo";
 import WebsocketBlobResult from "../model/WebsocketBlobResult";
 import { frontendStatusExtensionId, useCompetitionWcif } from "../util/wcif.util";
+import { setExtensionLazily } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
 
 const Main = () => {
-    const [zipFileName, setZipFileName] = useState("");
-
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
     const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId
+        (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
@@ -38,11 +38,31 @@ const Main = () => {
 
     const interceptorRef = useRef<Interceptor>(null);
 
+    const { data: wcaScrambleProgram } = useQuery({
+        queryKey: ["wca-scramble-program"],
+        queryFn: () => wcaApi.fetchVersionInfo(),
+        select: (resp) => resp.data,
+    });
+
+    const { data: tnoodleVersion } = useQuery({
+        queryKey: ["tnoodle-version"],
+        queryFn: () => tnoodleApi.fetchRunningVersion(),
+        select: (resp) => resp.data,
+    });
+
+    const runningVersion = `${tnoodleVersion?.projectName}-${tnoodleVersion?.projectVersion}`;
+    const versionAllowed =
+        wcaScrambleProgram?.allowed?.includes(runningVersion);
+    const signatureValid =
+        tnoodleVersion?.signedBuild &&
+        tnoodleVersion?.signatureKeyBytes ===
+            wcaScrambleProgram?.publicKeyBytes;
+
     const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const dispatch = useDispatch();
 
-    const onSubmit = (evt: SyntheticEvent) => {
+    const onSubmit = (evt: FormEvent<HTMLFormElement>) => {
         evt.preventDefault();
 
         if (generatingScrambles) {
@@ -63,15 +83,29 @@ const Main = () => {
         dispatch(setScramblingProgressCurrentEvent(eventId));
 
     const generateZip = () => {
-        setZipFileName(wcif.name);
-
         let scrambleClient = new ScrambleClient(
             onScrambleHandShake,
             onScrambleProgress,
         );
 
+        const extendedWcif = setExtensionLazily(
+            wcif,
+            frontendStatusExtensionId,
+            () => ({
+                id: frontendStatusExtensionId,
+                specUrl: "",
+                data: {
+                    isStaging: isUsingStaging(),
+                    isManual: selectedCompetitionId === undefined,
+                    isSignedBuild: signatureValid,
+                    isAllowedVersion: versionAllowed,
+                },
+            }),
+            () => undefined,
+        );
+
         tnoodleApi
-            .fetchZip(scrambleClient, wcif, password)
+            .fetchZip(scrambleClient, extendedWcif, password)
             .then((plainZip: WebsocketBlobResult) =>
                 dispatch(setFileZip(plainZip)),
             )
@@ -87,22 +121,14 @@ const Main = () => {
         // We use the unofficialZip to stamp .zip in order to prevent delegates / organizers mistakes.
         // If TNoodle version is not official (as per VersionInfo) or if we generate scrambles using
         // a competition from staging, add a [Unofficial]
-        let frontendStatusExtension = wcif.extensions.find(
-            (ext) => ext.id === frontendStatusExtensionId,
-        );
-
-        let isValidSignedBuild = frontendStatusExtension?.data.isSignedBuild;
-        let isAllowedVersion = frontendStatusExtension?.data.isAllowedVersion;
-
-        let officialZipStatus = isValidSignedBuild && isAllowedVersion;
+        let officialZipStatus = signatureValid && versionAllowed;
 
         let isUnofficialZip =
-            !officialZipStatus || (selectedCompetitionId !== undefined && isUsingStaging());
+            !officialZipStatus ||
+            (selectedCompetitionId !== undefined && isUsingStaging());
 
         let fileName =
-            (isUnofficialZip ? "[UNOFFICIAL] " : "") +
-            zipFileName +
-            ".zip";
+            (isUnofficialZip ? "[UNOFFICIAL] " : "") + wcif.name + ".zip";
 
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -144,7 +170,8 @@ const Main = () => {
             (event) => event.rounds.length > 0,
         );
 
-        let isLoggedCompSelection = selectedCompetitionId !== undefined && wcaApi.isLogged();
+        let isLoggedCompSelection =
+            selectedCompetitionId !== undefined && wcaApi.isLogged();
         let isOnlineLocked = appOnlineMode && !isLoggedCompSelection;
 
         let disableScrambleButton = !anyEventHasRounds || isOnlineLocked;

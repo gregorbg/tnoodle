@@ -75,7 +75,31 @@ const getWcifQueryKey = (competitionId?: string) => ["competitionWcif", competit
 export const useCompetitionWcif = (competitionId?: string) => {
     return useQuery({
         queryKey: getWcifQueryKey(competitionId),
-        queryFn: () => wcaApi.getCompetitionJson(competitionId!).then(resp => resp.data),
+        queryFn: async () => {
+            const wcifResponse = await wcaApi.getCompetitionJson(competitionId!);
+            const competitionWcif = wcifResponse.data;
+
+            return {
+                ...competitionWcif,
+                events: competitionWcif.events.map((wcifEvent) => ({
+                    ...wcifEvent,
+                    rounds: wcifEvent.rounds.map((eventRound) => ({
+                        ...eventRound,
+                        extensions: [
+                            ...eventRound.extensions.filter(
+                                (it) => it.id !== copiesExtensionId,
+                            ),
+                            getDefaultCopiesExtension(),
+                        ],
+                    })),
+                    extensions: wcifEvent.extensions.filter(
+                        (it) =>
+                            it.id !== fmcTranslationsExtensionId &&
+                            it.id !== mbldCubesExtensionId,
+                    ),
+                })),
+            };
+        },
         enabled: competitionId !== undefined,
         initialData: defaultWcif,
     });

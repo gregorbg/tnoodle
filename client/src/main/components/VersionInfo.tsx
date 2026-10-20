@@ -1,23 +1,8 @@
-import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
-import wcaApi, { isUsingStaging } from "../api/wca.api";
-import { setWcif } from "../redux/slice/WcifSlice";
-import {
-    frontendStatusExtensionId,
-    useCompetitionWcif,
-} from "../util/wcif.util";
-import RootState from "../model/RootState";
-import { setExtensionLazily } from "../util/extension.util";
+import wcaApi from "../api/wca.api";
 import { useQuery } from "@tanstack/react-query";
 
 const VersionInfo = () => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
-
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
-
     // WCA API response
     const { data: wcaScrambleProgram } = useQuery({
         queryKey: ["wca-scramble-program"],
@@ -37,30 +22,6 @@ const VersionInfo = () => {
     // what we make of it
     const versionAllowed = wcaScrambleProgram?.allowed?.includes(runningVersion);
     const signatureValid = tnoodleVersion?.signedBuild && tnoodleVersion?.signatureKeyBytes === wcaScrambleProgram?.publicKeyBytes;
-
-    const dispatch = useDispatch();
-
-    const buildFrontendStatusExtension = useCallback(() => {
-        return {
-            id: frontendStatusExtensionId,
-            specUrl: "",
-            data: {
-                isStaging: isUsingStaging(),
-                isManual: selectedCompetitionId === undefined,
-                isSignedBuild: signatureValid,
-                isAllowedVersion: versionAllowed,
-            },
-        };
-    }, [selectedCompetitionId, signatureValid, versionAllowed]);
-
-    useEffect(() => {
-        setExtensionLazily(
-            wcif,
-            frontendStatusExtensionId,
-            buildFrontendStatusExtension,
-            (wcif) => dispatch(setWcif(wcif)),
-        );
-    }, [dispatch, wcif, buildFrontendStatusExtension]);
 
     // We cannot analyze TNoodle version here. We do not bother the user.
     if (wcaScrambleProgram === undefined || tnoodleVersion === undefined) {

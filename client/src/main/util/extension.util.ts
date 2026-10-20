@@ -45,6 +45,8 @@ export const setExtensionLazily = <T extends Extendable>(
         if (oldExtension !== undefined) {
             const removedExtendable = removeExtension(extendable, extensionId);
             handleOnChange(removedExtendable);
+
+            return removedExtendable;
         }
     } else {
         const extensionDataEqual = _.isEqual(
@@ -56,6 +58,10 @@ export const setExtensionLazily = <T extends Extendable>(
         if (!extensionDataEqual) {
             const newExtendable = upsertExtension(extendable, newExtension);
             handleOnChange(newExtendable);
+
+            return newExtendable;
         }
     }
+
+    return extendable;
 };
