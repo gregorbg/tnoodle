@@ -5,9 +5,10 @@ import { toWcaUrl } from "../api/wca.api";
 import RootState from "../model/RootState";
 import EventPicker from "./EventPicker";
 import WcaEvent from "../model/WcaEvent";
-import { buildMbldExtension, useCompetitionWcif } from "../util/wcif.util";
+import { useCompetitionWcif } from "../util/wcif.util";
 import { MBLD_DEFAULT } from "../constants/wca.constants";
 import { useQuery } from "@tanstack/react-query";
+import { buildMbldExtension } from "../util/extension.util";
 
 const EVENTS_PER_LINE = 2;
 

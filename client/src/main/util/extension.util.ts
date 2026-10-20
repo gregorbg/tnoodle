@@ -1,6 +1,45 @@
 import { Extendable, Extension } from "../model/Extension";
 import _ from "lodash";
 
+export const copiesExtensionId =
+    "org.worldcubeassociation.tnoodle.SheetCopyCount";
+export const colorSchemeExtensionId =
+    "org.worldcubeassociation.tnoodle.ColorScheme";
+export const frontendStatusExtensionId =
+    "org.worldcubeassociation.tnoodle.CompetitionStatus";
+export const fmcTranslationsExtensionId =
+    "org.worldcubeassociation.tnoodle.FmcLanguages";
+export const mbldCubesExtensionId =
+    "org.worldcubeassociation.tnoodle.MultiScrambleCount";
+
+export const getDefaultCopiesExtension = () => {
+    return {
+        id: copiesExtensionId,
+        specUrl: "",
+        data: {
+            numCopies: 1,
+        },
+    };
+};
+
+export const buildFmcExtension = (selectedTranslations: string[]) => {
+    return {
+        id: fmcTranslationsExtensionId,
+        specUrl: "",
+        data: { languageTags: selectedTranslations },
+    };
+};
+
+export const buildMbldExtension = (scramblesCount: number) => {
+    return {
+        id: mbldCubesExtensionId,
+        specUrl: "",
+        data: {
+            requestedScrambles: scramblesCount,
+        },
+    };
+};
+
 export const findExtension = <T extends Extendable>(
     extendable: T,
     extensionId: string,
@@ -34,7 +73,6 @@ export const setExtensionLazily = <T extends Extendable>(
     extendable: T,
     extensionId: string,
     buildExtension: () => Extension | null,
-    handleOnChange: (newExtendable: T) => void,
 ) => {
     const oldExtension = findExtension(extendable, extensionId);
     const newExtension = buildExtension();
@@ -43,10 +81,7 @@ export const setExtensionLazily = <T extends Extendable>(
     if (newExtension === null) {
         // is there is an extension that we _can_ delete in the first place?
         if (oldExtension !== undefined) {
-            const removedExtendable = removeExtension(extendable, extensionId);
-            handleOnChange(removedExtendable);
-
-            return removedExtendable;
+            return removeExtension(extendable, extensionId);
         }
     } else {
         const extensionDataEqual = _.isEqual(
@@ -56,10 +91,7 @@ export const setExtensionLazily = <T extends Extendable>(
 
         // did the extension data update?
         if (!extensionDataEqual) {
-            const newExtendable = upsertExtension(extendable, newExtension);
-            handleOnChange(newExtendable);
-
-            return newExtendable;
+            return upsertExtension(extendable, newExtension);
         }
     }
 

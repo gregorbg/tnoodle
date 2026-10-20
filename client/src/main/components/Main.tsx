@@ -18,8 +18,11 @@ import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
 import WebsocketBlobResult from "../model/WebsocketBlobResult";
-import { frontendStatusExtensionId, useCompetitionWcif } from "../util/wcif.util";
-import { setExtensionLazily } from "../util/extension.util";
+import { useCompetitionWcif } from "../util/wcif.util";
+import {
+    frontendStatusExtensionId,
+    setExtensionLazily,
+} from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 
 const Main = () => {
@@ -101,7 +104,6 @@ const Main = () => {
                     isAllowedVersion: versionAllowed,
                 },
             }),
-            () => undefined,
         );
 
         tnoodleApi

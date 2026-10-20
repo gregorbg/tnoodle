@@ -5,44 +5,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import wcaApi from "../api/wca.api";
 import { useCallback } from "react";
 import type { Extension } from "../model/Extension";
-import { setExtensionLazily } from "./extension.util";
+import {
+    buildFmcExtension,
+    buildMbldExtension,
+    copiesExtensionId,
+    fmcTranslationsExtensionId,
+    getDefaultCopiesExtension,
+    mbldCubesExtensionId,
+    setExtensionLazily,
+} from "./extension.util";
 import { useDispatch } from "react-redux";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
-
-export const copiesExtensionId =
-    "org.worldcubeassociation.tnoodle.SheetCopyCount";
-export const colorSchemeExtensionId =
-    "org.worldcubeassociation.tnoodle.ColorScheme";
-export const frontendStatusExtensionId =
-    "org.worldcubeassociation.tnoodle.CompetitionStatus";
-export const fmcTranslationsExtensionId =
-    "org.worldcubeassociation.tnoodle.FmcLanguages";
-export const mbldCubesExtensionId =
-    "org.worldcubeassociation.tnoodle.MultiScrambleCount";
-
-/**
- * This is the default extension object the backend expects
- * @param {} copies
- */
-export const getDefaultCopiesExtension = () => {
-    return {
-        id: copiesExtensionId,
-        specUrl: "",
-        data: {
-            numCopies: 1,
-        },
-    };
-};
-
-export const buildMbldExtension = (mbld: number) => {
-    return {
-        id: mbldCubesExtensionId,
-        specUrl: "",
-        data: {
-            requestedScrambles: mbld,
-        },
-    };
-};
+import tnoodleApi from "../api/tnoodle.api";
 
 // Add 1 round of 3x3x3
 const default333: WcifEvent = {
@@ -75,29 +49,43 @@ const getWcifQueryKey = (competitionId?: string) => ["competitionWcif", competit
 export const useCompetitionWcif = (competitionId?: string) => {
     return useQuery({
         queryKey: getWcifQueryKey(competitionId),
-        queryFn: async () => {
+        queryFn: async ({ client }) => {
             const wcifResponse = await wcaApi.getCompetitionJson(competitionId!);
-            const competitionWcif = wcifResponse.data;
+            const wcif = wcifResponse.data;
+
+            const [fmcTranslations, mbldScrambleCount] = await Promise.all([
+                tnoodleApi.fetchSuggestedFmcTranslations(wcif.persons),
+                tnoodleApi.fetchBestMbldAttempt(wcif.persons),
+            ]);
+
+            client.setQueryData(["suggestedFmcTranslations", wcif.persons], fmcTranslations);
+            client.setQueryData(["best-mbld-attempt", wcif.persons], mbldScrambleCount);
 
             return {
-                ...competitionWcif,
-                events: competitionWcif.events.map((wcifEvent) => ({
-                    ...wcifEvent,
-                    rounds: wcifEvent.rounds.map((eventRound) => ({
-                        ...eventRound,
-                        extensions: [
-                            ...eventRound.extensions.filter(
-                                (it) => it.id !== copiesExtensionId,
+                ...wcif,
+                events: wcif.events.map((wcifEvent) => {
+                    const roundsExtended = {
+                        ...wcifEvent,
+                        rounds: wcifEvent.rounds.map((eventRound) =>
+                            setExtensionLazily(
+                                eventRound,
+                                copiesExtensionId,
+                                getDefaultCopiesExtension,
                             ),
-                            getDefaultCopiesExtension(),
-                        ],
-                    })),
-                    extensions: wcifEvent.extensions.filter(
-                        (it) =>
-                            it.id !== fmcTranslationsExtensionId &&
-                            it.id !== mbldCubesExtensionId,
-                    ),
-                })),
+                        ),
+                        extensions: wcifEvent.extensions.filter(
+                            (it) =>
+                                it.id !== fmcTranslationsExtensionId &&
+                                it.id !== mbldCubesExtensionId,
+                        ),
+                    };
+
+                    return setExtensionLazily(
+                        setExtensionLazily(roundsExtended, fmcTranslationsExtensionId, () => buildFmcExtension(fmcTranslations.data)),
+                        mbldCubesExtensionId,
+                        () => buildMbldExtension(mbldScrambleCount.data.attempted),
+                    )
+                }),
             };
         },
         enabled: competitionId !== undefined,
@@ -151,6 +139,8 @@ export const useSetEventExtension = (competitionId?: string) => {
     const setWcifEvent = useSetWcifEvent(competitionId);
 
     return useCallback(<T extends WcifEvent>(extendable: T, extensionId: string, buildExtension: () => Extension | null, middleware: (ext: T) => T = (ext) => ext) => {
-        return setExtensionLazily(extendable, extensionId, buildExtension, (newExtendable) => setWcifEvent(middleware(newExtendable)));
+        const updatedExtension = setExtensionLazily(extendable, extensionId, buildExtension);
+
+        return setWcifEvent(middleware(updatedExtension));
     }, [setWcifEvent]);
 }

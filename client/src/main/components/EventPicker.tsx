@@ -6,10 +6,6 @@ import Round from "../model/Round";
 import WcaEvent from "../model/WcaEvent";
 import WcifEvent from "../model/WcifEvent";
 import {
-    buildMbldExtension,
-    colorSchemeExtensionId,
-    copiesExtensionId,
-    getDefaultCopiesExtension,
     useCompetitionWcif,
     useSetEventExtension,
     useSetWcifEvent,
@@ -23,7 +19,13 @@ import { useCallback, useMemo, useState } from "react";
 import SVG from "react-inlinesvg";
 import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
-import { findExtension } from "../util/extension.util";
+import {
+    buildMbldExtension,
+    colorSchemeExtensionId,
+    copiesExtensionId,
+    findExtension,
+    getDefaultCopiesExtension,
+} from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 
 interface EventPickerProps {

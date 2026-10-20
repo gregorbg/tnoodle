@@ -3,14 +3,14 @@ import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import RootState from "../model/RootState";
 import WcifEvent from "../model/WcifEvent";
 import {
-    buildMbldExtension,
-    mbldCubesExtensionId,
     useCompetitionWcif,
     useSetEventExtension,
 } from "../util/wcif.util";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
+    buildMbldExtension,
     findExtension,
+    mbldCubesExtensionId,
     upsertExtension,
 } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
@@ -34,6 +34,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         queryKey: ["best-mbld-attempt", wcif.persons],
         queryFn: () => tnoodleApi.fetchBestMbldAttempt(wcif.persons),
         select: (resp) => resp.data?.attempted,
+        enabled: selectedCompetitionId !== undefined,
     });
 
     const mbld = useMemo(() => {
@@ -70,17 +71,6 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         },
         [mbldWcifEvent, setEventExtension],
     );
-
-    useEffect(() => {
-        const wcifExtension = findExtension(
-            mbldWcifEvent,
-            mbldCubesExtensionId,
-        );
-
-        if (wcifExtension === undefined && bestMbldAttempt !== undefined) {
-            updateEventMbld(bestMbldAttempt);
-        }
-    }, [mbldWcifEvent, updateEventMbld, bestMbldAttempt]);
 
     return (
         <tfoot>

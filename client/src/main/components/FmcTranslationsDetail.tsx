@@ -1,15 +1,18 @@
 import { chunk } from "lodash";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import RootState from "../model/RootState";
 import tnoodleApi from "../api/tnoodle.api";
 import WcifEvent from "../model/WcifEvent";
 import {
-    fmcTranslationsExtensionId,
     useCompetitionWcif,
     useSetEventExtension,
 } from "../util/wcif.util";
-import { findExtension } from "../util/extension.util";
+import {
+    buildFmcExtension,
+    findExtension,
+    fmcTranslationsExtensionId,
+} from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 
 const TRANSLATIONS_PER_LINE = 3;
@@ -40,6 +43,7 @@ const FmcTranslationsDetail = ({
         queryKey: ["suggestedFmcTranslations", wcif.persons],
         queryFn: () => tnoodleApi.fetchSuggestedFmcTranslations(wcif.persons),
         select: (resp) => resp.data,
+        enabled: selectedCompetitionId !== undefined,
     });
 
     const [showTranslations, setShowTranslations] = useState(false);
@@ -55,14 +59,6 @@ const FmcTranslationsDetail = ({
 
     const setEventExtension = useSetEventExtension(selectedCompetitionId);
 
-    const buildFmcExtension = (selectedTranslations: string[]) => {
-        return {
-            id: fmcTranslationsExtensionId,
-            specUrl: "",
-            data: { languageTags: selectedTranslations },
-        };
-    };
-
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
             setEventExtension(
@@ -73,24 +69,6 @@ const FmcTranslationsDetail = ({
         },
         [fmcWcifEvent, setEventExtension],
     );
-
-    useEffect(() => {
-        const wcifExtension = findExtension(
-            fmcWcifEvent,
-            fmcTranslationsExtensionId,
-        );
-
-        if (
-            wcifExtension === undefined &&
-            suggestedFmcTranslations !== undefined
-        ) {
-            updateEventSelectedTranslations(suggestedFmcTranslations);
-        }
-    }, [
-        fmcWcifEvent,
-        updateEventSelectedTranslations,
-        suggestedFmcTranslations,
-    ]);
 
     const handleTranslation = (id: string, status: boolean) => {
         let newSelectedTranslations = selectedTranslations.filter(
