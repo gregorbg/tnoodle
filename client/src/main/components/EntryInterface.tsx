@@ -23,13 +23,6 @@ const EntryInterface = () => {
     const dispatch = useDispatch();
     const setCompetitionName = useSetCompetitionName(selectedCompetitionId);
 
-    const handleCompetitionNameChange = (name: string) => {
-        setCompetitionName(name);
-
-        // Require another zip with the new name.
-        dispatch(setFileZip());
-    };
-
     const handlePasswordChange = (password: string) => {
         dispatch(setPassword(password));
 
@@ -51,7 +44,7 @@ const EntryInterface = () => {
                     className="form-control"
                     placeholder="Competition Name"
                     onChange={(e) =>
-                        handleCompetitionNameChange(e.target.value)
+                        setCompetitionName(e.target.value)
                     }
                     value={wcif.name}
                     disabled={selectedCompetitionId !== undefined || generatingScrambles}

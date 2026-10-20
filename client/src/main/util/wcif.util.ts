@@ -4,6 +4,10 @@ import { competitionName2Id, getDefaultCompetitionName } from "./competition.nam
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import wcaApi from "../api/wca.api";
 import { useCallback } from "react";
+import type { Extension } from "../model/Extension";
+import { setExtensionLazily } from "./extension.util";
+import { useDispatch } from "react-redux";
+import { setFileZip } from "../redux/slice/ScramblingSlice";
 
 export const copiesExtensionId =
     "org.worldcubeassociation.tnoodle.SheetCopyCount";
@@ -79,8 +83,12 @@ export const useCompetitionWcif = (competitionId?: string) => {
 
 export const useCompetitionWcifDispatch = (competitionId?: string) => {
     const queryClient = useQueryClient();
+    const dispatch = useDispatch();
 
     return useCallback((updater: (wcif: Wcif) => Wcif) => {
+        // changing anything about the WCIF invalidates the currently generated ZIP file
+        dispatch(setFileZip());
+
         return queryClient.setQueryData(
             getWcifQueryKey(competitionId),
             (wcif: Wcif) => ({
@@ -88,14 +96,14 @@ export const useCompetitionWcifDispatch = (competitionId?: string) => {
                 ...updater(wcif),
             }),
         );
-    }, [queryClient, competitionId]);
+    }, [dispatch, queryClient, competitionId]);
 }
 
 export const useSetCompetitionName = (competitionId?: string) => {
     const dispatch = useCompetitionWcifDispatch(competitionId);
 
     return useCallback((name: string) => {
-        dispatch(wcif => ({ ...wcif, name, shortName: name, id: competitionName2Id(name) }));
+        return dispatch(wcif => ({ ...wcif, name, shortName: name, id: competitionName2Id(name) }));
     }, [dispatch]);
 }
 
@@ -103,7 +111,7 @@ export const useSetWcifEvent = (competitionId?: string) => {
     const dispatch = useCompetitionWcifDispatch(competitionId);
 
     return useCallback((event: WcifEvent) => {
-        dispatch((wcif) => ({
+        return dispatch((wcif) => ({
             ...wcif,
             events: [
                 ...wcif.events.filter(
@@ -113,4 +121,12 @@ export const useSetWcifEvent = (competitionId?: string) => {
             ],
         }));
     }, [dispatch]);
+}
+
+export const useSetEventExtension = (competitionId?: string) => {
+    const setWcifEvent = useSetWcifEvent(competitionId);
+
+    return useCallback(<T extends WcifEvent>(extendable: T, extensionId: string, buildExtension: () => Extension | null, middleware: (ext: T) => T = (ext) => ext) => {
+        return setExtensionLazily(extendable, extensionId, buildExtension, (newExtendable) => setWcifEvent(middleware(newExtendable)));
+    }, [setWcifEvent]);
 }

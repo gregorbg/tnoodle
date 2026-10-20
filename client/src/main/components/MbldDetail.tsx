@@ -1,18 +1,16 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import RootState from "../model/RootState";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
 import WcifEvent from "../model/WcifEvent";
 import {
     buildMbldExtension,
     mbldCubesExtensionId,
     useCompetitionWcif,
-    useSetWcifEvent,
+    useSetEventExtension,
 } from "../util/wcif.util";
 import { useCallback, useEffect, useMemo } from "react";
 import {
     findExtension,
-    setExtensionLazily,
     upsertExtension,
 } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
@@ -47,18 +45,17 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         );
     }, [mbldWcifEvent, bestMbldAttempt]);
 
-    const dispatch = useDispatch();
-
-    const setWcifEvent = useSetWcifEvent(selectedCompetitionId);
+    const setEventExtension = useSetEventExtension(selectedCompetitionId);
 
     const updateEventMbld = useCallback(
         (mbld: number) => {
-            setExtensionLazily(
+            setEventExtension(
                 mbldWcifEvent,
                 mbldCubesExtensionId,
                 () => buildMbldExtension(mbld),
-                (newWcifEvent) => {
-                    newWcifEvent.rounds = newWcifEvent.rounds.map(
+                (newWcifEvent) => ({
+                    ...newWcifEvent,
+                    rounds: newWcifEvent.rounds.map(
                         (wcifRound) => {
                             const overrideExtension = buildMbldExtension(mbld);
 
@@ -67,14 +64,11 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
                                 overrideExtension,
                             );
                         },
-                    );
-
-                    setWcifEvent(newWcifEvent);
-                    dispatch(setFileZip());
-                },
+                    ),
+                }),
             );
         },
-        [dispatch, mbldWcifEvent, setWcifEvent],
+        [mbldWcifEvent, setEventExtension],
     );
 
     useEffect(() => {

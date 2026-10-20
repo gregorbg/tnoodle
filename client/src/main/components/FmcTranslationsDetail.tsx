@@ -1,16 +1,15 @@
 import { chunk } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import RootState from "../model/RootState";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
 import tnoodleApi from "../api/tnoodle.api";
 import WcifEvent from "../model/WcifEvent";
 import {
     fmcTranslationsExtensionId,
     useCompetitionWcif,
-    useSetWcifEvent,
+    useSetEventExtension,
 } from "../util/wcif.util";
-import { findExtension, setExtensionLazily } from "../util/extension.util";
+import { findExtension } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 
 const TRANSLATIONS_PER_LINE = 3;
@@ -54,9 +53,7 @@ const FmcTranslationsDetail = ({
         );
     }, [fmcWcifEvent, suggestedFmcTranslations]);
 
-    const dispatch = useDispatch();
-
-    const setWcifEvent = useSetWcifEvent(selectedCompetitionId);
+    const setEventExtension = useSetEventExtension(selectedCompetitionId);
 
     const buildFmcExtension = (selectedTranslations: string[]) => {
         return {
@@ -68,17 +65,13 @@ const FmcTranslationsDetail = ({
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
-            setExtensionLazily(
+            setEventExtension(
                 fmcWcifEvent,
                 fmcTranslationsExtensionId,
                 () => buildFmcExtension(selectedTranslations),
-                (fmcWcifEvent) => {
-                    setWcifEvent(fmcWcifEvent);
-                    dispatch(setFileZip());
-                },
             );
         },
-        [dispatch, fmcWcifEvent, setWcifEvent],
+        [fmcWcifEvent, setEventExtension],
     );
 
     useEffect(() => {
