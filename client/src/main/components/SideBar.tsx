@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Collapse, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import tnoodleApi from "../api/tnoodle.api";
 import wcaApi from "../api/wca.api";
 import logo from "../assets/tnoodle_logo.svg";
 import RootState from "../model/RootState";
@@ -9,10 +8,6 @@ import {
     addCachedObject,
     setIsManualSelection,
 } from "../redux/slice/InformationSlice";
-import {
-    setBestMbldAttempt,
-    setSuggestedFmcTranslations,
-} from "../redux/slice/EventDataSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
@@ -101,49 +96,11 @@ const SideBar = () => {
     const handleManualSelection = () => {
         dispatch(setIsManualSelection(true));
         dispatch(setWcif({ ...defaultWcif }));
-        dispatch(setBestMbldAttempt());
         dispatch(setCompetitionName(getDefaultCompetitionName()));
         dispatch(setFileZip());
-        dispatch(setSuggestedFmcTranslations());
 
         deleteParameter("competitionId");
     };
-
-    const getAndCacheBestMbldAttempt = useCallback(
-        (wcif: Wcif) => {
-            tnoodleApi.fetchBestMbldAttempt(wcif).then((response) => {
-                const attempted = response.data?.attempted;
-
-                if (!!attempted) {
-                    dispatch(
-                        addCachedObject({
-                            competitionId: wcif.id,
-                            identifier: "bestMbldAttempt",
-                            object: attempted,
-                        }),
-                    );
-                    dispatch(setBestMbldAttempt(attempted));
-                }
-            });
-        },
-        [dispatch],
-    );
-
-    const getAndCacheSuggestedFmcTranslations = useCallback(
-        (wcif: Wcif) => {
-            tnoodleApi.fetchSuggestedFmcTranslations(wcif).then((response) => {
-                dispatch(
-                    addCachedObject({
-                        competitionId: wcif.id,
-                        identifier: "suggestedFmcTranslations",
-                        object: response.data,
-                    }),
-                );
-                dispatch(setSuggestedFmcTranslations(response.data));
-            });
-        },
-        [dispatch],
-    );
 
     const updateWcif = useCallback(
         (wcif: Wcif) => {
@@ -170,15 +127,6 @@ const SideBar = () => {
 
             if (!!cachedObject) {
                 updateWcif(cachedObject.wcif);
-
-                let cachedSuggestedFmcTranslations =
-                    cachedObject.suggestedFmcTranslations;
-                dispatch(
-                    setSuggestedFmcTranslations(cachedSuggestedFmcTranslations),
-                );
-
-                let cachedBestMbldAttempt = cachedObject.bestMbldAttempt;
-                dispatch(setBestMbldAttempt(cachedBestMbldAttempt));
             } else {
                 setLoadingCompetitionInfo(true);
 
@@ -193,8 +141,6 @@ const SideBar = () => {
                                 object: response.data,
                             }),
                         );
-                        getAndCacheSuggestedFmcTranslations(response.data);
-                        getAndCacheBestMbldAttempt(response.data);
                     })
                     .finally(() => setLoadingCompetitionInfo(false));
             }
@@ -203,8 +149,6 @@ const SideBar = () => {
             dispatch,
             wcif.id,
             cachedObjects,
-            getAndCacheBestMbldAttempt,
-            getAndCacheSuggestedFmcTranslations,
             updateWcif,
         ],
     );

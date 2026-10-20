@@ -19,8 +19,8 @@ interface FmcTranslationsDetailProps {
 const FmcTranslationsDetail = ({
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const suggestedFmcTranslations = useSelector(
-        (state: RootState) => state.eventDataSlice.suggestedFmcTranslations,
+    const wcif = useSelector(
+        (state: RootState) => state.wcifSlice.wcif,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
@@ -29,6 +29,12 @@ const FmcTranslationsDetail = ({
     const { data: availableTranslations } = useQuery({
         queryKey: ["availableFmcTranslations"],
         queryFn: () => tnoodleApi.fetchAvailableFmcTranslations(),
+        select: (resp) => resp.data,
+    });
+
+    const { data: suggestedFmcTranslations } = useQuery({
+        queryKey: ["suggestedFmcTranslations", wcif],
+        queryFn: () => tnoodleApi.fetchSuggestedFmcTranslations(wcif),
         select: (resp) => resp.data,
     });
 

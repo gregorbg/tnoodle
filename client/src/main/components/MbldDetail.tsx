@@ -11,18 +11,26 @@ import {
     setExtensionLazily,
     upsertExtension,
 } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
+import tnoodleApi from "../api/tnoodle.api";
 
 interface MbldDetailProps {
     mbldWcifEvent: WcifEvent;
 }
 
 const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const bestMbldAttempt = useSelector(
-        (state: RootState) => state.eventDataSlice.bestMbldAttempt,
+    const wcif = useSelector(
+        (state: RootState) => state.wcifSlice.wcif,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: bestMbldAttempt } = useQuery({
+        queryKey: ["best-mbld-attempt", wcif],
+        queryFn: () => tnoodleApi.fetchBestMbldAttempt(wcif),
+        select: (resp) => resp.data?.attempted,
+    });
 
     const mbld = useMemo(() => {
         return (
