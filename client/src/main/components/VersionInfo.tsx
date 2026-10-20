@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import wcaApi, { isUsingStaging } from "../api/wca.api";
-import CurrentTnoodle from "../model/CurrentTnoodle";
 import { setWcif } from "../redux/slice/WcifSlice";
 import { frontendStatusExtensionId } from "../util/wcif.util";
 import RootState from "../model/RootState";
 import { setExtensionLazily } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
 
 const VersionInfo = () => {
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
@@ -15,66 +15,26 @@ const VersionInfo = () => {
     );
 
     // WCA API response
-    const [currentTnoodle, setCurrentTnoodle] = useState<CurrentTnoodle>();
-    const [allowedTnoodleVersions, setAllowedTnoodleVersions] =
-        useState<string[]>();
-    const [wcaPublicKeyBytes, setWcaPublicKeyBytes] = useState<string>();
+    const { data: wcaScrambleProgram } = useQuery({
+        queryKey: ["wca-scramble-program"],
+        queryFn: () => wcaApi.fetchVersionInfo(),
+        select: (resp) => resp.data,
+    });
 
     // TNoodle backend API response
-    const [runningVersion, setRunningVersion] = useState<string>();
-    const [signedBuild, setSignedBuild] = useState<boolean>();
-    const [signatureKeyBytes, setSignatureKeyBytes] = useState<string>();
+    const { data: tnoodleVersion } = useQuery({
+        queryKey: ["tnoodle-version"],
+        queryFn: () => tnoodleApi.fetchRunningVersion(),
+        select: (resp) => resp.data,
+    });
+
+    const runningVersion = `${tnoodleVersion?.projectName}-${tnoodleVersion?.projectVersion}`;
 
     // what we make of it
-    const [signatureValid, setSignatureValid] = useState<boolean>(false);
-    const [versionAllowed, setVersionAllowed] = useState<boolean>(false);
+    const versionAllowed = wcaScrambleProgram?.allowed?.includes(runningVersion);
+    const signatureValid = tnoodleVersion?.signedBuild && tnoodleVersion?.signatureKeyBytes === wcaScrambleProgram?.publicKeyBytes;
 
     const dispatch = useDispatch();
-
-    useEffect(() => {
-        // Fetch from WCA API.
-        wcaApi.fetchVersionInfo().then((response) => {
-            setCurrentTnoodle(response.data.current);
-            setAllowedTnoodleVersions(response.data.allowed);
-            setWcaPublicKeyBytes(response.data.publicKeyBytes);
-        });
-
-        tnoodleApi.fetchRunningVersion().then((response) => {
-            let versionString =
-                !!response.data.projectName && !!response.data.projectVersion
-                    ? `${response.data.projectName}-${response.data.projectVersion}`
-                    : "";
-
-            setRunningVersion(versionString);
-            setSignedBuild(response.data.signedBuild);
-            setSignatureKeyBytes(response.data.signatureKeyBytes);
-        });
-    }, []);
-
-    useEffect(() => {
-        if (
-            signedBuild === undefined ||
-            signatureKeyBytes === undefined ||
-            wcaPublicKeyBytes === undefined
-        ) {
-            return;
-        }
-
-        setSignatureValid(
-            signedBuild && signatureKeyBytes === wcaPublicKeyBytes,
-        );
-    }, [signedBuild, signatureKeyBytes, wcaPublicKeyBytes]);
-
-    useEffect(() => {
-        if (
-            allowedTnoodleVersions === undefined ||
-            runningVersion === undefined
-        ) {
-            return;
-        }
-
-        setVersionAllowed(allowedTnoodleVersions.includes(runningVersion));
-    }, [allowedTnoodleVersions, runningVersion]);
 
     const buildFrontendStatusExtension = useCallback(() => {
         return {
@@ -99,19 +59,19 @@ const VersionInfo = () => {
     }, [dispatch, wcif, buildFrontendStatusExtension]);
 
     // We cannot analyze TNoodle version here. We do not bother the user.
-    if (!runningVersion || !allowedTnoodleVersions || !currentTnoodle) {
+    if (wcaScrambleProgram === undefined || tnoodleVersion === undefined) {
         return null;
     }
 
     // Running version is not the most recent release
-    if (runningVersion !== currentTnoodle.name) {
+    if (runningVersion !== wcaScrambleProgram.current.name) {
         // Running version is allowed, but not the latest.
         if (versionAllowed) {
             return (
                 <div className="alert alert-info m-0">
                     You are running {runningVersion}, which is still allowed,
-                    but you should upgrade to {currentTnoodle.name} available{" "}
-                    <a href={currentTnoodle.download}>here</a> as soon as
+                    but you should upgrade to {wcaScrambleProgram.current.name} available{" "}
+                    <a href={wcaScrambleProgram.current.download}>here</a> as soon as
                     possible.
                 </div>
             );
@@ -122,7 +82,7 @@ const VersionInfo = () => {
                 You are running {runningVersion}, which is not allowed. Do not
                 use scrambles generated in any official competition and consider
                 downloading the latest version{" "}
-                <a href={currentTnoodle.download}>here</a>.
+                <a href={wcaScrambleProgram.current.download}>here</a>.
             </div>
         );
     }
@@ -134,7 +94,7 @@ const VersionInfo = () => {
                 You are running an unsigned TNoodle release. Do not use
                 scrambles generated in any official competition and consider
                 downloading the official program{" "}
-                <a href={currentTnoodle.download}>here</a>
+                <a href={wcaScrambleProgram.current.download}>here</a>
             </div>
         );
     }
