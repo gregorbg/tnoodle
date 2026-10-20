@@ -14,7 +14,10 @@ export const informationSlice = createSlice({
     name: "informationSlice",
     initialState,
     reducers: {
-        setSelectedCompetitionId: (state, action: PayloadAction<string | undefined>) => {
+        setSelectedCompetitionId: (
+            state,
+            action: PayloadAction<string | undefined>,
+        ) => {
             state.selectedCompetitionId = action.payload;
         },
         setShowColorPicker: (state, action: PayloadAction<boolean>) => {
@@ -23,7 +26,5 @@ export const informationSlice = createSlice({
     },
 });
 
-export const {
-    setSelectedCompetitionId,
-    setShowColorPicker,
-} = informationSlice.actions;
+export const { setSelectedCompetitionId, setShowColorPicker } =
+    informationSlice.actions;

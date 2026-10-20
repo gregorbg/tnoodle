@@ -20,8 +20,12 @@ const VersionInfo = () => {
     const runningVersion = `${tnoodleVersion?.projectName}-${tnoodleVersion?.projectVersion}`;
 
     // what we make of it
-    const versionAllowed = wcaScrambleProgram?.allowed?.includes(runningVersion);
-    const signatureValid = tnoodleVersion?.signedBuild && tnoodleVersion?.signatureKeyBytes === wcaScrambleProgram?.publicKeyBytes;
+    const versionAllowed =
+        wcaScrambleProgram?.allowed?.includes(runningVersion);
+    const signatureValid =
+        tnoodleVersion?.signedBuild &&
+        tnoodleVersion?.signatureKeyBytes ===
+            wcaScrambleProgram?.publicKeyBytes;
 
     // We cannot analyze TNoodle version here. We do not bother the user.
     if (wcaScrambleProgram === undefined || tnoodleVersion === undefined) {
@@ -35,9 +39,10 @@ const VersionInfo = () => {
             return (
                 <div className="alert alert-info m-0">
                     You are running {runningVersion}, which is still allowed,
-                    but you should upgrade to {wcaScrambleProgram.current.name} available{" "}
-                    <a href={wcaScrambleProgram.current.download}>here</a> as soon as
-                    possible.
+                    but you should upgrade to {wcaScrambleProgram.current.name}{" "}
+                    available{" "}
+                    <a href={wcaScrambleProgram.current.download}>here</a> as
+                    soon as possible.
                 </div>
             );
         }

@@ -43,11 +43,12 @@ const EntryInterface = () => {
                     id="competition-name"
                     className="form-control"
                     placeholder="Competition Name"
-                    onChange={(e) =>
-                        setCompetitionName(e.target.value)
-                    }
+                    onChange={(e) => setCompetitionName(e.target.value)}
                     value={wcif.name}
-                    disabled={selectedCompetitionId !== undefined || generatingScrambles}
+                    disabled={
+                        selectedCompetitionId !== undefined ||
+                        generatingScrambles
+                    }
                     required
                 />
             </div>

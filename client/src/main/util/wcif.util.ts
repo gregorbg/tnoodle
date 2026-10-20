@@ -1,6 +1,9 @@
 import Wcif from "../model/Wcif";
 import WcifEvent from "../model/WcifEvent";
-import { competitionName2Id, getDefaultCompetitionName } from "./competition.name.util";
+import {
+    competitionName2Id,
+    getDefaultCompetitionName,
+} from "./competition.name.util";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import wcaApi from "../api/wca.api";
 import { useCallback } from "react";
@@ -44,13 +47,18 @@ export const defaultWcif: Wcif = {
     extensions: [],
 };
 
-const getWcifQueryKey = (competitionId?: string) => ["competitionWcif", competitionId];
+const getWcifQueryKey = (competitionId?: string) => [
+    "competitionWcif",
+    competitionId,
+];
 
 export const useCompetitionWcif = (competitionId?: string) => {
     return useQuery({
         queryKey: getWcifQueryKey(competitionId),
         queryFn: async ({ client }) => {
-            const wcifResponse = await wcaApi.getCompetitionJson(competitionId!);
+            const wcifResponse = await wcaApi.getCompetitionJson(
+                competitionId!,
+            );
             const wcif = wcifResponse.data;
 
             const [fmcTranslations, mbldScrambleCount] = await Promise.all([
@@ -58,8 +66,14 @@ export const useCompetitionWcif = (competitionId?: string) => {
                 tnoodleApi.fetchBestMbldAttempt(wcif.persons),
             ]);
 
-            client.setQueryData(["suggestedFmcTranslations", wcif.persons], fmcTranslations);
-            client.setQueryData(["best-mbld-attempt", wcif.persons], mbldScrambleCount);
+            client.setQueryData(
+                ["suggestedFmcTranslations", wcif.persons],
+                fmcTranslations,
+            );
+            client.setQueryData(
+                ["best-mbld-attempt", wcif.persons],
+                mbldScrambleCount,
+            );
 
             return {
                 ...wcif,
@@ -81,66 +95,99 @@ export const useCompetitionWcif = (competitionId?: string) => {
                     };
 
                     return setExtensionLazily(
-                        setExtensionLazily(roundsExtended, fmcTranslationsExtensionId, () => buildFmcExtension(fmcTranslations.data)),
+                        setExtensionLazily(
+                            roundsExtended,
+                            fmcTranslationsExtensionId,
+                            () => buildFmcExtension(fmcTranslations.data),
+                        ),
                         mbldCubesExtensionId,
-                        () => buildMbldExtension(mbldScrambleCount.data.attempted),
-                    )
+                        () =>
+                            buildMbldExtension(
+                                mbldScrambleCount.data.attempted,
+                            ),
+                    );
                 }),
             };
         },
         enabled: competitionId !== undefined,
         initialData: defaultWcif,
     });
-}
+};
 
 export const useCompetitionWcifDispatch = (competitionId?: string) => {
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
 
-    return useCallback((updater: (wcif: Wcif) => Wcif) => {
-        // changing anything about the WCIF invalidates the currently generated ZIP file
-        dispatch(setFileZip());
+    return useCallback(
+        (updater: (wcif: Wcif) => Wcif) => {
+            // changing anything about the WCIF invalidates the currently generated ZIP file
+            dispatch(setFileZip());
 
-        return queryClient.setQueryData(
-            getWcifQueryKey(competitionId),
-            (wcif: Wcif) => ({
-                ...wcif,
-                ...updater(wcif),
-            }),
-        );
-    }, [dispatch, queryClient, competitionId]);
-}
+            return queryClient.setQueryData(
+                getWcifQueryKey(competitionId),
+                (wcif: Wcif) => ({
+                    ...wcif,
+                    ...updater(wcif),
+                }),
+            );
+        },
+        [dispatch, queryClient, competitionId],
+    );
+};
 
 export const useSetCompetitionName = (competitionId?: string) => {
     const dispatch = useCompetitionWcifDispatch(competitionId);
 
-    return useCallback((name: string) => {
-        return dispatch(wcif => ({ ...wcif, name, shortName: name, id: competitionName2Id(name) }));
-    }, [dispatch]);
-}
+    return useCallback(
+        (name: string) => {
+            return dispatch((wcif) => ({
+                ...wcif,
+                name,
+                shortName: name,
+                id: competitionName2Id(name),
+            }));
+        },
+        [dispatch],
+    );
+};
 
 export const useSetWcifEvent = (competitionId?: string) => {
     const dispatch = useCompetitionWcifDispatch(competitionId);
 
-    return useCallback((event: WcifEvent) => {
-        return dispatch((wcif) => ({
-            ...wcif,
-            events: [
-                ...wcif.events.filter(
-                    (wcaEvent) => wcaEvent.id !== event.id,
-                ),
-                event,
-            ],
-        }));
-    }, [dispatch]);
-}
+    return useCallback(
+        (event: WcifEvent) => {
+            return dispatch((wcif) => ({
+                ...wcif,
+                events: [
+                    ...wcif.events.filter(
+                        (wcaEvent) => wcaEvent.id !== event.id,
+                    ),
+                    event,
+                ],
+            }));
+        },
+        [dispatch],
+    );
+};
 
 export const useSetEventExtension = (competitionId?: string) => {
     const setWcifEvent = useSetWcifEvent(competitionId);
 
-    return useCallback(<T extends WcifEvent>(extendable: T, extensionId: string, buildExtension: () => Extension | null, middleware: (ext: T) => T = (ext) => ext) => {
-        const updatedExtension = setExtensionLazily(extendable, extensionId, buildExtension);
+    return useCallback(
+        <T extends WcifEvent>(
+            extendable: T,
+            extensionId: string,
+            buildExtension: () => Extension | null,
+            middleware: (ext: T) => T = (ext) => ext,
+        ) => {
+            const updatedExtension = setExtensionLazily(
+                extendable,
+                extensionId,
+                buildExtension,
+            );
 
-        return setWcifEvent(middleware(updatedExtension));
-    }, [setWcifEvent]);
-}
+            return setWcifEvent(middleware(updatedExtension));
+        },
+        [setWcifEvent],
+    );
+};

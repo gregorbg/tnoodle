@@ -2,10 +2,7 @@ import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import RootState from "../model/RootState";
 import WcifEvent from "../model/WcifEvent";
-import {
-    useCompetitionWcif,
-    useSetEventExtension,
-} from "../util/wcif.util";
+import { useCompetitionWcif, useSetEventExtension } from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
     buildMbldExtension,
@@ -56,16 +53,11 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
                 () => buildMbldExtension(mbld),
                 (newWcifEvent) => ({
                     ...newWcifEvent,
-                    rounds: newWcifEvent.rounds.map(
-                        (wcifRound) => {
-                            const overrideExtension = buildMbldExtension(mbld);
+                    rounds: newWcifEvent.rounds.map((wcifRound) => {
+                        const overrideExtension = buildMbldExtension(mbld);
 
-                            return upsertExtension(
-                                wcifRound,
-                                overrideExtension,
-                            );
-                        },
-                    ),
+                        return upsertExtension(wcifRound, overrideExtension);
+                    }),
                 }),
             );
         },

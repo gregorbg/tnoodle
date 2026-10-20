@@ -83,17 +83,27 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
 
     const { data: puzzleSvg } = useQuery({
         queryKey: ["solved-puzzle-svg", wcaEvent.puzzle_id, colorScheme],
-        queryFn: () => tnoodleApi.fetchPuzzleSolvedSvg(wcaEvent.puzzle_id, colorScheme),
+        queryFn: () =>
+            tnoodleApi.fetchPuzzleSolvedSvg(wcaEvent.puzzle_id, colorScheme),
         select: (resp) => resp.data,
         enabled: colorScheme !== undefined,
     });
 
-    const { data: randomSampleScramble, refetch: fetchRandomSampleScramble } = useQuery({
-        queryKey: ["random-sample-scramble", wcaEvent.puzzle_id, colorScheme],
-        queryFn: () => tnoodleApi.fetchPuzzleRandomScramble(wcaEvent.puzzle_id, colorScheme),
-        select: (resp) => resp.data,
-        enabled: colorScheme !== undefined,
-    });
+    const { data: randomSampleScramble, refetch: fetchRandomSampleScramble } =
+        useQuery({
+            queryKey: [
+                "random-sample-scramble",
+                wcaEvent.puzzle_id,
+                colorScheme,
+            ],
+            queryFn: () =>
+                tnoodleApi.fetchPuzzleRandomScramble(
+                    wcaEvent.puzzle_id,
+                    colorScheme,
+                ),
+            select: (resp) => resp.data,
+            enabled: colorScheme !== undefined,
+        });
 
     const fetchDisplayScramble = useCallback(
         (fetchNewScramble = true) => {
@@ -119,10 +129,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     };
 
     const updateEventColorScheme = (colorScheme: Record<string, string>) => {
-        setWcifEventExtension(
-            wcifEvent,
-            colorSchemeExtensionId,
-            () => buildColorSchemeExtension(colorScheme),
+        setWcifEventExtension(wcifEvent, colorSchemeExtensionId, () =>
+            buildColorSchemeExtension(colorScheme),
         );
     };
 
@@ -226,10 +234,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         );
 
         if (wcifEvent !== undefined && colorScheme !== undefined) {
-            setWcifEventExtension(
-                wcifEvent,
-                colorSchemeExtensionId,
-                () => buildColorSchemeExtension(colorScheme),
+            setWcifEventExtension(wcifEvent, colorSchemeExtensionId, () =>
+                buildColorSchemeExtension(colorScheme),
             );
         }
     };
@@ -550,7 +556,10 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                     wcifEvent.rounds,
                                 )
                             }
-                            disabled={selectedCompetitionId !== undefined || generatingScrambles}
+                            disabled={
+                                selectedCompetitionId !== undefined ||
+                                generatingScrambles
+                            }
                         >
                             {Array.from(
                                 { length: MAX_WCA_ROUNDS + 1 },

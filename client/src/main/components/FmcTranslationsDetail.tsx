@@ -4,10 +4,7 @@ import { useSelector } from "react-redux";
 import RootState from "../model/RootState";
 import tnoodleApi from "../api/tnoodle.api";
 import WcifEvent from "../model/WcifEvent";
-import {
-    useCompetitionWcif,
-    useSetEventExtension,
-} from "../util/wcif.util";
+import { useCompetitionWcif, useSetEventExtension } from "../util/wcif.util";
 import {
     buildFmcExtension,
     findExtension,
@@ -61,10 +58,8 @@ const FmcTranslationsDetail = ({
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
-            setEventExtension(
-                fmcWcifEvent,
-                fmcTranslationsExtensionId,
-                () => buildFmcExtension(selectedTranslations),
+            setEventExtension(fmcWcifEvent, fmcTranslationsExtensionId, () =>
+                buildFmcExtension(selectedTranslations),
             );
         },
         [fmcWcifEvent, setEventExtension],
