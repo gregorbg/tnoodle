@@ -9,13 +9,12 @@ import {
     setShowColorPicker,
 } from "../redux/slice/InformationSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
-import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
     deleteParameter,
     getQueryParameter,
     setQueryParameter,
 } from "../util/query.param.util";
-import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
+import { useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
 import { useQuery } from "@tanstack/react-query";
 
@@ -61,28 +60,24 @@ const SideBar = () => {
     }, [handleIsOpen]);
 
     const competitions = useMemo(() => {
-        if (
-            wcif.id === defaultWcif.id ||
-            wcif.name === getDefaultCompetitionName()
-        ) {
+        if (selectedCompetitionId === undefined) {
             return upcomingCompetitions || [];
         }
 
         if (upcomingCompetitions === undefined) {
-            return [{ id: wcif.id, name: wcif.name }];
+            return [wcif];
         }
 
-        const queryParamId = getQueryParameter("competitionId");
         const isUpcoming = upcomingCompetitions.some(
-            (comp) => comp.id === queryParamId,
+            (comp) => comp.id === selectedCompetitionId,
         );
 
         if (isUpcoming) {
             return upcomingCompetitions;
         } else {
-            return [...upcomingCompetitions, { id: wcif.id, name: wcif.name }];
+            return [...upcomingCompetitions, wcif];
         }
-    }, [wcif, upcomingCompetitions]);
+    }, [selectedCompetitionId, upcomingCompetitions, wcif]);
 
     const dispatch = useDispatch();
 
