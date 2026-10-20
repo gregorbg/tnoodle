@@ -48,7 +48,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         (state: RootState) => state.scramblingSlice.scramblingProgressTarget,
     );
     const showColorPicker = useSelector(
-        (state: RootState) => state.settingsSlice.showColorPicker,
+        (state: RootState) => state.informationSlice.showColorPicker,
     );
 
     const { data: wcaEvents } = useQuery({

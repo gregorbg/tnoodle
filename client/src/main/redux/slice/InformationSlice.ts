@@ -3,11 +3,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface InformationState {
     selectedCompetitionId?: string;
     isManualSelection: boolean;
+    showColorPicker: boolean;
 }
 
 const initialState: InformationState = {
     selectedCompetitionId: undefined,
     isManualSelection: true,
+    showColorPicker: true,
 };
 
 export const informationSlice = createSlice({
@@ -20,10 +22,14 @@ export const informationSlice = createSlice({
         setIsManualSelection: (state, action: PayloadAction<boolean>) => {
             state.isManualSelection = action.payload;
         },
+        setShowColorPicker: (state, action: PayloadAction<boolean>) => {
+            state.showColorPicker = action.payload;
+        },
     },
 });
 
 export const {
     setIsManualSelection,
-    setSelectedCompetitionId
+    setSelectedCompetitionId,
+    setShowColorPicker,
 } = informationSlice.actions;

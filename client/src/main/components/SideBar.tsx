@@ -7,6 +7,7 @@ import RootState from "../model/RootState";
 import {
     setIsManualSelection,
     setSelectedCompetitionId,
+    setShowColorPicker,
 } from "../redux/slice/InformationSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
@@ -18,7 +19,6 @@ import {
 } from "../util/query.param.util";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
-import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
@@ -29,7 +29,7 @@ const SideBar = () => {
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
     const showColorPicker = useSelector(
-        (state: RootState) => state.settingsSlice.showColorPicker,
+        (state: RootState) => state.informationSlice.showColorPicker,
     );
 
     const { data: me, isFetching: loadingUser } = useQuery({
