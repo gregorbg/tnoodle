@@ -18,12 +18,12 @@ import "./EventPicker.css";
 import FmcTranslationsDetail from "./FmcTranslationsDetail";
 import MbldDetail from "./MbldDetail";
 import "@cubing/icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import SVG from "react-inlinesvg";
 import SchemeColorPicker from "./SchemeColorPicker";
-import ScrambleAndImage from "../model/ScrambleAndImage";
 import _ from "lodash";
 import { setExtensionLazily, findExtension } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
 
 interface EventPickerProps {
     wcaEvent: WcaEvent;
@@ -56,12 +56,12 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
 
-    const [puzzleSvg, setPuzzleSvg] = useState<string>();
-    const [randomSampleScramble, setRandomSampleScramble] =
-        useState<ScrambleAndImage>();
-
-    const [defaultColorScheme, setDefaultColorScheme] =
-        useState<Record<string, string>>();
+    const { data: defaultColorScheme } = useQuery({
+        queryKey: ["default-color-scheme", wcaEvent.puzzle_id],
+        queryFn: () => tnoodleApi.fetchPuzzleColorScheme(wcaEvent.puzzle_id),
+        select: (resp) => resp.data,
+        enabled: wcifEvent.rounds.length > 0,
+    });
 
     const [showColorSchemeConfig, setShowColorSchemeConfig] =
         useState<boolean>(false);
@@ -73,46 +73,32 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         );
     }, [wcifEvent, defaultColorScheme]);
 
+    const { data: puzzleSvg } = useQuery({
+        queryKey: ["solved-puzzle-svg", wcaEvent.puzzle_id, colorScheme],
+        queryFn: () => tnoodleApi.fetchPuzzleSolvedSvg(wcaEvent.puzzle_id, colorScheme),
+        select: (resp) => resp.data,
+        enabled: colorScheme !== undefined,
+    });
+
+    const { data: randomSampleScramble, refetch: fetchRandomSampleScramble } = useQuery({
+        queryKey: ["random-sample-scramble", wcaEvent.puzzle_id, colorScheme],
+        queryFn: () => tnoodleApi.fetchPuzzleRandomScramble(wcaEvent.puzzle_id, colorScheme),
+        select: (resp) => resp.data,
+        enabled: colorScheme !== undefined,
+    });
+
     const fetchDisplayScramble = useCallback(
         (fetchNewScramble = true) => {
             // we need this additional boolean to make sure we can fetch only once
             // when the overlay is hidden, because its callback yields a `show` boolean.
-            if (fetchNewScramble && colorScheme !== undefined) {
-                tnoodleApi
-                    .fetchPuzzleRandomScramble(wcaEvent.puzzle_id, colorScheme)
-                    .then((response) => {
-                        setRandomSampleScramble(response.data);
-                    });
+            if (fetchNewScramble) {
+                void fetchRandomSampleScramble();
             }
         },
-        [wcaEvent.puzzle_id, colorScheme],
+        [fetchRandomSampleScramble],
     );
 
-    useEffect(() => {
-        if (colorScheme !== undefined) {
-            tnoodleApi
-                .fetchPuzzleSolvedSvg(wcaEvent.puzzle_id, colorScheme)
-                .then((response) => {
-                    setPuzzleSvg(response.data);
-                });
-
-            fetchDisplayScramble();
-        }
-    }, [wcaEvent.puzzle_id, colorScheme, fetchDisplayScramble]);
-
     const dispatch = useDispatch();
-
-    useEffect(() => {
-        if (wcifEvent.rounds.length > 0) {
-            if (defaultColorScheme === undefined) {
-                tnoodleApi
-                    .fetchPuzzleColorScheme(wcaEvent.puzzle_id)
-                    .then((response) => {
-                        setDefaultColorScheme(response.data);
-                    });
-            }
-        }
-    }, [wcaEvent.puzzle_id, wcifEvent.rounds, defaultColorScheme]);
 
     const dispatchWcifEvent = useCallback(
         (newWcifEvent: WcifEvent) => {
