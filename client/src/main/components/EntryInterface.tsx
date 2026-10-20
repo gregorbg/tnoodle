@@ -8,9 +8,6 @@ import { useCompetitionWcif, useSetCompetitionName } from "../util/wcif.util";
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
-    );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
@@ -57,7 +54,7 @@ const EntryInterface = () => {
                         handleCompetitionNameChange(e.target.value)
                     }
                     value={wcif.name}
-                    disabled={!isManualSelection || generatingScrambles}
+                    disabled={selectedCompetitionId !== undefined || generatingScrambles}
                     required
                 />
             </div>

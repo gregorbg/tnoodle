@@ -15,9 +15,6 @@ const EventPickerTable = () => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
-    );
 
     const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
@@ -40,7 +37,7 @@ const EventPickerTable = () => {
     };
 
     const maybeShowEditWarning = () => {
-        if (isManualSelection) {
+        if (selectedCompetitionId === undefined) {
             return;
         }
 
@@ -80,7 +77,7 @@ const EventPickerTable = () => {
     // This filters events to show only those in the competition.
     let filteredEvents = wcaEvents.filter(
         (wcaEvent) =>
-            isManualSelection ||
+            selectedCompetitionId === undefined ||
             wcif.events.find((item) => item.id === wcaEvent.id),
     );
 

@@ -5,7 +5,6 @@ import wcaApi from "../api/wca.api";
 import logo from "../assets/tnoodle_logo.svg";
 import RootState from "../model/RootState";
 import {
-    setIsManualSelection,
     setSelectedCompetitionId,
     setShowColorPicker,
 } from "../redux/slice/InformationSlice";
@@ -91,7 +90,6 @@ const SideBar = () => {
         string + (number > 1 ? "s" : "");
 
     const handleManualSelection = () => {
-        dispatch(setIsManualSelection(true));
         dispatch(setSelectedCompetitionId(undefined));
         dispatch(setFileZip());
 

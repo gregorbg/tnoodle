@@ -15,9 +15,6 @@ const VersionInfo = () => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
-    );
 
     const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
@@ -49,12 +46,12 @@ const VersionInfo = () => {
             specUrl: "",
             data: {
                 isStaging: isUsingStaging(),
-                isManual: isManualSelection,
+                isManual: selectedCompetitionId === undefined,
                 isSignedBuild: signatureValid,
                 isAllowedVersion: versionAllowed,
             },
         };
-    }, [isManualSelection, signatureValid, versionAllowed]);
+    }, [selectedCompetitionId, signatureValid, versionAllowed]);
 
     useEffect(() => {
         setExtensionLazily(

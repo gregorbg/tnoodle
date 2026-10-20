@@ -29,9 +29,6 @@ const Main = () => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId
     );
-    const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
-    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
@@ -100,7 +97,7 @@ const Main = () => {
         let officialZipStatus = isValidSignedBuild && isAllowedVersion;
 
         let isUnofficialZip =
-            !officialZipStatus || (!isManualSelection && isUsingStaging());
+            !officialZipStatus || (selectedCompetitionId !== undefined && isUsingStaging());
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") +
@@ -147,7 +144,7 @@ const Main = () => {
             (event) => event.rounds.length > 0,
         );
 
-        let isLoggedCompSelection = !isManualSelection && wcaApi.isLogged();
+        let isLoggedCompSelection = selectedCompetitionId !== undefined && wcaApi.isLogged();
         let isOnlineLocked = appOnlineMode && !isLoggedCompSelection;
 
         let disableScrambleButton = !anyEventHasRounds || isOnlineLocked;

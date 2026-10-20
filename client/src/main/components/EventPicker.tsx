@@ -34,9 +34,6 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
-    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
@@ -402,7 +399,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                         )
                                     }
                                     disabled={
-                                        !isManualSelection ||
+                                        selectedCompetitionId !== undefined ||
                                         generatingScrambles
                                     }
                                 >
@@ -429,7 +426,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                     min={1}
                                     required
                                     disabled={
-                                        !isManualSelection ||
+                                        selectedCompetitionId !== undefined ||
                                         generatingScrambles
                                     }
                                 />
@@ -561,7 +558,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                     wcifEvent.rounds,
                                 )
                             }
-                            disabled={!isManualSelection || generatingScrambles}
+                            disabled={selectedCompetitionId !== undefined || generatingScrambles}
                         >
                             {Array.from(
                                 { length: MAX_WCA_ROUNDS + 1 },
