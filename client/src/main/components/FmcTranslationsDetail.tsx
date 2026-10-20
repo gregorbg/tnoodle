@@ -8,8 +8,8 @@ import WcifEvent from "../model/WcifEvent";
 import {
     fmcTranslationsExtensionId,
     useCompetitionWcif,
+    useSetWcifEvent,
 } from "../util/wcif.util";
-import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { findExtension, setExtensionLazily } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 
@@ -56,6 +56,8 @@ const FmcTranslationsDetail = ({
 
     const dispatch = useDispatch();
 
+    const setWcifEvent = useSetWcifEvent(selectedCompetitionId);
+
     const buildFmcExtension = (selectedTranslations: string[]) => {
         return {
             id: fmcTranslationsExtensionId,
@@ -71,12 +73,12 @@ const FmcTranslationsDetail = ({
                 fmcTranslationsExtensionId,
                 () => buildFmcExtension(selectedTranslations),
                 (fmcWcifEvent) => {
-                    dispatch(setWcifEvent(fmcWcifEvent));
+                    setWcifEvent(fmcWcifEvent);
                     dispatch(setFileZip());
                 },
             );
         },
-        [dispatch, fmcWcifEvent],
+        [dispatch, fmcWcifEvent, setWcifEvent],
     );
 
     useEffect(() => {

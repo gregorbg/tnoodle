@@ -1,13 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import RootState from "../model/RootState";
-import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import WcifEvent from "../model/WcifEvent";
 import {
     buildMbldExtension,
     mbldCubesExtensionId,
     useCompetitionWcif,
+    useSetWcifEvent,
 } from "../util/wcif.util";
 import { useCallback, useEffect, useMemo } from "react";
 import {
@@ -49,6 +49,8 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
 
     const dispatch = useDispatch();
 
+    const setWcifEvent = useSetWcifEvent(selectedCompetitionId);
+
     const updateEventMbld = useCallback(
         (mbld: number) => {
             setExtensionLazily(
@@ -67,12 +69,12 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
                         },
                     );
 
-                    dispatch(setWcifEvent(newWcifEvent));
+                    setWcifEvent(newWcifEvent);
                     dispatch(setFileZip());
                 },
             );
         },
-        [dispatch, mbldWcifEvent],
+        [dispatch, mbldWcifEvent, setWcifEvent],
     );
 
     useEffect(() => {

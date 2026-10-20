@@ -6,13 +6,12 @@ import Round from "../model/Round";
 import WcaEvent from "../model/WcaEvent";
 import WcifEvent from "../model/WcifEvent";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
-import { setWcifEvent } from "../redux/slice/WcifSlice";
 import {
     buildMbldExtension,
     colorSchemeExtensionId,
     copiesExtensionId,
     getDefaultCopiesExtension,
-    useCompetitionWcif,
+    useCompetitionWcif, useSetWcifEvent,
 } from "../util/wcif.util";
 import tnoodleApi from "../api/tnoodle.api";
 import "./EventPicker.css";
@@ -109,12 +108,14 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
 
     const dispatch = useDispatch();
 
+    const setWcifEvent = useSetWcifEvent(selectedCompetitionId);
+
     const dispatchWcifEvent = useCallback(
         (newWcifEvent: WcifEvent) => {
-            dispatch(setWcifEvent(newWcifEvent));
+            setWcifEvent(newWcifEvent);
             dispatch(setFileZip());
         },
-        [dispatch],
+        [dispatch, setWcifEvent],
     );
 
     const updateEventRounds = (rounds: Round[]) => {

@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Wcif from "../../model/Wcif";
-import WcifEvent from "../../model/WcifEvent";
 import {
     copiesExtensionId,
     fmcTranslationsExtensionId,
@@ -21,17 +20,6 @@ export const wcifSlice = createSlice({
     name: "wcifSlice",
     initialState,
     reducers: {
-        setWcifEvent: (state, action: PayloadAction<WcifEvent>) => {
-            state.wcif = {
-                ...state.wcif,
-                events: [
-                    ...state.wcif.events.filter(
-                        (wcaEvent) => wcaEvent.id !== action.payload.id,
-                    ),
-                    action.payload,
-                ],
-            };
-        },
         setWcif: (state, action: PayloadAction<Wcif>) => {
             state.wcif = {
                 ...action.payload,
@@ -60,6 +48,5 @@ export const wcifSlice = createSlice({
 });
 
 export const {
-    setWcifEvent,
     setWcif,
 } = wcifSlice.actions;
