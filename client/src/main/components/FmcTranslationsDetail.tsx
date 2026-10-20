@@ -8,6 +8,7 @@ import WcifEvent from "../model/WcifEvent";
 import { fmcTranslationsExtensionId } from "../util/wcif.util";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { findExtension, setExtensionLazily } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
 
 const TRANSLATIONS_PER_LINE = 3;
 
@@ -25,16 +26,11 @@ const FmcTranslationsDetail = ({
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
 
-    const [availableTranslations, setAvailableTranslations] =
-        useState<Record<string, string>>();
-
-    useEffect(() => {
-        if (availableTranslations === undefined) {
-            tnoodleApi.fetchAvailableFmcTranslations().then((response) => {
-                setAvailableTranslations(response.data);
-            });
-        }
-    }, [availableTranslations]);
+    const { data: availableTranslations } = useQuery({
+        queryKey: ["availableFmcTranslations"],
+        queryFn: () => tnoodleApi.fetchAvailableFmcTranslations(),
+        select: (resp) => resp.data,
+    });
 
     const [showTranslations, setShowTranslations] = useState(false);
 
