@@ -10,7 +10,6 @@ import {
     setShowColorPicker,
 } from "../redux/slice/InformationSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
-import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
     deleteParameter,
@@ -93,8 +92,7 @@ const SideBar = () => {
 
     const handleManualSelection = () => {
         dispatch(setIsManualSelection(true));
-        dispatch(setWcif({ ...defaultWcif }));
-        dispatch(setCompetitionName(getDefaultCompetitionName()));
+        dispatch(setSelectedCompetitionId(undefined));
         dispatch(setFileZip());
 
         deleteParameter("competitionId");

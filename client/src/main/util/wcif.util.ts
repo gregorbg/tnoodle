@@ -1,7 +1,7 @@
 import Wcif from "../model/Wcif";
 import WcifEvent from "../model/WcifEvent";
-import { getDefaultCompetitionName } from "./competition.name.util";
-import { useQuery } from "@tanstack/react-query";
+import { competitionName2Id, getDefaultCompetitionName } from "./competition.name.util";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import wcaApi from "../api/wca.api";
 
 export const copiesExtensionId =
@@ -40,7 +40,7 @@ export const buildMbldExtension = (mbld: number) => {
 };
 
 // Add 1 round of 3x3x3
-let default333: WcifEvent = {
+const default333: WcifEvent = {
     id: "333",
     rounds: [
         {
@@ -53,7 +53,7 @@ let default333: WcifEvent = {
     extensions: [],
 };
 
-let name = getDefaultCompetitionName();
+const name = getDefaultCompetitionName();
 export const defaultWcif: Wcif = {
     formatVersion: "1.0",
     name,
@@ -65,11 +65,35 @@ export const defaultWcif: Wcif = {
     extensions: [],
 };
 
+const getWcifQueryKey = (competitionId?: string) => ["competitionWcif", competitionId];
+
 export const useCompetitionWcif = (competitionId?: string) => {
     return useQuery({
-        queryKey: ["competitionWcif", competitionId],
+        queryKey: getWcifQueryKey(competitionId),
         queryFn: () => wcaApi.getCompetitionJson(competitionId!).then(resp => resp.data),
         enabled: competitionId !== undefined,
         initialData: defaultWcif,
     });
+}
+
+export const useCompetitionWcifDispatch = (competitionId?: string) => {
+    const queryClient = useQueryClient();
+
+    return (updater: (wcif: Wcif) => Wcif) => {
+        return queryClient.setQueryData(
+            getWcifQueryKey(competitionId),
+            (wcif: Wcif) => ({
+                ...wcif,
+                ...updater(wcif),
+            }),
+        );
+    }
+}
+
+export const useSetCompetitionName = (competitionId?: string) => {
+    const dispatch = useCompetitionWcifDispatch(competitionId);
+
+    return (name: string) => {
+        dispatch(wcif => ({ ...wcif, name, shortName: name, id: competitionName2Id(name) }));
+    };
 }

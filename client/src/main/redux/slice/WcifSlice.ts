@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Wcif from "../../model/Wcif";
 import WcifEvent from "../../model/WcifEvent";
-import { competitionName2Id } from "../../util/competition.name.util";
 import {
     copiesExtensionId,
     fmcTranslationsExtensionId,
@@ -22,17 +21,6 @@ export const wcifSlice = createSlice({
     name: "wcifSlice",
     initialState,
     reducers: {
-        setCompetitionName: (state, action: PayloadAction<string>) => {
-            const competitionName = action.payload;
-            const id = competitionName2Id(competitionName);
-
-            state.wcif = {
-                ...state.wcif,
-                name: competitionName,
-                shortName: competitionName,
-                id,
-            };
-        },
         setWcifEvent: (state, action: PayloadAction<WcifEvent>) => {
             state.wcif = {
                 ...state.wcif,
@@ -72,7 +60,6 @@ export const wcifSlice = createSlice({
 });
 
 export const {
-    setCompetitionName,
     setWcifEvent,
     setWcif,
 } = wcifSlice.actions;

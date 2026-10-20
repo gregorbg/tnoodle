@@ -3,8 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import RootState from "../model/RootState";
 import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
-import { setCompetitionName } from "../redux/slice/WcifSlice";
-import { useCompetitionWcif } from "../util/wcif.util";
+import { useCompetitionWcif, useSetCompetitionName } from "../util/wcif.util";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -25,9 +24,10 @@ const EntryInterface = () => {
     const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
 
     const dispatch = useDispatch();
+    const setCompetitionName = useSetCompetitionName(selectedCompetitionId);
 
     const handleCompetitionNameChange = (name: string) => {
-        dispatch(setCompetitionName(name));
+        setCompetitionName(name);
 
         // Require another zip with the new name.
         dispatch(setFileZip());

@@ -21,7 +21,8 @@ import WebsocketBlobResult from "../model/WebsocketBlobResult";
 import { frontendStatusExtensionId, useCompetitionWcif } from "../util/wcif.util";
 
 const Main = () => {
-    const [competitionNameFileZip, setCompetitionNameFileZip] = useState("");
+    const [zipFileName, setZipFileName] = useState("");
+
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
@@ -65,7 +66,7 @@ const Main = () => {
         dispatch(setScramblingProgressCurrentEvent(eventId));
 
     const generateZip = () => {
-        setCompetitionNameFileZip(wcif.name);
+        setZipFileName(wcif.name);
 
         let scrambleClient = new ScrambleClient(
             onScrambleHandShake,
@@ -103,7 +104,7 @@ const Main = () => {
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") +
-            competitionNameFileZip +
+            zipFileName +
             ".zip";
 
         const link = document.createElement("a");
