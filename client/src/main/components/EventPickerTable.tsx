@@ -1,14 +1,13 @@
 import { chunk } from "lodash";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import { toWcaUrl } from "../api/wca.api";
 import RootState from "../model/RootState";
-import { setWcaEvents, setWcaFormats } from "../redux/slice/WcifSlice";
 import EventPicker from "./EventPicker";
 import WcaEvent from "../model/WcaEvent";
 import { buildMbldExtension } from "../util/wcif.util";
 import { MBLD_DEFAULT } from "../constants/wca.constants";
+import { useQuery } from "@tanstack/react-query";
 
 const EVENTS_PER_LINE = 2;
 
@@ -17,20 +16,12 @@ const EventPickerTable = () => {
         (state: RootState) => state.informationSlice.isManualSelection,
     );
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
-    const wcaEvents = useSelector(
-        (state: RootState) => state.wcifSlice.wcaEvents,
-    );
 
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        tnoodleApi.fetchFormats().then((response) => {
-            dispatch(setWcaFormats(response.data));
-        });
-        tnoodleApi.fetchWcaEvents().then((response) => {
-            dispatch(setWcaEvents(response.data));
-        });
-    }, [dispatch]);
+    const { data: wcaEvents } = useQuery({
+        queryKey: ["wcaEvents"],
+        queryFn: () => tnoodleApi.fetchWcaEvents(),
+        select: (resp) => resp.data,
+    });
 
     const generateDefaultEvent = (wcaEvent: WcaEvent) => {
         const extensions = wcaEvent.is_multiple_blindfolded

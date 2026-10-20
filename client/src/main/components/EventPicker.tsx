@@ -31,12 +31,6 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
-    const wcaFormats = useSelector(
-        (state: RootState) => state.wcifSlice.wcaFormats,
-    );
-    const wcaEvents = useSelector(
-        (state: RootState) => state.wcifSlice.wcaEvents,
-    );
     const wcifEvents = useSelector(
         (state: RootState) => state.wcifSlice.wcif.events,
     );
@@ -55,6 +49,18 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
+
+    const { data: wcaEvents } = useQuery({
+        queryKey: ["wcaEvents"],
+        queryFn: () => tnoodleApi.fetchWcaEvents(),
+        select: (resp) => resp.data,
+    });
+
+    const { data: wcaFormats } = useQuery({
+        queryKey: ["wcaFormats"],
+        queryFn: () => tnoodleApi.fetchFormats(),
+        select: (resp) => resp.data,
+    });
 
     const { data: defaultColorScheme } = useQuery({
         queryKey: ["default-color-scheme", wcaEvent.puzzle_id],

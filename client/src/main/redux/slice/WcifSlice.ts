@@ -1,6 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import WcaEvent from "../../model/WcaEvent";
-import WcaFormat from "../../model/WcaFormat";
 import Wcif from "../../model/Wcif";
 import WcifEvent from "../../model/WcifEvent";
 import { competitionName2Id } from "../../util/competition.name.util";
@@ -13,14 +11,10 @@ import {
 } from "../../util/wcif.util";
 
 interface WcifState {
-    wcaEvents?: WcaEvent[];
-    wcaFormats?: Record<string, WcaFormat>;
     wcif: Wcif;
 }
 
 const initialState: WcifState = {
-    wcaEvents: undefined,
-    wcaFormats: undefined,
     wcif: { ...defaultWcif },
 };
 
@@ -49,15 +43,6 @@ export const wcifSlice = createSlice({
                     action.payload,
                 ],
             };
-        },
-        setWcaEvents: (state, action: PayloadAction<WcaEvent[]>) => {
-            state.wcaEvents = action.payload;
-        },
-        setWcaFormats: (
-            state,
-            action: PayloadAction<Record<string, WcaFormat>>,
-        ) => {
-            state.wcaFormats = action.payload;
         },
         setWcif: (state, action: PayloadAction<Wcif>) => {
             state.wcif = {
@@ -89,7 +74,5 @@ export const wcifSlice = createSlice({
 export const {
     setCompetitionName,
     setWcifEvent,
-    setWcaEvents,
-    setWcaFormats,
     setWcif,
 } = wcifSlice.actions;
