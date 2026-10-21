@@ -3,7 +3,11 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import RootState from "../model/RootState";
 import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
-import { useCompetitionWcif, useSetCompetitionName } from "../util/wcif.util";
+import {
+    defaultWcif,
+    useCompetitionWcif,
+    useSetCompetitionName,
+} from "../util/wcif.util";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +22,7 @@ const EntryInterface = () => {
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
 
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const dispatch = useDispatch();
     const setCompetitionName = useSetCompetitionName(selectedCompetitionId);

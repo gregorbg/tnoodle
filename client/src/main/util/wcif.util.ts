@@ -4,7 +4,11 @@ import {
     competitionName2Id,
     getDefaultCompetitionName,
 } from "./competition.name.util";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+    keepPreviousData,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
 import wcaApi from "../api/wca.api";
 import { useCallback } from "react";
 import type { Extension } from "../model/Extension";
@@ -110,7 +114,8 @@ export const useCompetitionWcif = (competitionId?: string) => {
             };
         },
         enabled: competitionId !== undefined,
-        initialData: defaultWcif,
+        initialData: () => competitionId === undefined ? defaultWcif : undefined,
+        placeholderData: keepPreviousData,
     });
 };
 

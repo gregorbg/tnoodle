@@ -6,6 +6,7 @@ import Round from "../model/Round";
 import WcaEvent from "../model/WcaEvent";
 import WcifEvent from "../model/WcifEvent";
 import {
+    defaultWcif,
     useCompetitionWcif,
     useSetEventExtension,
     useSetWcifEvent,
@@ -69,7 +70,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         enabled: wcifEvent.rounds.length > 0,
     });
 
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const [showColorSchemeConfig, setShowColorSchemeConfig] =
         useState<boolean>(false);

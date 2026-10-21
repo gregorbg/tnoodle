@@ -5,7 +5,7 @@ import { toWcaUrl } from "../api/wca.api";
 import RootState from "../model/RootState";
 import EventPicker from "./EventPicker";
 import WcaEvent from "../model/WcaEvent";
-import { useCompetitionWcif } from "../util/wcif.util";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import { MBLD_DEFAULT } from "../constants/wca.constants";
 import { useQuery } from "@tanstack/react-query";
 import { buildMbldExtension } from "../util/extension.util";
@@ -17,7 +17,7 @@ const EventPickerTable = () => {
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
 
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: wcaEvents } = useQuery({
         queryKey: ["wcaEvents"],

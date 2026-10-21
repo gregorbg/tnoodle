@@ -18,7 +18,7 @@ import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
 import WebsocketBlobResult from "../model/WebsocketBlobResult";
-import { useCompetitionWcif } from "../util/wcif.util";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import {
     frontendStatusExtensionId,
     setExtensionLazily,
@@ -61,7 +61,7 @@ const Main = () => {
         tnoodleVersion?.signatureKeyBytes ===
             wcaScrambleProgram?.publicKeyBytes;
 
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const dispatch = useDispatch();
 

@@ -14,7 +14,7 @@ import {
     getQueryParameter,
     setQueryParameter,
 } from "../util/query.param.util";
-import { useCompetitionWcif } from "../util/wcif.util";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
 import { useQuery } from "@tanstack/react-query";
 
@@ -44,7 +44,7 @@ const SideBar = () => {
             enabled: wcaApi.isLogged(),
         });
 
-    const { data: wcif, isFetching: loadingCompetitionInfo } =
+    const { data: wcif = defaultWcif, isFetching: loadingCompetitionInfo, isPlaceholderData } =
         useCompetitionWcif(selectedCompetitionId);
 
     const [isOpen, setIsOpen] = useState(true);
@@ -151,7 +151,7 @@ const SideBar = () => {
             return loadingElement("Loading competitions");
         }
 
-        if (loadingCompetitionInfo) {
+        if (loadingCompetitionInfo && isPlaceholderData) {
             return loadingElement("Loading competition information");
         }
     };

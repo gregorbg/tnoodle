@@ -2,7 +2,11 @@ import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import RootState from "../model/RootState";
 import WcifEvent from "../model/WcifEvent";
-import { useCompetitionWcif, useSetEventExtension } from "../util/wcif.util";
+import {
+    defaultWcif,
+    useCompetitionWcif,
+    useSetEventExtension,
+} from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
     buildMbldExtension,
@@ -25,7 +29,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
 
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: bestMbldAttempt } = useQuery({
         queryKey: ["best-mbld-attempt", wcif.persons],

@@ -4,7 +4,11 @@ import { useSelector } from "react-redux";
 import RootState from "../model/RootState";
 import tnoodleApi from "../api/tnoodle.api";
 import WcifEvent from "../model/WcifEvent";
-import { useCompetitionWcif, useSetEventExtension } from "../util/wcif.util";
+import {
+    defaultWcif,
+    useCompetitionWcif,
+    useSetEventExtension,
+} from "../util/wcif.util";
 import {
     buildFmcExtension,
     findExtension,
@@ -28,7 +32,7 @@ const FmcTranslationsDetail = ({
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
 
-    const { data: wcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const { data: availableTranslations } = useQuery({
         queryKey: ["availableFmcTranslations"],
