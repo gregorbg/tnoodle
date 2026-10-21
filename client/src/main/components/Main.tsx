@@ -111,6 +111,9 @@ const Main = () => {
         onSettled: () => setScramblingProgressCurrent({}),
     });
 
+    const inputsChanged = useMemo(() => variables?.submitPassword !== password ||
+        !_.isEqual(variables?.submitWcif, extendedWcif), [extendedWcif, password, variables])
+
     const onSubmit = (evt: FormEvent<HTMLFormElement>) => {
         evt.preventDefault();
 
@@ -118,11 +121,7 @@ const Main = () => {
             return;
         }
 
-        const inputsChanged =
-            variables?.submitPassword !== password ||
-            !_.isEqual(variables?.submitWcif, extendedWcif);
-
-        if (!inputsChanged && fileZip !== undefined) {
+        if (fileZip !== undefined && !inputsChanged) {
             tnoodleApi.convertToBlob(fileZip).then((blob) => downloadZip(blob));
         } else {
             generateScrambles({
@@ -172,7 +171,7 @@ const Main = () => {
                 </button>
             );
         }
-        if (!!fileZip) {
+        if (fileZip !== undefined && !inputsChanged) {
             return (
                 <button type="submit" className="btn btn-success form-control">
                     Download Scrambles
