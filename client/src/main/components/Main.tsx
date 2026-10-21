@@ -1,23 +1,15 @@
-import { FormEvent, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FormEvent, useCallback, useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import wcaApi from "../api/wca.api";
 import { ScrambleClient } from "../api/tnoodle.socket";
 import { isUsingStaging } from "../api/wca.api";
 import RootState from "../model/RootState";
-import {
-    resetScramblingProgressCurrent,
-    setFileZip,
-    setGeneratingScrambles,
-    setScramblingProgressCurrentEvent,
-    setScramblingProgressTarget,
-} from "../redux/slice/ScramblingSlice";
 import EntryInterface from "./EntryInterface";
 import EventPickerTable from "./EventPickerTable";
 import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
-import WebsocketBlobResult from "../model/WebsocketBlobResult";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import {
     frontendStatusExtensionId,
@@ -26,17 +18,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 const Main = () => {
-    const password = useSelector(
-        (state: RootState) => state.scramblingSlice.password,
-    );
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
-    const fileZip = useSelector(
-        (state: RootState) => state.scramblingSlice.fileZip,
     );
 
     const interceptorRef = useRef<Interceptor>(null);
@@ -63,7 +46,8 @@ const Main = () => {
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
-    const dispatch = useDispatch();
+    const [password, setPassword] = useState("");
+    const [isScrambling, setIsScrambling] = useState(false);
 
     const onSubmit = (evt: FormEvent<HTMLFormElement>) => {
         evt.preventDefault();
@@ -75,49 +59,57 @@ const Main = () => {
         if (!!fileZip) {
             tnoodleApi.convertToBlob(fileZip).then((blob) => downloadZip(blob));
         } else {
-            generateZip();
+            setIsScrambling(true);
         }
     };
 
-    const onScrambleHandShake = (payload: Record<string, number>) =>
-        dispatch(setScramblingProgressTarget(payload));
+    const [scramblingProgressTarget, setScramblingProgressTarget] = useState<Record<string, number>>({});
+    const [scramblingProgressCurrent, setScramblingProgressCurrent] = useState<Record<string, number>>({});
 
-    const onScrambleProgress = (eventId: string) =>
-        dispatch(setScramblingProgressCurrentEvent(eventId));
+    const setScramblingProgressCurrentEvent = useCallback(
+        (eventId: string) =>
+            setScramblingProgressCurrent((progress) => ({
+                ...progress,
+                [eventId]: (progress[eventId] || 0) + 1,
+            })),
+        [setScramblingProgressCurrent],
+    );
 
-    const generateZip = () => {
-        let scrambleClient = new ScrambleClient(
-            onScrambleHandShake,
-            onScrambleProgress,
-        );
+    const extendedWcif = useMemo(() =>
+        setExtensionLazily(wcif, frontendStatusExtensionId, () => ({
+            id: frontendStatusExtensionId,
+            specUrl: "",
+            data: {
+                isStaging: isUsingStaging(),
+                isManual: selectedCompetitionId === undefined,
+                isSignedBuild: signatureValid,
+                isAllowedVersion: versionAllowed,
+            },
+        })),
+        [wcif, selectedCompetitionId, signatureValid, versionAllowed],
+    );
 
-        const extendedWcif = setExtensionLazily(
-            wcif,
-            frontendStatusExtensionId,
-            () => ({
-                id: frontendStatusExtensionId,
-                specUrl: "",
-                data: {
-                    isStaging: isUsingStaging(),
-                    isManual: selectedCompetitionId === undefined,
-                    isSignedBuild: signatureValid,
-                    isAllowedVersion: versionAllowed,
-                },
-            }),
-        );
+    const { data: fileZip, isFetching: generatingScrambles } = useQuery({
+        queryKey: ["scramble-zip", extendedWcif, password],
+        queryFn: async () => {
+            const scrambleClient = new ScrambleClient(
+                setScramblingProgressTarget,
+                setScramblingProgressCurrentEvent,
+            );
 
-        tnoodleApi
-            .fetchZip(scrambleClient, extendedWcif, password)
-            .then((plainZip: WebsocketBlobResult) =>
-                dispatch(setFileZip(plainZip)),
-            )
-            .catch((err: any) => interceptorRef.current?.updateMessage(err))
-            .finally(() => {
-                dispatch(setGeneratingScrambles(false));
-                dispatch(resetScramblingProgressCurrent());
-            });
-        dispatch(setGeneratingScrambles(true));
-    };
+            // TODO error handling
+            const zipBase64 = await tnoodleApi.fetchZip(
+                scrambleClient,
+                extendedWcif,
+                password,
+            );
+
+            setScramblingProgressCurrent({});
+
+            return zipBase64;
+        },
+        enabled: isScrambling,
+    });
 
     const downloadZip = (blob: Blob) => {
         // We use the unofficialZip to stamp .zip in order to prevent delegates / organizers mistakes.
@@ -208,12 +200,12 @@ const Main = () => {
                 <VersionInfo />
                 <div className="container-fluid pt-2">
                     <div className="row g-3 pb-3 align-items-end">
-                        <EntryInterface />
+                        <EntryInterface password={password} setPassword={setPassword} />
                         <div className="col-sm-4">{scrambleButton()}</div>
                     </div>
                 </div>
             </div>
-            <EventPickerTable />
+            <EventPickerTable scramblingProgressTarget={scramblingProgressTarget} scramblingProgressCurrent={scramblingProgressCurrent} />
         </form>
     );
 };

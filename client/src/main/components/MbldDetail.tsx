@@ -14,7 +14,7 @@ import {
     mbldCubesExtensionId,
     upsertExtension,
 } from "../util/extension.util";
-import { useQuery } from "@tanstack/react-query";
+import { useIsFetching, useQuery } from "@tanstack/react-query";
 import tnoodleApi from "../api/tnoodle.api";
 
 interface MbldDetailProps {
@@ -25,9 +25,8 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+    const generatingScrambles =
+        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 

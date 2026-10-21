@@ -8,7 +8,6 @@ import {
     setSelectedCompetitionId,
     setShowColorPicker,
 } from "../redux/slice/InformationSlice";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
 import {
     deleteParameter,
     getQueryParameter,
@@ -16,15 +15,14 @@ import {
 } from "../util/query.param.util";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
-import { useQuery } from "@tanstack/react-query";
+import { useIsFetching, useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+    const generatingScrambles =
+        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
     const showColorPicker = useSelector(
         (state: RootState) => state.informationSlice.showColorPicker,
     );
@@ -87,8 +85,6 @@ const SideBar = () => {
 
     const handleManualSelection = () => {
         dispatch(setSelectedCompetitionId(undefined));
-        dispatch(setFileZip());
-
         deleteParameter("competitionId");
     };
 

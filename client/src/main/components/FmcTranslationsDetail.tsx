@@ -14,7 +14,7 @@ import {
     findExtension,
     fmcTranslationsExtensionId,
 } from "../util/extension.util";
-import { useQuery } from "@tanstack/react-query";
+import { useIsFetching, useQuery } from "@tanstack/react-query";
 
 const TRANSLATIONS_PER_LINE = 3;
 
@@ -28,9 +28,8 @@ const FmcTranslationsDetail = ({
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+    const generatingScrambles =
+        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 

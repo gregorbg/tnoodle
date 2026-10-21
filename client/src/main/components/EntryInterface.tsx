@@ -1,38 +1,32 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import RootState from "../model/RootState";
-import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
 import {
     defaultWcif,
     useCompetitionWcif,
     useSetCompetitionName,
 } from "../util/wcif.util";
+import { useIsFetching } from "@tanstack/react-query";
 
-const EntryInterface = () => {
+const EntryInterface = ({
+    password,
+    setPassword,
+}: {
+    password: string;
+    setPassword: (password: string) => void;
+}) => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const password = useSelector(
-        (state: RootState) => state.scramblingSlice.password,
-    );
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+    const generatingScrambles =
+        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
-    const dispatch = useDispatch();
     const setCompetitionName = useSetCompetitionName(selectedCompetitionId);
-
-    const handlePasswordChange = (password: string) => {
-        dispatch(setPassword(password));
-
-        // Require another zip with the new password, in case there was a zip generated.
-        dispatch(setFileZip());
-    };
 
     return (
         <>
@@ -67,7 +61,7 @@ const EntryInterface = () => {
                         className="form-control"
                         placeholder="Password"
                         type={showPassword ? "" : "password"}
-                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)}
                         value={password}
                         disabled={generatingScrambles}
                     />

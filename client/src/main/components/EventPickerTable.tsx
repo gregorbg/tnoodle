@@ -12,7 +12,10 @@ import { buildMbldExtension } from "../util/extension.util";
 
 const EVENTS_PER_LINE = 2;
 
-const EventPickerTable = () => {
+const EventPickerTable = ({ scramblingProgressTarget, scramblingProgressCurrent }: {
+    scramblingProgressTarget: Record<string, number>;
+    scramblingProgressCurrent: Record<string, number>;
+}) => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
@@ -101,6 +104,8 @@ const EventPickerTable = () => {
                                     <EventPicker
                                         wcaEvent={wcaEvent}
                                         wcifEvent={wcifEvent}
+                                        scramblingProgressTarget={scramblingProgressTarget}
+                                        scramblingProgressCurrent={scramblingProgressCurrent}
                                     />
                                 </div>
                             );

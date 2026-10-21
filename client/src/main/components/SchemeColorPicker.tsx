@@ -1,8 +1,7 @@
 import "./SchemeColorPicker.css";
 import { ColorResult, SketchPicker } from "react-color";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { useSelector } from "react-redux";
-import RootState from "../model/RootState";
+import { useIsFetching } from "@tanstack/react-query";
 
 interface SchemeColorPickerProps {
     defaultColors: string[];
@@ -17,9 +16,8 @@ const SchemeColorPicker = ({
     colorValue,
     onColorChange,
 }: SchemeColorPickerProps) => {
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+    const generatingScrambles =
+        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
 
     const handleColorChange = (color: ColorResult) => {
         onColorChange(color.hex);
