@@ -21,8 +21,6 @@ import {
     mbldCubesExtensionId,
     setExtensionLazily,
 } from "./extension.util";
-import { useDispatch } from "react-redux";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
 import tnoodleApi from "../api/tnoodle.api";
 
 // Add 1 round of 3x3x3
@@ -121,13 +119,9 @@ export const useCompetitionWcif = (competitionId?: string) => {
 
 export const useCompetitionWcifDispatch = (competitionId?: string) => {
     const queryClient = useQueryClient();
-    const dispatch = useDispatch();
 
     return useCallback(
         (updater: (wcif: Wcif) => Wcif) => {
-            // changing anything about the WCIF invalidates the currently generated ZIP file
-            dispatch(setFileZip());
-
             return queryClient.setQueryData(
                 getWcifQueryKey(competitionId),
                 (wcif: Wcif) => ({
@@ -136,7 +130,7 @@ export const useCompetitionWcifDispatch = (competitionId?: string) => {
                 }),
             );
         },
-        [dispatch, queryClient, competitionId],
+        [queryClient, competitionId],
     );
 };
 

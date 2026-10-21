@@ -27,7 +27,7 @@ import {
     findExtension,
     getDefaultCopiesExtension,
 } from "../util/extension.util";
-import { useIsFetching, useQuery } from "@tanstack/react-query";
+import { useIsMutating, useQuery } from "@tanstack/react-query";
 
 interface EventPickerProps {
     wcaEvent: WcaEvent;
@@ -41,7 +41,7 @@ const EventPicker = ({ wcaEvent, wcifEvent, scramblingProgressTarget, scrambling
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles =
-        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
     const showColorPicker = useSelector(
         (state: RootState) => state.informationSlice.showColorPicker,
     );

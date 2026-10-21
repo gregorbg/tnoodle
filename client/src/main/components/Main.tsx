@@ -1,9 +1,8 @@
 import { FormEvent, useCallback, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
-import wcaApi from "../api/wca.api";
+import wcaApi, { isUsingStaging } from "../api/wca.api";
 import { ScrambleClient } from "../api/tnoodle.socket";
-import { isUsingStaging } from "../api/wca.api";
 import RootState from "../model/RootState";
 import EntryInterface from "./EntryInterface";
 import EventPickerTable from "./EventPickerTable";
@@ -11,11 +10,10 @@ import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
-import {
-    frontendStatusExtensionId,
-    setExtensionLazily,
-} from "../util/extension.util";
-import { useQuery } from "@tanstack/react-query";
+import { frontendStatusExtensionId, setExtensionLazily } from "../util/extension.util";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type Wcif from "../model/Wcif";
+import _ from "lodash";
 
 const Main = () => {
     const selectedCompetitionId = useSelector(
@@ -47,21 +45,6 @@ const Main = () => {
     const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 
     const [password, setPassword] = useState("");
-    const [isScrambling, setIsScrambling] = useState(false);
-
-    const onSubmit = (evt: FormEvent<HTMLFormElement>) => {
-        evt.preventDefault();
-
-        if (generatingScrambles) {
-            return;
-        }
-
-        if (!!fileZip) {
-            tnoodleApi.convertToBlob(fileZip).then((blob) => downloadZip(blob));
-        } else {
-            setIsScrambling(true);
-        }
-    };
 
     const [scramblingProgressTarget, setScramblingProgressTarget] = useState<Record<string, number>>({});
     const [scramblingProgressCurrent, setScramblingProgressCurrent] = useState<Record<string, number>>({});
@@ -89,27 +72,41 @@ const Main = () => {
         [wcif, selectedCompetitionId, signatureValid, versionAllowed],
     );
 
-    const { data: fileZip, isFetching: generatingScrambles } = useQuery({
-        queryKey: ["scramble-zip", extendedWcif, password],
-        queryFn: async () => {
+    const { data: fileZip, mutate: generateScrambles, isPending: generatingScrambles, variables } = useMutation({
+        mutationKey: ["scramble-zip"],
+        mutationFn: async ({ submitWcif, submitPassword }: { submitWcif: Wcif, submitPassword: string }) => {
             const scrambleClient = new ScrambleClient(
                 setScramblingProgressTarget,
                 setScramblingProgressCurrentEvent,
             );
 
-            // TODO error handling
-            const zipBase64 = await tnoodleApi.fetchZip(
+            return await tnoodleApi.fetchZip(
                 scrambleClient,
-                extendedWcif,
-                password,
+                submitWcif,
+                submitPassword,
             );
-
-            setScramblingProgressCurrent({});
-
-            return zipBase64;
         },
-        enabled: isScrambling,
+        onError: interceptorRef.current?.updateMessage,
+        onSettled: () => setScramblingProgressCurrent({}),
     });
+
+    const onSubmit = (evt: FormEvent<HTMLFormElement>) => {
+        evt.preventDefault();
+
+        if (generatingScrambles) {
+            return;
+        }
+
+        const inputsChanged =
+            variables?.submitPassword !== password ||
+            !_.isEqual(variables?.submitWcif, extendedWcif);
+
+        if (!inputsChanged && fileZip !== undefined) {
+            tnoodleApi.convertToBlob(fileZip).then((blob) => downloadZip(blob));
+        } else {
+            generateScrambles({ submitWcif: extendedWcif, submitPassword: password });
+        }
+    };
 
     const downloadZip = (blob: Blob) => {
         // We use the unofficialZip to stamp .zip in order to prevent delegates / organizers mistakes.

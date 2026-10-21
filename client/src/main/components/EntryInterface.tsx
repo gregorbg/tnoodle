@@ -7,7 +7,7 @@ import {
     useCompetitionWcif,
     useSetCompetitionName,
 } from "../util/wcif.util";
-import { useIsFetching } from "@tanstack/react-query";
+import { useIsMutating } from "@tanstack/react-query";
 
 const EntryInterface = ({
     password,
@@ -22,7 +22,7 @@ const EntryInterface = ({
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles =
-        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
 

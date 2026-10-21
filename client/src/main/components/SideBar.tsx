@@ -15,14 +15,14 @@ import {
 } from "../util/query.param.util";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
-import { useIsFetching, useQuery } from "@tanstack/react-query";
+import { useIsMutating, useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
     const generatingScrambles =
-        useIsFetching({ queryKey: ["scramble-zip"] }) > 0;
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
     const showColorPicker = useSelector(
         (state: RootState) => state.informationSlice.showColorPicker,
     );
