@@ -24,7 +24,9 @@ const EntryInterface = ({
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(
+        selectedCompetitionId,
+    );
 
     const setCompetitionName = useSetCompetitionName(selectedCompetitionId);
 

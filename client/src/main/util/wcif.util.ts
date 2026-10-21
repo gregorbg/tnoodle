@@ -112,7 +112,8 @@ export const useCompetitionWcif = (competitionId?: string) => {
             };
         },
         enabled: competitionId !== undefined,
-        initialData: () => competitionId === undefined ? defaultWcif : undefined,
+        initialData: () =>
+            competitionId === undefined ? defaultWcif : undefined,
         placeholderData: keepPreviousData,
     });
 };

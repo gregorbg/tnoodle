@@ -12,7 +12,10 @@ import { buildMbldExtension } from "../util/extension.util";
 
 const EVENTS_PER_LINE = 2;
 
-const EventPickerTable = ({ scramblingProgressTarget, scramblingProgressCurrent }: {
+const EventPickerTable = ({
+    scramblingProgressTarget,
+    scramblingProgressCurrent,
+}: {
     scramblingProgressTarget: Record<string, number>;
     scramblingProgressCurrent: Record<string, number>;
 }) => {
@@ -20,7 +23,9 @@ const EventPickerTable = ({ scramblingProgressTarget, scramblingProgressCurrent 
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(
+        selectedCompetitionId,
+    );
 
     const { data: wcaEvents } = useQuery({
         queryKey: ["wcaEvents"],
@@ -104,8 +109,12 @@ const EventPickerTable = ({ scramblingProgressTarget, scramblingProgressCurrent 
                                     <EventPicker
                                         wcaEvent={wcaEvent}
                                         wcifEvent={wcifEvent}
-                                        scramblingProgressTarget={scramblingProgressTarget}
-                                        scramblingProgressCurrent={scramblingProgressCurrent}
+                                        scramblingProgressTarget={
+                                            scramblingProgressTarget
+                                        }
+                                        scramblingProgressCurrent={
+                                            scramblingProgressCurrent
+                                        }
                                     />
                                 </div>
                             );

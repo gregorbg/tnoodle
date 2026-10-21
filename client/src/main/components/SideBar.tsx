@@ -42,8 +42,11 @@ const SideBar = () => {
             enabled: wcaApi.isLogged(),
         });
 
-    const { data: wcif = defaultWcif, isFetching: loadingCompetitionInfo, isPlaceholderData } =
-        useCompetitionWcif(selectedCompetitionId);
+    const {
+        data: wcif = defaultWcif,
+        isFetching: loadingCompetitionInfo,
+        isPlaceholderData,
+    } = useCompetitionWcif(selectedCompetitionId);
 
     const [isOpen, setIsOpen] = useState(true);
 

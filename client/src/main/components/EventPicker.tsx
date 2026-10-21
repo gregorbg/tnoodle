@@ -36,7 +36,12 @@ interface EventPickerProps {
     scramblingProgressCurrent: Record<string, number>;
 }
 
-const EventPicker = ({ wcaEvent, wcifEvent, scramblingProgressTarget, scramblingProgressCurrent }: EventPickerProps) => {
+const EventPicker = ({
+    wcaEvent,
+    wcifEvent,
+    scramblingProgressTarget,
+    scramblingProgressCurrent,
+}: EventPickerProps) => {
     const selectedCompetitionId = useSelector(
         (state: RootState) => state.informationSlice.selectedCompetitionId,
     );
@@ -65,7 +70,9 @@ const EventPicker = ({ wcaEvent, wcifEvent, scramblingProgressTarget, scrambling
         enabled: wcifEvent.rounds.length > 0,
     });
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(
+        selectedCompetitionId,
+    );
 
     const [showColorSchemeConfig, setShowColorSchemeConfig] =
         useState<boolean>(false);

@@ -10,7 +10,10 @@ import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
-import { frontendStatusExtensionId, setExtensionLazily } from "../util/extension.util";
+import {
+    frontendStatusExtensionId,
+    setExtensionLazily,
+} from "../util/extension.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type Wcif from "../model/Wcif";
 import _ from "lodash";
@@ -42,12 +45,18 @@ const Main = () => {
         tnoodleVersion?.signatureKeyBytes ===
             wcaScrambleProgram?.publicKeyBytes;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(
+        selectedCompetitionId,
+    );
 
     const [password, setPassword] = useState("");
 
-    const [scramblingProgressTarget, setScramblingProgressTarget] = useState<Record<string, number>>({});
-    const [scramblingProgressCurrent, setScramblingProgressCurrent] = useState<Record<string, number>>({});
+    const [scramblingProgressTarget, setScramblingProgressTarget] = useState<
+        Record<string, number>
+    >({});
+    const [scramblingProgressCurrent, setScramblingProgressCurrent] = useState<
+        Record<string, number>
+    >({});
 
     const setScramblingProgressCurrentEvent = useCallback(
         (eventId: string) =>
@@ -58,23 +67,35 @@ const Main = () => {
         [setScramblingProgressCurrent],
     );
 
-    const extendedWcif = useMemo(() =>
-        setExtensionLazily(wcif, frontendStatusExtensionId, () => ({
-            id: frontendStatusExtensionId,
-            specUrl: "",
-            data: {
-                isStaging: isUsingStaging(),
-                isManual: selectedCompetitionId === undefined,
-                isSignedBuild: signatureValid,
-                isAllowedVersion: versionAllowed,
-            },
-        })),
+    const extendedWcif = useMemo(
+        () =>
+            setExtensionLazily(wcif, frontendStatusExtensionId, () => ({
+                id: frontendStatusExtensionId,
+                specUrl: "",
+                data: {
+                    isStaging: isUsingStaging(),
+                    isManual: selectedCompetitionId === undefined,
+                    isSignedBuild: signatureValid,
+                    isAllowedVersion: versionAllowed,
+                },
+            })),
         [wcif, selectedCompetitionId, signatureValid, versionAllowed],
     );
 
-    const { data: fileZip, mutate: generateScrambles, isPending: generatingScrambles, variables } = useMutation({
+    const {
+        data: fileZip,
+        mutate: generateScrambles,
+        isPending: generatingScrambles,
+        variables,
+    } = useMutation({
         mutationKey: ["scramble-zip"],
-        mutationFn: async ({ submitWcif, submitPassword }: { submitWcif: Wcif, submitPassword: string }) => {
+        mutationFn: async ({
+            submitWcif,
+            submitPassword,
+        }: {
+            submitWcif: Wcif;
+            submitPassword: string;
+        }) => {
             const scrambleClient = new ScrambleClient(
                 setScramblingProgressTarget,
                 setScramblingProgressCurrentEvent,
@@ -104,7 +125,10 @@ const Main = () => {
         if (!inputsChanged && fileZip !== undefined) {
             tnoodleApi.convertToBlob(fileZip).then((blob) => downloadZip(blob));
         } else {
-            generateScrambles({ submitWcif: extendedWcif, submitPassword: password });
+            generateScrambles({
+                submitWcif: extendedWcif,
+                submitPassword: password,
+            });
         }
     };
 
@@ -197,12 +221,18 @@ const Main = () => {
                 <VersionInfo />
                 <div className="container-fluid pt-2">
                     <div className="row g-3 pb-3 align-items-end">
-                        <EntryInterface password={password} setPassword={setPassword} />
+                        <EntryInterface
+                            password={password}
+                            setPassword={setPassword}
+                        />
                         <div className="col-sm-4">{scrambleButton()}</div>
                     </div>
                 </div>
             </div>
-            <EventPickerTable scramblingProgressTarget={scramblingProgressTarget} scramblingProgressCurrent={scramblingProgressCurrent} />
+            <EventPickerTable
+                scramblingProgressTarget={scramblingProgressTarget}
+                scramblingProgressCurrent={scramblingProgressCurrent}
+            />
         </form>
     );
 };

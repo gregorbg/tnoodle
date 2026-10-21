@@ -14,10 +14,7 @@ import {
     mbldCubesExtensionId,
     upsertExtension,
 } from "../util/extension.util";
-import {
-    useIsMutating,
-    useQuery,
-} from "@tanstack/react-query";
+import { useIsMutating, useQuery } from "@tanstack/react-query";
 import tnoodleApi from "../api/tnoodle.api";
 
 interface MbldDetailProps {
@@ -31,7 +28,9 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(selectedCompetitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif(
+        selectedCompetitionId,
+    );
 
     const { data: bestMbldAttempt } = useQuery({
         queryKey: ["best-mbld-attempt", wcif.persons],
