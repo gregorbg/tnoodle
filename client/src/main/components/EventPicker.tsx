@@ -1,7 +1,5 @@
 import { OverlayTrigger, ProgressBar, Tooltip } from "react-bootstrap";
-import { useSelector } from "react-redux";
 import { MAX_WCA_ROUNDS, MBLD_DEFAULT } from "../constants/wca.constants";
-import RootState from "../model/RootState";
 import Round from "../model/Round";
 import WcaEvent from "../model/WcaEvent";
 import WcifEvent from "../model/WcifEvent";
@@ -30,26 +28,24 @@ import {
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 
 interface EventPickerProps {
+    competitionId?: string;
     wcaEvent: WcaEvent;
     wcifEvent: WcifEvent;
+    showColorPicker: boolean;
     scramblingProgressTarget: Record<string, number>;
     scramblingProgressCurrent: Record<string, number>;
 }
 
 const EventPicker = ({
+    competitionId,
     wcaEvent,
     wcifEvent,
+    showColorPicker,
     scramblingProgressTarget,
     scramblingProgressCurrent,
 }: EventPickerProps) => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
-    const showColorPicker = useSelector(
-        (state: RootState) => state.informationSlice.showColorPicker,
-    );
 
     const { data: wcaEvents } = useQuery({
         queryKey: ["wcaEvents"],
@@ -71,7 +67,7 @@ const EventPicker = ({
     });
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(
-        selectedCompetitionId,
+        competitionId,
     );
 
     const [showColorSchemeConfig, setShowColorSchemeConfig] =
@@ -119,8 +115,8 @@ const EventPicker = ({
         [fetchRandomSampleScramble],
     );
 
-    const setWcifEvent = useSetWcifEvent(selectedCompetitionId);
-    const setWcifEventExtension = useSetEventExtension(selectedCompetitionId);
+    const setWcifEvent = useSetWcifEvent(competitionId);
+    const setWcifEventExtension = useSetEventExtension(competitionId);
 
     const updateEventRounds = (rounds: Round[]) => {
         let event = {
@@ -400,7 +396,7 @@ const EventPicker = ({
                                         )
                                     }
                                     disabled={
-                                        selectedCompetitionId !== undefined ||
+                                        competitionId !== undefined ||
                                         generatingScrambles
                                     }
                                 >
@@ -427,7 +423,7 @@ const EventPicker = ({
                                     min={1}
                                     required
                                     disabled={
-                                        selectedCompetitionId !== undefined ||
+                                        competitionId !== undefined ||
                                         generatingScrambles
                                     }
                                 />
@@ -560,7 +556,7 @@ const EventPicker = ({
                                 )
                             }
                             disabled={
-                                selectedCompetitionId !== undefined ||
+                                competitionId !== undefined ||
                                 generatingScrambles
                             }
                         >
@@ -581,10 +577,10 @@ const EventPicker = ({
             {maybeShowTableBody()}
             {wcaEvent.is_multiple_blindfolded &&
                 wcifEvent.rounds.length > 0 && (
-                    <MbldDetail mbldWcifEvent={wcifEvent} />
+                    <MbldDetail competitionId={competitionId} mbldWcifEvent={wcifEvent} />
                 )}
             {wcaEvent.is_fewest_moves && wcifEvent.rounds.length > 0 && (
-                <FmcTranslationsDetail fmcWcifEvent={wcifEvent} />
+                <FmcTranslationsDetail competitionId={competitionId} fmcWcifEvent={wcifEvent} />
             )}
         </table>
     );

@@ -1,8 +1,6 @@
 import { chunk } from "lodash";
-import { useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import { toWcaUrl } from "../api/wca.api";
-import RootState from "../model/RootState";
 import EventPicker from "./EventPicker";
 import WcaEvent from "../model/WcaEvent";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
@@ -13,18 +11,18 @@ import { buildMbldExtension } from "../util/extension.util";
 const EVENTS_PER_LINE = 2;
 
 const EventPickerTable = ({
+    competitionId,
+    showColorPicker,
     scramblingProgressTarget,
     scramblingProgressCurrent,
 }: {
+    competitionId?: string;
+    showColorPicker: boolean;
     scramblingProgressTarget: Record<string, number>;
     scramblingProgressCurrent: Record<string, number>;
 }) => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
-
     const { data: wcif = defaultWcif } = useCompetitionWcif(
-        selectedCompetitionId,
+        competitionId,
     );
 
     const { data: wcaEvents } = useQuery({
@@ -46,7 +44,7 @@ const EventPickerTable = ({
     };
 
     const maybeShowEditWarning = () => {
-        if (selectedCompetitionId === undefined) {
+        if (competitionId === undefined) {
             return;
         }
 
@@ -86,7 +84,7 @@ const EventPickerTable = ({
     // This filters events to show only those in the competition.
     let filteredEvents = wcaEvents.filter(
         (wcaEvent) =>
-            selectedCompetitionId === undefined ||
+            competitionId === undefined ||
             wcif.events.find((item) => item.id === wcaEvent.id),
     );
 
@@ -107,8 +105,10 @@ const EventPickerTable = ({
                             return (
                                 <div className="col-lg-6" key={wcaEvent.id}>
                                     <EventPicker
+                                        competitionId={competitionId}
                                         wcaEvent={wcaEvent}
                                         wcifEvent={wcifEvent}
+                                        showColorPicker={showColorPicker}
                                         scramblingProgressTarget={
                                             scramblingProgressTarget
                                         }

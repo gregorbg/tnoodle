@@ -1,7 +1,5 @@
 import { chunk } from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
-import RootState from "../model/RootState";
 import tnoodleApi from "../api/tnoodle.api";
 import WcifEvent from "../model/WcifEvent";
 import {
@@ -19,20 +17,19 @@ import { useIsMutating, useQuery } from "@tanstack/react-query";
 const TRANSLATIONS_PER_LINE = 3;
 
 interface FmcTranslationsDetailProps {
+    competitionId?: string;
     fmcWcifEvent: WcifEvent;
 }
 
 const FmcTranslationsDetail = ({
+    competitionId,
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(
-        selectedCompetitionId,
+        competitionId,
     );
 
     const { data: availableTranslations } = useQuery({
@@ -45,7 +42,7 @@ const FmcTranslationsDetail = ({
         queryKey: ["suggestedFmcTranslations", wcif.persons],
         queryFn: () => tnoodleApi.fetchSuggestedFmcTranslations(wcif.persons),
         select: (resp) => resp.data,
-        enabled: selectedCompetitionId !== undefined,
+        enabled: competitionId !== undefined,
     });
 
     const [showTranslations, setShowTranslations] = useState(false);
@@ -59,7 +56,7 @@ const FmcTranslationsDetail = ({
         );
     }, [fmcWcifEvent, suggestedFmcTranslations]);
 
-    const setEventExtension = useSetEventExtension(selectedCompetitionId);
+    const setEventExtension = useSetEventExtension(competitionId);
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {

@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Collapse, Spinner } from "react-bootstrap";
-import { useDispatch, useSelector } from "react-redux";
 import wcaApi from "../api/wca.api";
 import logo from "../assets/tnoodle_logo.svg";
-import RootState from "../model/RootState";
-import {
-    setSelectedCompetitionId,
-    setShowColorPicker,
-} from "../redux/slice/InformationSlice";
 import {
     deleteParameter,
     getQueryParameter,
@@ -17,15 +11,14 @@ import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 
-const SideBar = () => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
+const SideBar = ({ competitionId, setCompetitionId, showColorPicker, setShowColorPicker }: {
+    competitionId?: string,
+    setCompetitionId: (competitionId?: string) => void,
+    showColorPicker: boolean,
+    setShowColorPicker: (showColorPicker: boolean) => void,
+}) => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
-    const showColorPicker = useSelector(
-        (state: RootState) => state.informationSlice.showColorPicker,
-    );
 
     const { data: me, isFetching: loadingUser } = useQuery({
         queryKey: ["me"],
@@ -46,7 +39,7 @@ const SideBar = () => {
         data: wcif = defaultWcif,
         isFetching: loadingCompetitionInfo,
         isPlaceholderData,
-    } = useCompetitionWcif(selectedCompetitionId);
+    } = useCompetitionWcif(competitionId);
 
     const [isOpen, setIsOpen] = useState(true);
 
@@ -62,7 +55,7 @@ const SideBar = () => {
     }, [handleIsOpen]);
 
     const competitions = useMemo(() => {
-        if (selectedCompetitionId === undefined) {
+        if (competitionId === undefined) {
             return upcomingCompetitions || [];
         }
 
@@ -71,7 +64,7 @@ const SideBar = () => {
         }
 
         const isUpcoming = upcomingCompetitions.some(
-            (comp) => comp.id === selectedCompetitionId,
+            (comp) => comp.id === competitionId,
         );
 
         if (isUpcoming) {
@@ -79,15 +72,13 @@ const SideBar = () => {
         } else {
             return [...upcomingCompetitions, wcif];
         }
-    }, [selectedCompetitionId, upcomingCompetitions, wcif]);
-
-    const dispatch = useDispatch();
+    }, [competitionId, upcomingCompetitions, wcif]);
 
     const pluralize = (string: string, number: number) =>
         string + (number > 1 ? "s" : "");
 
     const handleManualSelection = () => {
-        dispatch(setSelectedCompetitionId(undefined));
+        setCompetitionId(undefined);
         deleteParameter("competitionId");
     };
 
@@ -95,16 +86,16 @@ const SideBar = () => {
         const queryParamId = getQueryParameter("competitionId");
 
         if (queryParamId !== null && wcif.id !== queryParamId) {
-            dispatch(setSelectedCompetitionId(queryParamId));
+            setCompetitionId(queryParamId);
         }
-    }, [dispatch, wcif.id]);
+    }, [setCompetitionId, wcif.id]);
 
     const handleCompetitionSelection = useCallback(
         (competitionId: string) => {
             setQueryParameter("competitionId", competitionId);
-            dispatch(setSelectedCompetitionId(competitionId));
+            setCompetitionId(competitionId);
         },
-        [dispatch],
+        [setCompetitionId],
     );
 
     const logInButton = () => {
@@ -164,7 +155,7 @@ const SideBar = () => {
                 id="colorPicker"
                 disabled={generatingScrambles}
                 checked={showColorPicker}
-                onChange={(e) => dispatch(setShowColorPicker(e.target.checked))}
+                onChange={(e) => setShowColorPicker(e.target.checked)}
             />
             <label className="form-check-label" htmlFor="colorPicker">
                 Show color scheme pickers

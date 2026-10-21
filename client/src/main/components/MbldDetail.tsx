@@ -1,6 +1,4 @@
-import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
-import RootState from "../model/RootState";
 import WcifEvent from "../model/WcifEvent";
 import {
     defaultWcif,
@@ -18,25 +16,23 @@ import { useIsMutating, useQuery } from "@tanstack/react-query";
 import tnoodleApi from "../api/tnoodle.api";
 
 interface MbldDetailProps {
+    competitionId?: string;
     mbldWcifEvent: WcifEvent;
 }
 
-const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
+const MbldDetail = ({ competitionId, mbldWcifEvent }: MbldDetailProps) => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(
-        selectedCompetitionId,
+        competitionId,
     );
 
     const { data: bestMbldAttempt } = useQuery({
         queryKey: ["best-mbld-attempt", wcif.persons],
         queryFn: () => tnoodleApi.fetchBestMbldAttempt(wcif.persons),
         select: (resp) => resp.data?.attempted,
-        enabled: selectedCompetitionId !== undefined,
+        enabled: competitionId !== undefined,
     });
 
     const mbld = useMemo(() => {
@@ -48,7 +44,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         );
     }, [mbldWcifEvent, bestMbldAttempt]);
 
-    const setEventExtension = useSetEventExtension(selectedCompetitionId);
+    const setEventExtension = useSetEventExtension(competitionId);
 
     const updateEventMbld = useCallback(
         (mbld: number) => {

@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useSelector } from "react-redux";
-import RootState from "../model/RootState";
 import {
     defaultWcif,
     useCompetitionWcif,
@@ -10,25 +8,24 @@ import {
 import { useIsMutating } from "@tanstack/react-query";
 
 const EntryInterface = ({
+    competitionId,
     password,
     setPassword,
 }: {
+    competitionId?: string;
     password: string;
     setPassword: (password: string) => void;
 }) => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(
-        selectedCompetitionId,
+        competitionId,
     );
 
-    const setCompetitionName = useSetCompetitionName(selectedCompetitionId);
+    const setCompetitionName = useSetCompetitionName(competitionId);
 
     return (
         <>
@@ -46,7 +43,7 @@ const EntryInterface = ({
                     onChange={(e) => setCompetitionName(e.target.value)}
                     value={wcif.name}
                     disabled={
-                        selectedCompetitionId !== undefined ||
+                        competitionId !== undefined ||
                         generatingScrambles
                     }
                     required

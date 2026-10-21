@@ -1,9 +1,7 @@
 import { FormEvent, useCallback, useMemo, useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
 import wcaApi, { isUsingStaging } from "../api/wca.api";
 import { ScrambleClient } from "../api/tnoodle.socket";
-import RootState from "../model/RootState";
 import EntryInterface from "./EntryInterface";
 import EventPickerTable from "./EventPickerTable";
 import Interceptor from "./Interceptor";
@@ -18,11 +16,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type Wcif from "../model/Wcif";
 import _ from "lodash";
 
-const Main = () => {
-    const selectedCompetitionId = useSelector(
-        (state: RootState) => state.informationSlice.selectedCompetitionId,
-    );
-
+const Main = ({ competitionId, showColorPicker }: { competitionId?: string, showColorPicker: boolean }) => {
     const interceptorRef = useRef<Interceptor>(null);
 
     const { data: wcaScrambleProgram } = useQuery({
@@ -46,7 +40,7 @@ const Main = () => {
             wcaScrambleProgram?.publicKeyBytes;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(
-        selectedCompetitionId,
+        competitionId,
     );
 
     const [password, setPassword] = useState("");
@@ -74,12 +68,12 @@ const Main = () => {
                 specUrl: "",
                 data: {
                     isStaging: isUsingStaging(),
-                    isManual: selectedCompetitionId === undefined,
+                    isManual: competitionId === undefined,
                     isSignedBuild: signatureValid,
                     isAllowedVersion: versionAllowed,
                 },
             })),
-        [wcif, selectedCompetitionId, signatureValid, versionAllowed],
+        [wcif, competitionId, signatureValid, versionAllowed],
     );
 
     const {
@@ -139,7 +133,7 @@ const Main = () => {
 
         let isUnofficialZip =
             !officialZipStatus ||
-            (selectedCompetitionId !== undefined && isUsingStaging());
+            (competitionId !== undefined && isUsingStaging());
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") + wcif.name + ".zip";
@@ -185,7 +179,7 @@ const Main = () => {
         );
 
         let isLoggedCompSelection =
-            selectedCompetitionId !== undefined && wcaApi.isLogged();
+            competitionId !== undefined && wcaApi.isLogged();
         let isOnlineLocked = appOnlineMode && !isLoggedCompSelection;
 
         let disableScrambleButton = !anyEventHasRounds || isOnlineLocked;
@@ -221,6 +215,7 @@ const Main = () => {
                 <div className="container-fluid pt-2">
                     <div className="row g-3 pb-3 align-items-end">
                         <EntryInterface
+                            competitionId={competitionId}
                             password={password}
                             setPassword={setPassword}
                         />
@@ -229,6 +224,8 @@ const Main = () => {
                 </div>
             </div>
             <EventPickerTable
+                competitionId={competitionId}
+                showColorPicker={showColorPicker}
                 scramblingProgressTarget={scramblingProgressTarget}
                 scramblingProgressCurrent={scramblingProgressCurrent}
             />
