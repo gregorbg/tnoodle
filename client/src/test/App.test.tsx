@@ -1,12 +1,11 @@
 import { render, act, fireEvent } from "@testing-library/react";
 import { shuffle, difference } from "lodash";
 import React from "react";
-import { Provider } from "react-redux";
 import App from "../App";
 import tnoodleApi from "../main/api/tnoodle.api";
 import wcaApi from "../main/api/wca.api";
 import Wcif from "../main/model/Wcif";
-import { defaultWcif, frontendStatusExtensionId } from "../main/util/wcif.util";
+import { defaultWcif } from "../main/util/wcif.util";
 import {
     bestMbldAttempt,
     colorScheme,
@@ -19,7 +18,7 @@ import {
     scrambleAndImage,
     version,
 } from "./mock/tnoodle.api.test.mock";
-import { axiosResponse, getNewStore } from "./mock/util.test.mock";
+import { axiosResponse, getDefaultQueryClient } from "./mock/util.test.mock";
 import {
     competitions,
     me,
@@ -30,7 +29,11 @@ import {
     getFmcLanguageTags,
     getMbldCubesCount,
 } from "./util/extension.test.util";
-import { findExtension } from "../main/util/extension.util";
+import {
+    findExtension,
+    frontendStatusExtensionId,
+} from "../main/util/extension.util";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 
@@ -123,15 +126,15 @@ afterEach(() => {
 });
 
 it("Just generate scrambles", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <App />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -157,15 +160,15 @@ it("Just generate scrambles", async () => {
 });
 
 it("Changes on 333, scramble", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <App />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -230,15 +233,15 @@ it("Changes on 333, scramble", async () => {
 });
 
 it("Remove 333, add FMC and MBLD", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <App />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -339,7 +342,7 @@ it("Remove 333, add FMC and MBLD", async () => {
 });
 
 it("Logged user", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Allow downloads
     global.URL.createObjectURL = jest.fn();
@@ -367,9 +370,9 @@ it("Logged user", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <App />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -473,7 +476,7 @@ it("Logged user", async () => {
 });
 
 it("Comfort features should not block zip generation", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Allow downloads
     global.URL.createObjectURL = jest.fn();
@@ -498,9 +501,9 @@ it("Comfort features should not block zip generation", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <App />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );

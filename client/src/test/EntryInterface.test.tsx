@@ -1,8 +1,8 @@
 import { render, act, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Provider } from "react-redux";
 import EntryInterface from "../main/components/EntryInterface";
-import store from "../main/redux/Store";
+import { getDefaultQueryClient } from "./mock/util.test.mock";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -18,13 +18,15 @@ afterEach(() => {
 });
 
 it("Competition name should be already filled with current date and changes should go to the store", async () => {
+    const queryClient = getDefaultQueryClient();
+
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EntryInterface />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -47,13 +49,15 @@ it("Competition name should be already filled with current date and changes shou
 });
 
 it("Password should toggle and changes to it should go to the store", async () => {
+    const queryClient = getDefaultQueryClient();
+
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EntryInterface />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );

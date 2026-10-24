@@ -1,14 +1,6 @@
 import { render, act, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Provider } from "react-redux";
 import EventPicker from "../main/components/EventPicker";
-import {
-    setGeneratingScrambles,
-    setScramblingProgressCurrentEvent,
-    setScramblingProgressTarget,
-} from "../main/redux/slice/ScramblingSlice";
-import { setIsManualSelection } from "../main/redux/slice/InformationSlice";
-import store from "../main/redux/Store";
 import { defaultWcif } from "../main/util/wcif.util";
 import {
     colorScheme,
@@ -17,7 +9,8 @@ import {
     scrambleAndImage,
 } from "./mock/tnoodle.api.test.mock";
 import tnoodleApi from "../main/api/tnoodle.api";
-import { axiosResponse } from "./mock/util.test.mock";
+import { axiosResponse, getDefaultQueryClient } from "./mock/util.test.mock";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -49,6 +42,8 @@ afterEach(() => {
 });
 
 it("Changing values from event", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const event = events[0];
     const wcifEvent = defaultWcif.events[0]; // This is one round of 333
 
@@ -59,9 +54,9 @@ it("Changing values from event", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EventPicker wcaEvent={event} wcifEvent={wcifEvent} />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -133,6 +128,8 @@ it("Changing values from event", async () => {
 });
 
 it("Editing disabled", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const event = events[0];
     const wcifEvent = defaultWcif.events[0]; // This is one round of 333
 
@@ -143,9 +140,9 @@ it("Editing disabled", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EventPicker wcaEvent={event} wcifEvent={wcifEvent} />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -163,6 +160,8 @@ it("Editing disabled", async () => {
 });
 
 it("Progress Bar showing/hiding", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const event = events[0];
     const wcifEvent = defaultWcif.events[0]; // This is one round of 333
 
@@ -173,9 +172,9 @@ it("Progress Bar showing/hiding", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EventPicker wcaEvent={event} wcifEvent={wcifEvent} />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );

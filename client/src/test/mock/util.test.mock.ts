@@ -1,10 +1,5 @@
-import { configureStore } from "@reduxjs/toolkit";
-import { informationSlice } from "../../main/redux/slice/InformationSlice";
-import { scramblingSlice } from "../../main/redux/slice/ScramblingSlice";
-import { wcifSlice } from "../../main/redux/slice/WcifSlice";
 import { AxiosHeaders } from "axios";
-import { eventDataSlice } from "../../main/redux/slice/EventDataSlice";
-import { settingsSlice } from "../../main/redux/slice/SettingsSlice";
+import { QueryClient } from "@tanstack/react-query";
 
 export const axiosResponse = {
     status: 200,
@@ -15,13 +10,13 @@ export const axiosResponse = {
     },
 };
 
-export const getNewStore = () =>
-    configureStore({
-        reducer: {
-            informationSlice: informationSlice.reducer,
-            scramblingSlice: scramblingSlice.reducer,
-            wcifSlice: wcifSlice.reducer,
-            eventDataSlice: eventDataSlice.reducer,
-            settingsSlice: settingsSlice.reducer,
+// Options per https://tanstack.com/query/latest/docs/framework/react/guides/testing
+export const getDefaultQueryClient = () =>
+    new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+                gcTime: Infinity
+            },
         },
     });

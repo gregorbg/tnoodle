@@ -1,10 +1,8 @@
 import { render, act, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Provider } from "react-redux";
 import tnoodleApi from "../main/api/tnoodle.api";
 import wcaApi from "../main/api/wca.api";
 import Main from "../main/components/Main";
-import { setSuggestedFmcTranslations } from "../main/redux/slice/EventDataSlice";
 import {
     colorScheme,
     emptySvg,
@@ -14,9 +12,13 @@ import {
     scrambleAndImage,
     version,
 } from "./mock/tnoodle.api.test.mock";
-import { axiosResponse, getNewStore } from "./mock/util.test.mock";
+import {
+    axiosResponse,
+    getDefaultQueryClient,
+} from "./mock/util.test.mock";
 import { scrambleProgram } from "./mock/wca.api.test.mock";
 import { getFmcLanguageTags } from "./util/extension.test.util";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -46,7 +48,7 @@ afterEach(() => {
 });
 
 it("There should be only 1 button of type submit, check FMC changes", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Turn on mocking behavior
     jest.spyOn(tnoodleApi, "fetchWcaEvents").mockImplementation(() =>
@@ -84,9 +86,9 @@ it("There should be only 1 button of type submit, check FMC changes", async () =
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <Main />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );

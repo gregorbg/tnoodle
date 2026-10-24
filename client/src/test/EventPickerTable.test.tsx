@@ -1,14 +1,7 @@
 import { render, act, fireEvent } from "@testing-library/react";
 import React from "react";
-import { Provider } from "react-redux";
 import tnoodleApi from "../main/api/tnoodle.api";
 import EventPickerTable from "../main/components/EventPickerTable";
-import { setWcif, setWcifEvent } from "../main/redux/slice/WcifSlice";
-import { setIsManualSelection } from "../main/redux/slice/InformationSlice";
-import {
-    getDefaultCopiesExtension,
-    mbldCubesExtensionId,
-} from "../main/util/wcif.util";
 import {
     colorScheme,
     emptySvg,
@@ -17,8 +10,12 @@ import {
     languages,
     scrambleAndImage,
 } from "./mock/tnoodle.api.test.mock";
-import { axiosResponse, getNewStore } from "./mock/util.test.mock";
+import {
+    axiosResponse,
+    getDefaultQueryClient,
+} from "./mock/util.test.mock";
 import { competitions, wcifs } from "./mock/wca.api.test.mock";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -69,7 +66,7 @@ afterEach(() => {
 });
 
 it("Show editing warn if case of competition selected", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Choose a competition
     const competition = wcifs[competitions[0].id];
@@ -97,9 +94,9 @@ it("Show editing warn if case of competition selected", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EventPickerTable />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -122,7 +119,7 @@ it("Show editing warn if case of competition selected", async () => {
 });
 
 it("Plural events", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Choose a competition
     const competition = wcifs[competitions[0].id];
@@ -135,9 +132,9 @@ it("Plural events", async () => {
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EventPickerTable />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );
@@ -148,15 +145,15 @@ it("Plural events", async () => {
 });
 
 it("Changes in MBLD should go to the store", async () => {
-    const store = getNewStore();
+    const queryClient = getDefaultQueryClient();
 
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
-                <Provider store={store}>
+                <QueryClientProvider client={queryClient}>
                     <EventPickerTable />
-                </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
             { container },
         );

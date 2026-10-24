@@ -1,13 +1,11 @@
 import React from "react";
 import { render, act } from "@testing-library/react";
 
-import { Provider } from "react-redux";
-
 import VersionInfo from "../main/components/VersionInfo";
 import tnoodleApi from "../main/api/tnoodle.api";
 import wcaApi from "../main/api/wca.api";
-import store from "../main/redux/Store";
-import { axiosResponse } from "./mock/util.test.mock";
+import { axiosResponse, getDefaultQueryClient } from "./mock/util.test.mock";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -23,6 +21,8 @@ afterEach(() => {
 });
 
 it("Current version is the correct one", async () => {
+    const queryClient = getDefaultQueryClient();
+
     // Mock objects
     const version = {
         projectName: "TNoodle-WCA",
@@ -56,9 +56,11 @@ it("Current version is the correct one", async () => {
     // Render component
     await act(async () => {
         render(
-            <Provider store={store}>
-                <VersionInfo />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <VersionInfo />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });
@@ -73,6 +75,8 @@ it("Current version is the correct one", async () => {
 });
 
 it("Current version is allowed, but it's not the latest one", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const version = {
         projectName: "TNoodle-WCA",
         projectVersion: "2",
@@ -108,9 +112,11 @@ it("Current version is allowed, but it's not the latest one", async () => {
 
     await act(async () => {
         render(
-            <Provider store={store}>
-                <VersionInfo />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <VersionInfo />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });
@@ -129,6 +135,8 @@ it("Current version is allowed, but it's not the latest one", async () => {
 });
 
 it("Not signed version alert", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const version = {
         projectName: "TNoodle-WCA",
         projectVersion: "3",
@@ -164,9 +172,11 @@ it("Not signed version alert", async () => {
 
     await act(async () => {
         render(
-            <Provider store={store}>
-                <VersionInfo />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <VersionInfo />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });
@@ -182,6 +192,8 @@ it("Not signed version alert", async () => {
 });
 
 it("Signed with different key", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const version = {
         projectName: "TNoodle-WCA",
         projectVersion: "3",
@@ -217,9 +229,11 @@ it("Signed with different key", async () => {
 
     await act(async () => {
         render(
-            <Provider store={store}>
-                <VersionInfo />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <VersionInfo />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });
@@ -235,6 +249,8 @@ it("Signed with different key", async () => {
 });
 
 it("Not allowed TNoodle version, despite it's official", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const version = {
         projectName: "TNoodle-WCA",
         projectVersion: "1",
@@ -270,9 +286,11 @@ it("Not allowed TNoodle version, despite it's official", async () => {
 
     await act(async () => {
         render(
-            <Provider store={store}>
-                <VersionInfo />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <VersionInfo />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });
@@ -286,6 +304,8 @@ it("Not allowed TNoodle version, despite it's official", async () => {
 });
 
 it("Do not bother the user if we can't be sure", async () => {
+    const queryClient = getDefaultQueryClient();
+
     const version = {} as any;
 
     const scrambleProgram = {
@@ -316,9 +336,11 @@ it("Do not bother the user if we can't be sure", async () => {
 
     await act(async () => {
         render(
-            <Provider store={store}>
-                <VersionInfo />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <VersionInfo />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });

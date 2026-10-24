@@ -2,14 +2,12 @@ import React from "react";
 
 import { render, act } from "@testing-library/react";
 
-import { Provider } from "react-redux";
-import store from "../main/redux/Store";
-
 import SideBar from "../main/components/SideBar";
 
 import { competitions, me } from "./mock/wca.api.test.mock";
 import wcaApi from "../main/api/wca.api";
-import { axiosResponse } from "./mock/util.test.mock";
+import { axiosResponse, getDefaultQueryClient } from "./mock/util.test.mock";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -25,6 +23,8 @@ afterEach(() => {
 });
 
 it("Each competition fetched from the website must become a button", async () => {
+    const queryClient = getDefaultQueryClient();
+
     // Turn on mocking behavior
     jest.spyOn(wcaApi, "isLogged").mockImplementation(() => true);
 
@@ -39,9 +39,11 @@ it("Each competition fetched from the website must become a button", async () =>
     // Render component
     await act(async () => {
         render(
-            <Provider store={store}>
-                <SideBar />
-            </Provider>,
+            <React.StrictMode>
+                <QueryClientProvider client={queryClient}>
+                    <SideBar />
+                </QueryClientProvider>
+            </React.StrictMode>,
             { container },
         );
     });
