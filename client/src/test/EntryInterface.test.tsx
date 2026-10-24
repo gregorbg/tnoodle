@@ -3,6 +3,8 @@ import React from "react";
 import EntryInterface from "../main/components/EntryInterface";
 import { getDefaultQueryClient } from "./mock/util.test.mock";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { getWcifQueryKey } from "../main/util/wcif.util";
+import type Wcif from "../main/model/Wcif";
 
 let container = document.createElement("div");
 beforeEach(() => {
@@ -19,13 +21,14 @@ afterEach(() => {
 
 it("Competition name should be already filled with current date and changes should go to the store", async () => {
     const queryClient = getDefaultQueryClient();
+    const setPassword = jest.fn();
 
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
                 <QueryClientProvider client={queryClient}>
-                    <EntryInterface />
+                    <EntryInterface password="" setPassword={setPassword} />
                 </QueryClientProvider>
             </React.StrictMode>,
             { container },
@@ -44,19 +47,21 @@ it("Competition name should be already filled with current date and changes shou
     fireEvent.change(input, { target: { value: typed } });
 
     // New competition name should go to the store
-    expect(store.getState().wcifSlice.wcif.name).toBe(typed);
-    expect(store.getState().wcifSlice.wcif.shortName).toBe(typed);
+    const storedWcif = queryClient.getQueryData<Wcif>(getWcifQueryKey());
+    expect(storedWcif?.name).toBe(typed);
+    expect(storedWcif?.shortName).toBe(typed);
 });
 
-it("Password should toggle and changes to it should go to the store", async () => {
+it("Password should toggle visibility", async () => {
     const queryClient = getDefaultQueryClient();
+    const setPassword = jest.fn();
 
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
                 <QueryClientProvider client={queryClient}>
-                    <EntryInterface />
+                    <EntryInterface password="123456" setPassword={setPassword} />
                 </QueryClientProvider>
             </React.StrictMode>,
             { container },
@@ -65,13 +70,6 @@ it("Password should toggle and changes to it should go to the store", async () =
 
     const input = container.querySelector("#password")! as HTMLInputElement;
     const passwordToggler = container.querySelector(".input-group-text")!;
-
-    expect(store.getState().scramblingSlice.password).toBe("");
-
-    const password = "123456";
-    await act(async () => {
-        fireEvent.change(input, { target: { value: password } });
-    });
 
     // Type password at first
     expect(input.type).toBe("password");
@@ -82,7 +80,5 @@ it("Password should toggle and changes to it should go to the store", async () =
     });
 
     expect(input.type).toBe("text");
-
-    // Password should go to the store
-    expect(store.getState().scramblingSlice.password).toBe(password);
+    expect(input.textContent).toBe("123456");
 });

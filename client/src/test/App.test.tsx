@@ -26,19 +26,17 @@ import {
     wcifs,
 } from "./mock/wca.api.test.mock";
 import {
-    getFmcLanguageTags,
-    getMbldCubesCount,
-} from "./util/extension.test.util";
-import {
     findExtension,
+    fmcTranslationsExtensionId,
     frontendStatusExtensionId,
+    mbldCubesExtensionId,
 } from "../main/util/extension.util";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 let container = document.createElement("div");
 
-let wcif: Wcif | null = null;
-let password: string | null = null;
+let submittedWcif: Wcif | null = null;
+let submittedPassword: string | null = null;
 beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement("div");
@@ -78,8 +76,8 @@ beforeEach(() => {
 
     jest.spyOn(tnoodleApi, "fetchZip").mockImplementation(
         (scrambleClient, _wcif, _password) => {
-            wcif = _wcif;
-            password = _password;
+            submittedWcif = _wcif;
+            submittedPassword = _password;
 
             return Promise.resolve(plainZip);
         },
@@ -107,8 +105,8 @@ afterEach(() => {
     container.remove();
     container = document.createElement("div");
 
-    wcif = null;
-    password = null;
+    submittedWcif = null;
+    submittedPassword = null;
 
     // Clear mock
     jest.spyOn(tnoodleApi, "fetchWcaEvents").mockRestore();
@@ -148,18 +146,18 @@ it("Just generate scrambles", async () => {
     });
 
     // Only 333
-    expect(wcif!.events.length).toBe(1);
+    expect(submittedWcif!.events.length).toBe(1);
 
-    expect(password).toBe("");
+    expect(submittedPassword).toBe("");
 
     let wcifStatus = findExtension(
-        store.getState().wcifSlice.wcif,
+        submittedWcif!,
         frontendStatusExtensionId,
     );
     expect(wcifStatus!.data).toEqual(defaultStatus);
 });
 
-it("Changes on 333, scramble", async () => {
+it("Changes on 333, then scramble", async () => {
     const queryClient = getDefaultQueryClient();
 
     // Render component
@@ -206,13 +204,13 @@ it("Changes on 333, scramble", async () => {
     });
 
     // Only 333
-    expect(wcif!.events.length).toBe(1);
+    expect(submittedWcif!.events.length).toBe(1);
 
     // Correct number of rounds
-    expect(wcif!.events[0].rounds.length).toBe(numberOfRounds);
+    expect(submittedWcif!.events[0].rounds.length).toBe(numberOfRounds);
 
     // Changes should be done to the 2nd round only
-    wcif!.events[0].rounds.forEach((round, i) => {
+    submittedWcif!.events[0].rounds.forEach((round, i) => {
         if (i === 1) {
             expect(round.format).toBe(roundFormat);
             expect(round.scrambleSetCount).toBe(scrambleSets);
@@ -229,7 +227,7 @@ it("Changes on 333, scramble", async () => {
         expect(round.extensions.length).toBe(1);
     });
 
-    expect(password).toBe(newPassword);
+    expect(submittedPassword).toBe(newPassword);
 });
 
 it("Remove 333, add FMC and MBLD", async () => {
@@ -319,12 +317,15 @@ it("Remove 333, add FMC and MBLD", async () => {
         fireEvent.click(scrambleButton);
     });
 
-    expect(wcif!.events.length).toBe(events.length);
+    expect(submittedWcif!.events.length).toBe(events.length);
 
-    let mbldExtensionCubesCount = getMbldCubesCount(store);
-    expect(mbldExtensionCubesCount).toBe(mbldCubes);
+    const mbldWcifEvent = submittedWcif!.events.find((evt) => evt.id === "333mbf");
+    let mbldExtension = findExtension(mbldWcifEvent!, mbldCubesExtensionId);
+    expect(mbldExtension?.data?.requestedScrambles).toBe(mbldCubes);
 
-    let fmcExtensionLanguageTags = getFmcLanguageTags(store);
+    const fmcWcifEvent = submittedWcif!.events.find((evt) => evt.id === "333fmc");
+    let fmcExtension = findExtension(fmcWcifEvent!, fmcTranslationsExtensionId);
+    let fmcExtensionLanguageTags = fmcExtension?.data?.languageTags ?? [];
 
     let selected = [...fmcExtensionLanguageTags].sort();
 
@@ -404,7 +405,7 @@ it("Logged user", async () => {
         });
 
         // We should send received wcif to tnoodle
-        expect(wcif).toStrictEqual(wcifs[competitions[i].id]);
+        expect(submittedWcif).toStrictEqual(wcifs[competitions[i].id]);
 
         // Download
         await act(async () => {
@@ -413,13 +414,19 @@ it("Logged user", async () => {
             );
         });
 
-        let mbldExtensionCubesCount = getMbldCubesCount(store);
+        const mbldWcifEvent = submittedWcif!.events.find((evt) => evt.id === "333mbf");
+        let mbldExtension = findExtension(mbldWcifEvent!, mbldCubesExtensionId);
+        let mbldExtensionCubesCount = mbldExtension?.data?.requestedScrambles;
+
+        const fetchedBestMbldAttempt = queryClient.getQueryData<number>([
+            "best-mbld-attempt",
+            wcifs[competitions[i].id].persons,
+        ]);
 
         // We should warn in case of mbld
         if (
             !!mbldExtensionCubesCount &&
-            store.getState().eventDataSlice.bestMbldAttempt! >
-                Number(mbldExtensionCubesCount)
+            fetchedBestMbldAttempt! > Number(mbldExtensionCubesCount)
         ) {
             let items = container.querySelectorAll("tfoot tr th[colspan]");
             expect(items[items.length - 1].innerHTML).toContain(
@@ -430,7 +437,7 @@ it("Logged user", async () => {
 
     // Get back to manual selection
     await act(async () => {
-        manualSelectionButton.dispatchEvent(
+        manualSelectionButton!.dispatchEvent(
             new MouseEvent("click", { bubbles: true }),
         );
     });
@@ -442,16 +449,9 @@ it("Logged user", async () => {
     });
 
     // After manual selection, events should be restored
-    expect(store.getState().wcifSlice.wcif.events).toStrictEqual(
+    expect(submittedWcif!.events).toStrictEqual(
         defaultWcif.events,
     );
-
-    // Wcifs should be cached
-    Object.keys(wcifs).forEach((competitionId) => {
-        expect(
-            store.getState().informationSlice.cachedObjects[competitionId].wcif,
-        ).toEqual(wcifs[competitionId]);
-    });
 
     // Click all buttons again
     for (let i = 0; i < competitionButtons.length; i++) {

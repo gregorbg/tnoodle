@@ -47,9 +47,6 @@ it("Changing values from event", async () => {
     const event = events[0];
     const wcifEvent = defaultWcif.events[0]; // This is one round of 333
 
-    // Enforce that fields are not disabled
-    store.dispatch(setIsManualSelection(true));
-
     // Render component
     await act(async () => {
         render(
@@ -133,15 +130,12 @@ it("Editing disabled", async () => {
     const event = events[0];
     const wcifEvent = defaultWcif.events[0]; // This is one round of 333
 
-    // Disable inputs
-    store.dispatch(setIsManualSelection(false));
-
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
                 <QueryClientProvider client={queryClient}>
-                    <EventPicker wcaEvent={event} wcifEvent={wcifEvent} />
+                    <EventPicker competitionId="TestCompetition2026" wcaEvent={event} wcifEvent={wcifEvent} />
                 </QueryClientProvider>
             </React.StrictMode>,
             { container },
@@ -165,15 +159,12 @@ it("Progress Bar showing/hiding", async () => {
     const event = events[0];
     const wcifEvent = defaultWcif.events[0]; // This is one round of 333
 
-    // Disable inputs
-    store.dispatch(setIsManualSelection(false));
-
     // Render component
     await act(async () => {
         render(
             <React.StrictMode>
                 <QueryClientProvider client={queryClient}>
-                    <EventPicker wcaEvent={event} wcifEvent={wcifEvent} />
+                    <EventPicker competitionId="TestCompetition2026" wcaEvent={event} wcifEvent={wcifEvent} />
                 </QueryClientProvider>
             </React.StrictMode>,
             { container },

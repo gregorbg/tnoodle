@@ -49,7 +49,7 @@ export const defaultWcif: Wcif = {
     extensions: [],
 };
 
-const getWcifQueryKey = (competitionId?: string) => [
+export const getWcifQueryKey = (competitionId?: string) => [
     "competitionWcif",
     competitionId,
 ];

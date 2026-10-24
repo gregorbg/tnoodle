@@ -69,6 +69,7 @@ it("Show editing warn if case of competition selected", async () => {
     const queryClient = getDefaultQueryClient();
 
     // Choose a competition
+    const competitionId = competitions[0].id;
     const competition = wcifs[competitions[0].id];
     store.dispatch(setWcif(competition));
 

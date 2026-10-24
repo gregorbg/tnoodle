@@ -25,6 +25,9 @@ afterEach(() => {
 it("Each competition fetched from the website must become a button", async () => {
     const queryClient = getDefaultQueryClient();
 
+    const setCompetitionId = jest.fn();
+    const setShowColorPicker = jest.fn();
+
     // Turn on mocking behavior
     jest.spyOn(wcaApi, "isLogged").mockImplementation(() => true);
 
@@ -41,7 +44,7 @@ it("Each competition fetched from the website must become a button", async () =>
         render(
             <React.StrictMode>
                 <QueryClientProvider client={queryClient}>
-                    <SideBar />
+                    <SideBar setCompetitionId={setCompetitionId} showColorPicker={false} setShowColorPicker={setShowColorPicker} />
                 </QueryClientProvider>
             </React.StrictMode>,
             { container },
