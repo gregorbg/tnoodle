@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
-import WcaApi from "../api/wca.api";
+import wcaApi from "../api/wca.api";
 import type CurrentTnoodle from "../model/CurrentTnoodle";
 import { setWcif } from "../redux/slice/WcifSlice";
 import { frontendStatusExtensionId } from "../util/wcif.util";
 import type RootState from "../model/RootState";
 import { setExtensionLazily } from "../util/extension.util";
-import { useAuth } from "react-oidc-context";
 import { isUsingStaging } from "../api/wca.oidc";
 
 const VersionInfo = () => {
@@ -31,16 +30,12 @@ const VersionInfo = () => {
     const [signatureValid, setSignatureValid] = useState<boolean>(false);
     const [versionAllowed, setVersionAllowed] = useState<boolean>(false);
 
-    const oidcAuth = useAuth();
-
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (!oidcAuth.isAuthenticated) {
+        if (!wcaApi.isLogged) {
             return;
         }
-
-        const wcaApi = new WcaApi(oidcAuth.user!.access_token);
 
         // Fetch from WCA API.
         wcaApi.fetchVersionInfo().then((response) => {

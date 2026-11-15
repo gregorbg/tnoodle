@@ -1,6 +1,7 @@
 import { BASE_PATH } from "../../paths";
 import { type OidcClientSettings, User } from "oidc-client-ts";
 import { getQueryParameter } from "../util/query.param.util";
+import { setWcaAccessToken } from "./wca.api";
 
 export function isUsingStaging() {
     return getQueryParameter("staging") === "true";
@@ -19,6 +20,10 @@ export function gotoPreLoginPath(user?: User) {
         document.title,
         window.location.origin + BASE_PATH + restoredSearch,
     );
+
+    if (user !== undefined) {
+        setWcaAccessToken(user);
+    }
 }
 
 export const getWcaOrigin = () => {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Collapse, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import tnoodleApi from "../api/tnoodle.api";
-import WcaApi from "../api/wca.api";
+import wcaApi from "../api/wca.api";
 import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
 import {
@@ -69,14 +69,12 @@ const SideBar = () => {
     }, [handleIsOpen]);
 
     useEffect(() => {
-        if (!oidcAuth.isAuthenticated) {
+        if (!wcaApi.isLogged) {
             setMe(undefined);
             setUpcomingCompetitions(undefined);
 
             return;
         }
-
-        const wcaApi = new WcaApi(oidcAuth.user!.access_token);
 
         if (!me) {
             setLoadingUser(true);
@@ -211,7 +209,6 @@ const SideBar = () => {
                 let cachedBestMbldAttempt = cachedObject.bestMbldAttempt;
                 dispatch(setBestMbldAttempt(cachedBestMbldAttempt));
             } else if (!!backendWcifVersion) {
-                const wcaApi = new WcaApi(oidcAuth.user!.access_token);
                 setLoadingCompetitionInfo(true);
 
                 wcaApi
