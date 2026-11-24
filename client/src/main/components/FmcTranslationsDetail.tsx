@@ -3,12 +3,12 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
-import { client as tnoodleClient } from "../api/tnoodle";
-import type { FmcLanguage } from "../api/tnoodle.schemas";
 import type { WcifEvent } from "../api/wca.schemas";
 import { fmcTranslationsExtensionId } from "../util/wcif.util";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { findExtension, setExtensionLazily } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
+import { useTNoodleQueries } from "../api/client.ts";
 
 const TRANSLATIONS_PER_LINE = 3;
 
@@ -26,16 +26,8 @@ const FmcTranslationsDetail = ({
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
 
-    const [availableTranslations, setAvailableTranslations] =
-        useState<FmcLanguage[]>();
-
-    useEffect(() => {
-        if (availableTranslations === undefined) {
-            tnoodleClient.getFmcSheetLanguages().then((response) => {
-                setAvailableTranslations(response);
-            });
-        }
-    }, [availableTranslations]);
+    const tnoodleQueries = useTNoodleQueries();
+    const { data: availableTranslations } = useQuery(tnoodleQueries.getFmcSheetLanguagesOptions());
 
     const [showTranslations, setShowTranslations] = useState(false);
 

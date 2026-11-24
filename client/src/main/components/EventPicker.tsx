@@ -59,8 +59,12 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
 
     const [scrambledPuzzleSvg, setScrambledPuzzleSvg] = useState<string>();
 
-    const [defaultColorScheme, setDefaultColorScheme] =
-        useState<Record<string, string>>();
+    const { data: defaultColorScheme } = useQuery({
+        ...tnoodleQueries.getDefaultColorSchemeOptions({
+            path: { puzzleId: wcaEvent.puzzle_id },
+        }),
+        enabled: wcifEvent.rounds.length > 0,
+    });
 
     const [showColorSchemeConfig, setShowColorSchemeConfig] =
         useState<boolean>(false);
@@ -115,20 +119,6 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     }, [wcaEvent.puzzle_id, colorScheme, fetchDisplayScramble]);
 
     const dispatch = useDispatch();
-
-    useEffect(() => {
-        if (wcifEvent.rounds.length > 0) {
-            if (defaultColorScheme === undefined) {
-                tnoodleClient
-                    .getDefaultColorScheme({
-                        path: { puzzleId: wcaEvent.puzzle_id },
-                    })
-                    .then((response) => {
-                        setDefaultColorScheme(response);
-                    });
-            }
-        }
-    }, [wcaEvent.puzzle_id, wcifEvent.rounds, defaultColorScheme]);
 
     const dispatchWcifEvent = useCallback(
         (newWcifEvent: WcifEvent) => {
