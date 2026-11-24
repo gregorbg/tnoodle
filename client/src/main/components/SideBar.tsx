@@ -28,6 +28,8 @@ import type { CompetitionSummary, User } from "../api/wca.schemas";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
 import { client as wcaClient, configure } from "../api/wca";
+import { useTNoodleQueries } from "../api/client.ts";
+import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
     const [loadingUser, setLoadingUser] = useState(false);
@@ -38,15 +40,15 @@ const SideBar = () => {
         (state: RootState) => state.informationSlice.cachedObjects,
     );
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
-    const backendWcifVersion = useSelector(
-        (state: RootState) => state.wcifSlice.backendWcifVersion,
-    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
+
+    const tnoodleQueries = useTNoodleQueries();
+    const { data: backendWcifVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions());
 
     const [me, setMe] = useState<User>();
     const [upcomingCompetitions, setUpcomingCompetitions] =

@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { WcaEvent, WcaFormat } from "../../api/tnoodle.schemas";
 import type { Wcif, WcifEvent } from "../../api/wca.schemas";
 import { competitionName2Id } from "../../util/competition.name.util";
 import {
@@ -11,16 +10,10 @@ import {
 } from "../../util/wcif.util";
 
 interface WcifState {
-    wcaEvents?: WcaEvent[];
-    wcaFormats?: WcaFormat[];
-    backendWcifVersion?: string;
     wcif: Wcif;
 }
 
 const initialState: WcifState = {
-    wcaEvents: undefined,
-    wcaFormats: undefined,
-    backendWcifVersion: undefined,
     wcif: { ...defaultWcif },
 };
 
@@ -49,15 +42,6 @@ export const wcifSlice = createSlice({
                     action.payload,
                 ],
             };
-        },
-        setWcaEvents: (state, action: PayloadAction<WcaEvent[]>) => {
-            state.wcaEvents = action.payload;
-        },
-        setWcaFormats: (state, action: PayloadAction<WcaFormat[]>) => {
-            state.wcaFormats = action.payload;
-        },
-        setBackendWcifVersion: (state, action: PayloadAction<string>) => {
-            state.backendWcifVersion = action.payload;
         },
         setWcif: (state, action: PayloadAction<Wcif>) => {
             state.wcif = {
@@ -89,8 +73,5 @@ export const wcifSlice = createSlice({
 export const {
     setCompetitionName,
     setWcifEvent,
-    setWcaEvents,
-    setWcaFormats,
-    setBackendWcifVersion,
     setWcif,
 } = wcifSlice.actions;

@@ -22,6 +22,8 @@ import SVG from "react-inlinesvg";
 import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
 import { setExtensionLazily, findExtension } from "../util/extension.util";
+import { useQuery } from "@tanstack/react-query";
+import { useTNoodleQueries } from "../api/client.ts";
 
 interface EventPickerProps {
     wcaEvent: WcaEvent;
@@ -29,12 +31,6 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
-    const wcaFormats = useSelector(
-        (state: RootState) => state.wcifSlice.wcaFormats,
-    );
-    const wcaEvents = useSelector(
-        (state: RootState) => state.wcifSlice.wcaEvents,
-    );
     const wcifEvents = useSelector(
         (state: RootState) => state.wcifSlice.wcif.events,
     );
@@ -53,6 +49,11 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
+
+    const tnoodleQueries = useTNoodleQueries();
+
+    const { data: wcaFormats } = useQuery(tnoodleQueries.getWcaFormatsOptions());
+    const { data: wcaEvents } = useQuery(tnoodleQueries.getWcaEventsOptions());
 
     const [solvedPuzzleSvg, setSolvedPuzzleSvg] = useState<string>();
 
