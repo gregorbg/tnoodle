@@ -24,16 +24,13 @@ import { defaultWcif } from "../util/wcif.util";
 import "./SideBar.css";
 import type { Wcif } from "../api/wca.schemas";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
-import type { CompetitionSummary, User } from "../api/wca.schemas";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
 import { client as wcaClient, configure } from "../api/wca";
-import { useTNoodleQueries } from "../api/client.ts";
+import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
 import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
-    const [loadingUser, setLoadingUser] = useState(false);
-    const [loadingCompetitions, setLoadingCompetitions] = useState(false);
     const [loadingCompetitionInfo, setLoadingCompetitionInfo] = useState(false);
 
     const cachedObjects = useSelector(
@@ -48,11 +45,9 @@ const SideBar = () => {
     );
 
     const tnoodleQueries = useTNoodleQueries();
-    const { data: backendWcifVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions());
+    const wcaQueries = useWcaQueries();
 
-    const [me, setMe] = useState<User>();
-    const [upcomingCompetitions, setUpcomingCompetitions] =
-        useState<CompetitionSummary[]>();
+    const { data: backendWcifVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions());
 
     const [isOpen, setIsOpen] = useState(true);
 
@@ -63,48 +58,30 @@ const SideBar = () => {
 
     const oidcAuth = useAuth();
 
+    const { data: user, isLoading: loadingUser } = useQuery({
+        ...wcaQueries.getMeOptions(),
+        enabled: oidcAuth.isAuthenticated,
+    });
+
+    const { data: upcomingCompetitions, isLoading: loadingCompetitions } =
+        useQuery({
+            ...wcaQueries.getCompetitionsOptions({
+                query: {
+                    managed_by_me: true,
+                    start: new Date(
+                        Date.now() - 7 * 24 * 60 * 60 * 1000,
+                    ).toISOString(),
+                    sort: "start_date",
+                },
+            }),
+            enabled: oidcAuth.isAuthenticated,
+        });
+
     useEffect(() => {
         window.addEventListener("resize", handleIsOpen);
 
         return () => window.removeEventListener("resize", handleIsOpen);
     }, [handleIsOpen]);
-
-    useEffect(() => {
-        if (!oidcAuth.isAuthenticated) {
-            setMe(undefined);
-            setUpcomingCompetitions(undefined);
-
-            return;
-        }
-
-        const wcaToken = oidcAuth.user!.access_token;
-        configure({ auth: { bearer: wcaToken } });
-
-        if (!me) {
-            setLoadingUser(true);
-
-            wcaClient
-                .getMe()
-                .then((response) => setMe(response.me))
-                .finally(() => setLoadingUser(false));
-        }
-
-        if (!upcomingCompetitions) {
-            const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-            setLoadingCompetitions(true);
-
-            wcaClient
-                .getCompetitions({
-                    query: {
-                        managed_by_me: true,
-                        start: oneWeekAgo.toISOString(),
-                        sort: "start_date",
-                    },
-                })
-                .then((response) => setUpcomingCompetitions(response))
-                .finally(() => setLoadingCompetitions(false));
-        }
-    }, [upcomingCompetitions, me, oidcAuth.isAuthenticated, oidcAuth.user]);
 
     const competitions = useMemo(() => {
         if (
@@ -310,9 +287,9 @@ const SideBar = () => {
                         Log In
                     </button>
                 )}
-                {!!me && (
+                {!!user?.me && (
                     <p className="text-white">
-                        Welcome, {me.name}.
+                        Welcome, {user.me.name}.
                         {!!competitions &&
                             ` You have ${
                                 competitions.length
