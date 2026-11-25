@@ -13,7 +13,7 @@ const EVENTS_PER_LINE = 2;
 
 const EventPickerTable = () => {
     const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
+        (state: RootState) => state.scramblingSlice.isManualSelection,
     );
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
 

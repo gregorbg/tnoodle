@@ -36,7 +36,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         (state: RootState) => state.wcifSlice.wcif.events,
     );
     const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
+        (state: RootState) => state.scramblingSlice.isManualSelection,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,

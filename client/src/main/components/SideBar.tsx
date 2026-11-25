@@ -4,10 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
 import {
-    addCachedObject,
+    setFileZip,
     setIsManualSelection,
-} from "../redux/slice/InformationSlice";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
+} from "../redux/slice/ScramblingSlice";
 import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
@@ -28,9 +27,6 @@ import { useQuery } from "@tanstack/react-query";
 const SideBar = () => {
     const [loadingCompetitionInfo, setLoadingCompetitionInfo] = useState(false);
 
-    const cachedObjects = useSelector(
-        (state: RootState) => state.informationSlice.cachedObjects,
-    );
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
@@ -135,15 +131,7 @@ const SideBar = () => {
                 return;
             }
 
-            // For quick switching between competitions.
-            let cachedObject = cachedObjects[competitionId];
-
-            if (
-                !!cachedObject &&
-                cachedObject.wcif.formatVersion === backendWcifVersion
-            ) {
-                updateWcif(cachedObject.wcif);
-            } else if (!!backendWcifVersion) {
+            if (!!backendWcifVersion) {
                 const wcaToken = oidcAuth.user!.access_token;
                 configure({ auth: { bearer: wcaToken } });
 
@@ -156,23 +144,13 @@ const SideBar = () => {
                             formatVersion: backendWcifVersion,
                         },
                     })
-                    .then((response) => {
-                        updateWcif(response);
-                        dispatch(
-                            addCachedObject({
-                                competitionId,
-                                identifier: "wcif",
-                                object: response,
-                            }),
-                        );
-                    })
+                    .then(updateWcif)
                     .finally(() => setLoadingCompetitionInfo(false));
             }
         },
         [
             dispatch,
             wcif.id,
-            cachedObjects,
             backendWcifVersion,
             updateWcif,
             oidcAuth.user,

@@ -13,7 +13,7 @@ import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
 const VersionInfo = () => {
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
+        (state: RootState) => state.scramblingSlice.isManualSelection,
     );
 
     const tnoodleQueries = useTNoodleQueries();

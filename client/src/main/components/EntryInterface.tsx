@@ -9,7 +9,7 @@ const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
+        (state: RootState) => state.scramblingSlice.isManualSelection,
     );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,

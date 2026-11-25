@@ -26,7 +26,7 @@ const Main = () => {
     );
     const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const isManualSelection = useSelector(
-        (state: RootState) => state.informationSlice.isManualSelection,
+        (state: RootState) => state.scramblingSlice.isManualSelection,
     );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
