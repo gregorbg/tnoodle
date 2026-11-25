@@ -2,12 +2,13 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
-import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
+import { setPassword } from "../redux/slice/ScramblingSlice";
 import {
     defaultWcif,
     useCompetitionWcif,
     useSetCompetitionName,
 } from "../util/wcif.util.ts";
+import { useIsMutating } from "@tanstack/react-query";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -18,21 +19,17 @@ const EntryInterface = () => {
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+
+    const generatingScrambles =
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const dispatch = useDispatch();
     const setCompetitionName = useSetCompetitionName(competitionId);
 
-    const handlePasswordChange = (password: string) => {
+    const handlePasswordChange = (password: string) =>
         dispatch(setPassword(password));
-
-        // Require another zip with the new password, in case there was a zip generated.
-        dispatch(setFileZip());
-    };
 
     return (
         <>

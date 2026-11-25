@@ -21,7 +21,11 @@ import React, { useCallback, useMemo, useState } from "react";
 import SVG from "react-inlinesvg";
 import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+    keepPreviousData,
+    useIsMutating,
+    useQuery,
+} from "@tanstack/react-query";
 import { useTNoodleQueries } from "../api/client.ts";
 import {
     defaultWcif,
@@ -38,9 +42,6 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const competitionId = useSelector(
         (state: RootState) => state.scramblingSlice.competitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
     const scramblingProgressCurrent = useSelector(
         (state: RootState) => state.scramblingSlice.scramblingProgressCurrent,
     );
@@ -50,6 +51,9 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
+
+    const generatingScrambles =
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 

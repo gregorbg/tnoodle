@@ -1,12 +1,10 @@
-import { type FormEvent, useRef } from "react";
+import { type FormEvent, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ScrambleClient } from "../api/tnoodle.socket";
 import { isUsingStaging } from "../api/wca.oidc";
 import type RootState from "../model/RootState";
 import {
     resetScramblingProgressCurrent,
-    setFileZip,
-    setGeneratingScrambles,
     setScramblingProgressCurrentEvent,
     setScramblingProgressTarget,
 } from "../redux/slice/ScramblingSlice";
@@ -19,6 +17,9 @@ import { useAuth } from "react-oidc-context";
 import { convertToBlob } from "../util/data.util.ts";
 import { frontendStatusExtensionId } from "../util/extension.util.ts";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util.ts";
+import type { Wcif } from "../api/wca.schemas.ts";
+import { useMutation } from "@tanstack/react-query";
+import _ from "lodash";
 
 const Main = () => {
     const competitionId = useSelector(
@@ -26,12 +27,6 @@ const Main = () => {
     );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
-    );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
-    const fileZip = useSelector(
-        (state: RootState) => state.scramblingSlice.fileZip,
     );
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
@@ -42,6 +37,50 @@ const Main = () => {
 
     const dispatch = useDispatch();
 
+    const onScrambleHandShake = (payload: Record<string, number>) =>
+        dispatch(setScramblingProgressTarget(payload));
+
+    const onScrambleProgress = (eventId: string) =>
+        dispatch(setScramblingProgressCurrentEvent(eventId));
+
+    const onScrambleCompleted = () =>
+        dispatch(resetScramblingProgressCurrent());
+
+    const {
+        data: fileZip,
+        mutate: generateZip,
+        isPending: generatingScrambles,
+        variables,
+    } = useMutation({
+        mutationKey: ["scramble-zip"] as const,
+        mutationFn: async ({
+            submitWcif,
+            submitPassword,
+        }: {
+            submitWcif: Wcif;
+            submitPassword: string;
+        }) => {
+            const scrambleClient = new ScrambleClient(
+                onScrambleHandShake,
+                onScrambleProgress,
+            );
+
+            return scrambleClient.loadScrambles({
+                wcif: submitWcif,
+                zipPassword: !submitPassword ? null : submitPassword,
+            }, submitWcif.id);
+        },
+        onError: interceptorRef.current?.updateMessage,
+        onSettled: onScrambleCompleted,
+    });
+
+    const inputsChanged = useMemo(
+        () =>
+            variables?.submitPassword !== password ||
+            !_.isEqual(variables?.submitWcif, wcif),
+        [wcif, password, variables],
+    );
+
     const onSubmit = (evt: FormEvent) => {
         evt.preventDefault();
 
@@ -49,36 +88,14 @@ const Main = () => {
             return;
         }
 
-        if (!!fileZip) {
+        if (fileZip !== undefined && !inputsChanged) {
             convertToBlob(fileZip).then((blob) => downloadZip(blob));
         } else {
-            generateZip();
-        }
-    };
-
-    const onScrambleHandShake = (payload: Record<string, number>) =>
-        dispatch(setScramblingProgressTarget(payload));
-
-    const onScrambleProgress = (eventId: string) =>
-        dispatch(setScramblingProgressCurrentEvent(eventId));
-
-    const generateZip = () => {
-        const scrambleClient = new ScrambleClient(
-            onScrambleHandShake,
-            onScrambleProgress,
-        );
-
-        const zipPassword = !password ? null : password;
-
-        scrambleClient
-            .loadScrambles({ wcif, zipPassword }, wcif.id)
-            .then((plainZip) => dispatch(setFileZip(plainZip)))
-            .catch((err) => interceptorRef.current?.updateMessage(err))
-            .finally(() => {
-                dispatch(setGeneratingScrambles(false));
-                dispatch(resetScramblingProgressCurrent());
+            generateZip({
+                submitWcif: wcif,
+                submitPassword: password,
             });
-        dispatch(setGeneratingScrambles(true));
+        }
     };
 
     const downloadZip = (blob: Blob) => {

@@ -1,10 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type WebsocketBlobResult from "../../model/WebsocketBlobResult";
 
 interface ScramblingState {
     competitionId?: string
-    fileZip?: WebsocketBlobResult;
-    generatingScrambles: boolean;
     password: string;
     scramblingProgressCurrent: Record<string, number>;
     scramblingProgressTarget: Record<string, number>;
@@ -12,8 +9,6 @@ interface ScramblingState {
 
 export const initialState: ScramblingState = {
     competitionId: undefined,
-    fileZip: undefined,
-    generatingScrambles: false,
     password: "",
     scramblingProgressCurrent: {},
     scramblingProgressTarget: {},
@@ -25,15 +20,6 @@ export const scramblingSlice = createSlice({
     reducers: {
         setCompetitionId: (state, action: PayloadAction<string | undefined>) => {
             state.competitionId = action.payload;
-        },
-        setFileZip: (
-            state,
-            action: PayloadAction<WebsocketBlobResult | undefined>,
-        ) => {
-            state.fileZip = action.payload;
-        },
-        setGeneratingScrambles: (state, action: PayloadAction<boolean>) => {
-            state.generatingScrambles = action.payload;
         },
         setPassword: (state, action: PayloadAction<string>) => {
             state.password = action.payload;
@@ -59,9 +45,7 @@ export const scramblingSlice = createSlice({
 
 export const {
     setCompetitionId,
-    setFileZip,
     setPassword,
-    setGeneratingScrambles,
     resetScramblingProgressCurrent,
     setScramblingProgressCurrentEvent,
     setScramblingProgressTarget,

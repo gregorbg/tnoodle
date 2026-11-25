@@ -17,7 +17,7 @@ import {
     upsertExtension,
 } from "../util/extension.util";
 import { useTNoodleApi } from "../api/client.ts";
-import { useQuery } from "@tanstack/react-query";
+import { useIsMutating, useQuery } from "@tanstack/react-query";
 
 interface MbldDetailProps {
     mbldWcifEvent: WcifEvent;
@@ -27,9 +27,9 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
     const competitionId = useSelector(
         (state: RootState) => state.scramblingSlice.competitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
+
+    const generatingScrambles =
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 

@@ -5,7 +5,6 @@ import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
 import {
     setCompetitionId,
-    setFileZip,
 } from "../redux/slice/ScramblingSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
@@ -19,18 +18,18 @@ import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
 import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
-import { useQuery } from "@tanstack/react-query";
+import { useIsMutating, useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
     const competitionId = useSelector(
         (state: RootState) => state.scramblingSlice.competitionId,
     );
-    const generatingScrambles = useSelector(
-        (state: RootState) => state.scramblingSlice.generatingScrambles,
-    );
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
+
+    const generatingScrambles =
+        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const tnoodleQueries = useTNoodleQueries();
     const wcaQueries = useWcaQueries();
@@ -102,12 +101,10 @@ const SideBar = () => {
     const pluralize = (string: string, number: number) =>
         string + (number > 1 ? "s" : "");
 
-    const handleManualSelection = () => {
+    const handleManualSelection = useCallback(() => {
         dispatch(setCompetitionId(undefined));
-        dispatch(setFileZip());
-
         deleteParameter("competitionId");
-    };
+    }, [dispatch]);
 
     const handleCompetitionSelection = useCallback(
         (competitionId: string) => {
