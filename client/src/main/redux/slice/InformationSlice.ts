@@ -22,7 +22,7 @@ export const informationSlice = createSlice({
             state,
             action: PayloadAction<{
                 competitionId: string;
-                identifier: string;
+                identifier: keyof CachedObject;
                 object: any;
             }>,
         ) => {

@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Collapse, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { client as tnoodleClient } from "../api/tnoodle";
 import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
 import {
     addCachedObject,
     setIsManualSelection,
 } from "../redux/slice/InformationSlice";
-import {
-    setBestMbldAttempt,
-    setSuggestedFmcTranslations,
-} from "../redux/slice/EventDataSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
@@ -115,57 +110,11 @@ const SideBar = () => {
     const handleManualSelection = () => {
         dispatch(setIsManualSelection(true));
         dispatch(setWcif({ ...defaultWcif }));
-        dispatch(setBestMbldAttempt());
         dispatch(setCompetitionName(getDefaultCompetitionName()));
         dispatch(setFileZip());
-        dispatch(setSuggestedFmcTranslations());
 
         deleteParameter("competitionId");
     };
-
-    const getAndCacheBestMbldAttempt = useCallback(
-        (wcif: Wcif) => {
-            tnoodleClient
-                .calculateMbldBest({
-                    body: wcif.persons,
-                })
-                .then((response) => {
-                    const attempted = response?.attempted;
-
-                    if (!!attempted) {
-                        dispatch(
-                            addCachedObject({
-                                competitionId: wcif.id,
-                                identifier: "bestMbldAttempt",
-                                object: attempted,
-                            }),
-                        );
-                        dispatch(setBestMbldAttempt(attempted));
-                    }
-                });
-        },
-        [dispatch],
-    );
-
-    const getAndCacheSuggestedFmcTranslations = useCallback(
-        (wcif: Wcif) => {
-            tnoodleClient
-                .calculateSuggestedFmcTranslations({
-                    body: wcif.persons,
-                })
-                .then((response) => {
-                    dispatch(
-                        addCachedObject({
-                            competitionId: wcif.id,
-                            identifier: "suggestedFmcTranslations",
-                            object: response,
-                        }),
-                    );
-                    dispatch(setSuggestedFmcTranslations(response));
-                });
-        },
-        [dispatch],
-    );
 
     const updateWcif = useCallback(
         (wcif: Wcif) => {
@@ -194,15 +143,6 @@ const SideBar = () => {
                 cachedObject.wcif.formatVersion === backendWcifVersion
             ) {
                 updateWcif(cachedObject.wcif);
-
-                let cachedSuggestedFmcTranslations =
-                    cachedObject.suggestedFmcTranslations;
-                dispatch(
-                    setSuggestedFmcTranslations(cachedSuggestedFmcTranslations),
-                );
-
-                let cachedBestMbldAttempt = cachedObject.bestMbldAttempt;
-                dispatch(setBestMbldAttempt(cachedBestMbldAttempt));
             } else if (!!backendWcifVersion) {
                 const wcaToken = oidcAuth.user!.access_token;
                 configure({ auth: { bearer: wcaToken } });
@@ -225,8 +165,6 @@ const SideBar = () => {
                                 object: response,
                             }),
                         );
-                        getAndCacheSuggestedFmcTranslations(response);
-                        getAndCacheBestMbldAttempt(response);
                     })
                     .finally(() => setLoadingCompetitionInfo(false));
             }
@@ -236,8 +174,6 @@ const SideBar = () => {
             wcif.id,
             cachedObjects,
             backendWcifVersion,
-            getAndCacheBestMbldAttempt,
-            getAndCacheSuggestedFmcTranslations,
             updateWcif,
             oidcAuth.user,
         ],

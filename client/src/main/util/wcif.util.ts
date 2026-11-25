@@ -1,6 +1,19 @@
-import type Wcif from "../model/Wcif";
-import type WcifEvent from "../model/WcifEvent";
-import { getDefaultCompetitionName } from "./competition.name.util";
+import {
+    competitionName2Id,
+    getDefaultCompetitionName,
+} from "./competition.name.util";
+import {
+    keepPreviousData,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
+import { getWcifQueryKey } from "../api/wca.tanstack.ts";
+import { buildFmcExtension, setExtensionLazily } from "./extension.util.ts";
+import { useCallback } from "react";
+import type { Wcif, WcifEvent, WcifPerson } from "../api/wca.schemas.ts";
+import { useTNoodleApi, useWcaApi } from "../api/client.ts";
+import type { GetWcifVariables } from "../api/wca.ts";
+import type { Extension } from "../model/Extension.ts";
 
 export const copiesExtensionId =
     "org.worldcubeassociation.tnoodle.SheetCopyCount";
@@ -38,7 +51,7 @@ export const buildMbldExtension = (mbld: number) => {
 };
 
 // Add 1 round of 3x3x3
-let default333: WcifEvent = {
+const default333: WcifEvent = {
     id: "333",
     rounds: [
         {
@@ -51,7 +64,8 @@ let default333: WcifEvent = {
     extensions: [],
 };
 
-let name = getDefaultCompetitionName();
+const name = getDefaultCompetitionName();
+
 export const defaultWcif: Wcif = {
     formatVersion: "1.0",
     name,
@@ -61,4 +75,151 @@ export const defaultWcif: Wcif = {
     persons: [],
     schedule: { numberOfDays: 0, venues: [] },
     extensions: [],
+};
+
+export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) => ["suggestedFmcTranslations", persons] as const;
+export const getBestMbldAttemptKey = (persons: WcifPerson[]) => ["bestMbldAttempt", persons] as const;
+
+export const useCompetitionWcif = (competitionId?: string) => {
+    const wcaApiClient = useWcaApi();
+    const wcifParams: GetWcifVariables = { path: { competitionId } }
+
+    const tnoodleApiClient = useTNoodleApi();
+
+    return useQuery({
+        queryKey: getWcifQueryKey(wcifParams),
+        queryFn: async ({ client, signal }) => {
+            const wcif = await wcaApiClient.getWcif(wcifParams, { signal });
+
+            const [fmcTranslations, mbldScrambleCount] = await Promise.all([
+                tnoodleApiClient.calculateSuggestedFmcTranslations({
+                    body: wcif.persons,
+                }, { signal }),
+                tnoodleApiClient.calculateMbldBest({
+                    body: wcif.persons,
+                }, { signal }),
+            ]);
+
+            client.setQueryData(
+                getSuggestedFmcTranslationsKey(wcif.persons),
+                fmcTranslations,
+            );
+            client.setQueryData(
+                getBestMbldAttemptKey(wcif.persons),
+                mbldScrambleCount,
+            );
+
+            return {
+                ...wcif,
+                events: wcif.events.map((wcifEvent) => {
+                    const roundsExtended = {
+                        ...wcifEvent,
+                        rounds: wcifEvent.rounds.map((eventRound) =>
+                            setExtensionLazily(
+                                eventRound,
+                                copiesExtensionId,
+                                getDefaultCopiesExtension,
+                            ),
+                        ),
+                        extensions: wcifEvent.extensions.filter(
+                            (it) =>
+                                it.id !== fmcTranslationsExtensionId &&
+                                it.id !== mbldCubesExtensionId,
+                        ),
+                    };
+
+                    return setExtensionLazily(
+                        setExtensionLazily(
+                            roundsExtended,
+                            fmcTranslationsExtensionId,
+                            () => buildFmcExtension(fmcTranslations),
+                        ),
+                        mbldCubesExtensionId,
+                        () =>
+                            buildMbldExtension(
+                                mbldScrambleCount.attempted,
+                            ),
+                    );
+                }),
+            };
+        },
+        enabled: competitionId !== undefined,
+        initialData: () =>
+            competitionId === undefined ? defaultWcif : undefined,
+        placeholderData: keepPreviousData,
+    });
+};
+
+export const useCompetitionWcifDispatch = (competitionId?: string) => {
+    const queryClient = useQueryClient();
+
+    return useCallback(
+        (updater: (wcif: Wcif) => Wcif) => {
+            return queryClient.setQueryData(
+                getWcifQueryKey(competitionId),
+                (wcif: Wcif) => ({
+                    ...wcif,
+                    ...updater(wcif),
+                }),
+            );
+        },
+        [queryClient, competitionId],
+    );
+};
+
+export const useSetCompetitionName = (competitionId?: string) => {
+    const dispatch = useCompetitionWcifDispatch(competitionId);
+
+    return useCallback(
+        (name: string) => {
+            return dispatch((wcif) => ({
+                ...wcif,
+                name,
+                shortName: name,
+                id: competitionName2Id(name),
+            }));
+        },
+        [dispatch],
+    );
+};
+
+export const useSetWcifEvent = (competitionId?: string) => {
+    const dispatch = useCompetitionWcifDispatch(competitionId);
+
+    return useCallback(
+        (event: WcifEvent) => {
+            return dispatch((wcif) => ({
+                ...wcif,
+                events: [
+                    ...wcif.events.filter(
+                        (wcaEvent) => wcaEvent.id !== event.id,
+                    ),
+                    event,
+                ],
+            }));
+        },
+        [dispatch],
+    );
+};
+
+export const useSetEventExtension = (competitionId?: string) => {
+    const setWcifEvent = useSetWcifEvent(competitionId);
+
+    return useCallback(
+        <T extends WcifEvent>(
+            extendable: T,
+            extensionId: string,
+            buildExtension: () => Extension | null,
+            middleware: (ext: T) => T = (ext) => ext,
+        ) => {
+            const updatedExtension = setExtensionLazily(
+                extendable,
+                extensionId,
+                buildExtension,
+            );
+
+            return setWcifEvent(middleware(updatedExtension));
+        },
+        [setWcifEvent],
+    );
 };

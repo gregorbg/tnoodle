@@ -4,25 +4,41 @@ import type RootState from "../model/RootState";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import type { WcifEvent } from "../api/wca.schemas";
-import { buildMbldExtension, mbldCubesExtensionId } from "../util/wcif.util";
-import { useCallback, useEffect, useMemo } from "react";
+import {
+    buildMbldExtension,
+    getBestMbldAttemptKey,
+    mbldCubesExtensionId,
+} from "../util/wcif.util";
+import { useCallback, useMemo } from "react";
 import {
     findExtension,
     setExtensionLazily,
     upsertExtension,
 } from "../util/extension.util";
+import { useTNoodleApi } from "../api/client.ts";
+import { useQuery } from "@tanstack/react-query";
 
 interface MbldDetailProps {
     mbldWcifEvent: WcifEvent;
 }
 
 const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const bestMbldAttempt = useSelector(
-        (state: RootState) => state.eventDataSlice.bestMbldAttempt,
-    );
+    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const tnoodleApiClient = useTNoodleApi();
+
+    const { data: bestMbldAttempt } = useQuery({
+        queryKey: getBestMbldAttemptKey(wcif.persons),
+        queryFn: (options) =>
+            tnoodleApiClient.calculateMbldBest(
+                { body: wcif.persons },
+                options,
+            ),
+        select: (data) => data.attempted,
+    });
 
     const mbld = useMemo(() => {
         return (
@@ -37,40 +53,26 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
 
     const updateEventMbld = useCallback(
         (mbld: number) => {
-            setExtensionLazily(
+            const updatedEvent = setExtensionLazily(
                 mbldWcifEvent,
                 mbldCubesExtensionId,
                 () => buildMbldExtension(mbld),
-                (newWcifEvent) => {
-                    newWcifEvent.rounds = newWcifEvent.rounds.map(
-                        (wcifRound) => {
-                            const overrideExtension = buildMbldExtension(mbld);
-
-                            return upsertExtension(
-                                wcifRound,
-                                overrideExtension,
-                            );
-                        },
-                    );
-
-                    dispatch(setWcifEvent(newWcifEvent));
-                    dispatch(setFileZip());
-                },
             );
+
+            const updatedWithRounds = {
+                ...updatedEvent,
+                rounds: updatedEvent.rounds.map((wcifRound) => {
+                    const overrideExtension = buildMbldExtension(mbld);
+
+                    return upsertExtension(wcifRound, overrideExtension);
+                }),
+            };
+
+            dispatch(setWcifEvent(updatedWithRounds));
+            dispatch(setFileZip());
         },
         [dispatch, mbldWcifEvent],
     );
-
-    useEffect(() => {
-        const wcifExtension = findExtension(
-            mbldWcifEvent,
-            mbldCubesExtensionId,
-        );
-
-        if (wcifExtension === undefined && bestMbldAttempt !== undefined) {
-            updateEventMbld(bestMbldAttempt);
-        }
-    }, [mbldWcifEvent, updateEventMbld, bestMbldAttempt]);
 
     return (
         <tfoot>

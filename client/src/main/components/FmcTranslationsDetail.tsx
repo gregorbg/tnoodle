@@ -1,14 +1,17 @@
 import { chunk } from "lodash";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import type { WcifEvent } from "../api/wca.schemas";
-import { fmcTranslationsExtensionId } from "../util/wcif.util";
+import {
+    fmcTranslationsExtensionId,
+    getSuggestedFmcTranslationsKey,
+} from "../util/wcif.util";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { findExtension, setExtensionLazily } from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
-import { useTNoodleQueries } from "../api/client.ts";
+import { useTNoodleApi, useTNoodleQueries } from "../api/client.ts";
 
 const TRANSLATIONS_PER_LINE = 3;
 
@@ -19,15 +22,20 @@ interface FmcTranslationsDetailProps {
 const FmcTranslationsDetail = ({
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const suggestedFmcTranslations = useSelector(
-        (state: RootState) => state.eventDataSlice.suggestedFmcTranslations,
-    );
+    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
 
     const tnoodleQueries = useTNoodleQueries();
     const { data: availableTranslations } = useQuery(tnoodleQueries.getFmcSheetLanguagesOptions());
+
+    const tnoodleApiClient = useTNoodleApi();
+
+    const { data: suggestedFmcTranslations } = useQuery({
+        queryKey: getSuggestedFmcTranslationsKey(wcif.persons),
+        queryFn: (options) => tnoodleApiClient.calculateSuggestedFmcTranslations({ body: wcif.persons }, options),
+    });
 
     const [showTranslations, setShowTranslations] = useState(false);
 
@@ -52,36 +60,16 @@ const FmcTranslationsDetail = ({
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
-            setExtensionLazily(
+            const extended = setExtensionLazily(
                 fmcWcifEvent,
                 fmcTranslationsExtensionId,
                 () => buildFmcExtension(selectedTranslations),
-                (fmcWcifEvent) => {
-                    dispatch(setWcifEvent(fmcWcifEvent));
-                    dispatch(setFileZip());
-                },
             );
+            dispatch(setWcifEvent(extended));
+            dispatch(setFileZip());
         },
         [dispatch, fmcWcifEvent],
     );
-
-    useEffect(() => {
-        const wcifExtension = findExtension(
-            fmcWcifEvent,
-            fmcTranslationsExtensionId,
-        );
-
-        if (
-            wcifExtension === undefined &&
-            suggestedFmcTranslations !== undefined
-        ) {
-            updateEventSelectedTranslations(suggestedFmcTranslations);
-        }
-    }, [
-        fmcWcifEvent,
-        updateEventSelectedTranslations,
-        suggestedFmcTranslations,
-    ]);
 
     const handleTranslation = (id: string, status: boolean) => {
         let newSelectedTranslations = selectedTranslations.filter(
