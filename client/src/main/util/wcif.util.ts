@@ -8,47 +8,20 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 import { getWcifQueryKey } from "../api/wca.tanstack.ts";
-import { buildFmcExtension, setExtensionLazily } from "./extension.util.ts";
+import {
+    buildFmcExtension,
+    buildMbldExtension,
+    copiesExtensionId,
+    fmcTranslationsExtensionId,
+    getDefaultCopiesExtension,
+    mbldCubesExtensionId,
+    setExtensionLazily,
+} from "./extension.util.ts";
 import { useCallback } from "react";
 import type { Wcif, WcifEvent, WcifPerson } from "../api/wca.schemas.ts";
 import { useTNoodleApi, useWcaApi } from "../api/client.ts";
 import type { GetWcifVariables } from "../api/wca.ts";
 import type { Extension } from "../model/Extension.ts";
-
-export const copiesExtensionId =
-    "org.worldcubeassociation.tnoodle.SheetCopyCount";
-export const colorSchemeExtensionId =
-    "org.worldcubeassociation.tnoodle.ColorScheme";
-export const frontendStatusExtensionId =
-    "org.worldcubeassociation.tnoodle.CompetitionStatus";
-export const fmcTranslationsExtensionId =
-    "org.worldcubeassociation.tnoodle.FmcLanguages";
-export const mbldCubesExtensionId =
-    "org.worldcubeassociation.tnoodle.MultiScrambleCount";
-
-/**
- * This is the default extension object the backend expects
- * @param {} copies
- */
-export const getDefaultCopiesExtension = () => {
-    return {
-        id: copiesExtensionId,
-        specUrl: "",
-        data: {
-            numCopies: 1,
-        },
-    };
-};
-
-export const buildMbldExtension = (mbld: number) => {
-    return {
-        id: mbldCubesExtensionId,
-        specUrl: "",
-        data: {
-            requestedScrambles: mbld,
-        },
-    };
-};
 
 // Add 1 round of 3x3x3
 const default333: WcifEvent = {
@@ -77,19 +50,27 @@ export const defaultWcif: Wcif = {
     extensions: [],
 };
 
+const getWcifParams = (competitionId?: string, formatVersion?: string): GetWcifVariables | undefined => {
+    if (competitionId === undefined || formatVersion === undefined) {
+        return undefined;
+    }
+
+    return { path: { competitionId, formatVersion } };
+};
+
 export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) => ["suggestedFmcTranslations", persons] as const;
 export const getBestMbldAttemptKey = (persons: WcifPerson[]) => ["bestMbldAttempt", persons] as const;
 
 export const useCompetitionWcif = (competitionId?: string) => {
     const wcaApiClient = useWcaApi();
-    const wcifParams: GetWcifVariables = { path: { competitionId } }
+    const wcifParams = getWcifParams(competitionId);
 
     const tnoodleApiClient = useTNoodleApi();
 
     return useQuery({
-        queryKey: getWcifQueryKey(wcifParams),
+        queryKey: getWcifQueryKey(),
         queryFn: async ({ client, signal }) => {
-            const wcif = await wcaApiClient.getWcif(wcifParams, { signal });
+            const wcif = await wcaApiClient.getWcif(wcifParams!, { signal });
 
             const [fmcTranslations, mbldScrambleCount] = await Promise.all([
                 tnoodleApiClient.calculateSuggestedFmcTranslations({
@@ -156,7 +137,7 @@ export const useCompetitionWcifDispatch = (competitionId?: string) => {
     return useCallback(
         (updater: (wcif: Wcif) => Wcif) => {
             return queryClient.setQueryData(
-                getWcifQueryKey(competitionId),
+                getWcifQueryKey(getWcifParams(competitionId)),
                 (wcif: Wcif) => ({
                     ...wcif,
                     ...updater(wcif),

@@ -7,20 +7,22 @@ import type { WcifEvent, WcifRound } from "../api/wca.schemas";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
 import {
-    buildMbldExtension,
+    setExtensionLazily,
+    findExtension,
     colorSchemeExtensionId,
-    copiesExtensionId,
     getDefaultCopiesExtension,
-} from "../util/wcif.util";
+    buildMbldExtension,
+    copiesExtensionId,
+} from "../util/extension.util";
 import "./EventPicker.css";
 import FmcTranslationsDetail from "./FmcTranslationsDetail";
 import MbldDetail from "./MbldDetail";
+// @ts-ignore TS2882
 import "@cubing/icons";
 import React, { useCallback, useMemo, useState } from "react";
 import SVG from "react-inlinesvg";
 import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
-import { setExtensionLazily, findExtension } from "../util/extension.util";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTNoodleQueries } from "../api/client.ts";
 

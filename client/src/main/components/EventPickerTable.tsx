@@ -4,10 +4,10 @@ import { getWcaOrigin } from "../api/wca.oidc";
 import type RootState from "../model/RootState";
 import EventPicker from "./EventPicker";
 import type { WcaEvent } from "../api/tnoodle.schemas";
-import { buildMbldExtension } from "../util/wcif.util";
 import { MBLD_DEFAULT } from "../constants/wca.constants";
 import {useTNoodleQueries} from "../api/client.ts";
 import {useQuery} from "@tanstack/react-query";
+import { buildMbldExtension } from "../util/extension.util.ts";
 
 const EVENTS_PER_LINE = 2;
 

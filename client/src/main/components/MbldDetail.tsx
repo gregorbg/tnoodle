@@ -5,13 +5,13 @@ import { setWcifEvent } from "../redux/slice/WcifSlice";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import type { WcifEvent } from "../api/wca.schemas";
 import {
-    buildMbldExtension,
     getBestMbldAttemptKey,
-    mbldCubesExtensionId,
 } from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
+    buildMbldExtension,
     findExtension,
+    mbldCubesExtensionId,
     setExtensionLazily,
     upsertExtension,
 } from "../util/extension.util";

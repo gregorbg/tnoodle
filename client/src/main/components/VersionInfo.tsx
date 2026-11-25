@@ -1,9 +1,11 @@
 import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setWcif } from "../redux/slice/WcifSlice";
-import { frontendStatusExtensionId } from "../util/wcif.util";
 import type RootState from "../model/RootState";
-import { setExtensionLazily } from "../util/extension.util";
+import {
+    frontendStatusExtensionId,
+    setExtensionLazily,
+} from "../util/extension.util";
 import { isUsingStaging } from "../api/wca.oidc";
 import { useQuery } from "@tanstack/react-query";
 import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";

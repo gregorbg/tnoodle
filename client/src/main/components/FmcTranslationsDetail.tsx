@@ -5,11 +5,14 @@ import type RootState from "../model/RootState";
 import { setFileZip } from "../redux/slice/ScramblingSlice";
 import type { WcifEvent } from "../api/wca.schemas";
 import {
-    fmcTranslationsExtensionId,
     getSuggestedFmcTranslationsKey,
 } from "../util/wcif.util";
 import { setWcifEvent } from "../redux/slice/WcifSlice";
-import { findExtension, setExtensionLazily } from "../util/extension.util";
+import {
+    findExtension,
+    fmcTranslationsExtensionId,
+    setExtensionLazily,
+} from "../util/extension.util";
 import { useQuery } from "@tanstack/react-query";
 import { useTNoodleApi, useTNoodleQueries } from "../api/client.ts";
 

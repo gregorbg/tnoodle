@@ -15,9 +15,9 @@ import EventPickerTable from "./EventPickerTable";
 import Interceptor from "./Interceptor";
 import "./Main.css";
 import VersionInfo from "./VersionInfo";
-import { frontendStatusExtensionId } from "../util/wcif.util";
 import { useAuth } from "react-oidc-context";
 import { convertToBlob } from "../util/data.util.ts";
+import { frontendStatusExtensionId } from "../util/extension.util.ts";
 
 const Main = () => {
     const [competitionNameFileZip, setCompetitionNameFileZip] = useState("");

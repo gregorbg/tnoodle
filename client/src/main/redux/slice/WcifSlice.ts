@@ -4,10 +4,10 @@ import { competitionName2Id } from "../../util/competition.name.util";
 import {
     copiesExtensionId,
     fmcTranslationsExtensionId,
-    mbldCubesExtensionId,
-    defaultWcif,
     getDefaultCopiesExtension,
-} from "../../util/wcif.util";
+    mbldCubesExtensionId,
+} from "../../util/extension.util.ts";
+import { defaultWcif } from "../../util/wcif.util.ts";
 
 interface WcifState {
     wcif: Wcif;
