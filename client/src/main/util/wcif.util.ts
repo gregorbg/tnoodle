@@ -24,6 +24,7 @@ import type { GetWcifVariables } from "../api/wca.ts";
 import type { Extension } from "../model/Extension.ts";
 import { useSelector } from "react-redux";
 import type RootState from "../model/RootState.ts";
+import { MBLD_DEFAULT } from "../constants/wca.constants.ts";
 
 // Add 1 round of 3x3x3
 const default333: WcifEvent = {
@@ -144,11 +145,6 @@ export const useCompetitionWcifQuery = (
                                 getDefaultCopiesExtension,
                             ),
                         ),
-                        extensions: wcifEvent.extensions.filter(
-                            (it) =>
-                                it.id !== fmcTranslationsExtensionId &&
-                                it.id !== mbldCubesExtensionId,
-                        ),
                     };
 
                     const fmcExtended = setExtensionLazily(
@@ -157,16 +153,19 @@ export const useCompetitionWcifQuery = (
                         () => buildFmcExtension(fmcTranslations),
                     );
 
-                    if (mbldScrambleCount !== null) {
-                        return setExtensionLazily(
-                            fmcExtended,
-                            mbldCubesExtensionId,
-                            () =>
-                                buildMbldExtension(mbldScrambleCount.attempted),
-                        );
-                    }
-
-                    return fmcExtended;
+                    return {
+                        ...fmcExtended,
+                        rounds: fmcExtended.rounds.map((eventRound) =>
+                            setExtensionLazily(
+                                eventRound,
+                                mbldCubesExtensionId,
+                                () =>
+                                    buildMbldExtension(
+                                        mbldScrambleCount?.attempted || MBLD_DEFAULT,
+                                    ),
+                            ),
+                        ),
+                    };
                 }),
             };
         },
