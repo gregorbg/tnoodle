@@ -94,4 +94,4 @@ export type MbldAttempt = {
      * The duration of the attempt in whole seconds
      */
     duration: number;
-};
+} | null;

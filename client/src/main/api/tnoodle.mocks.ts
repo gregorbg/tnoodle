@@ -110,7 +110,7 @@ export function createMbldAttempt(overrides?: Partial<MbldAttempt>): MbldAttempt
         attempted: 60,
         duration: 3012,
         ...overrides
-    };
+    } as MbldAttempt;
 }
 
 export const getVersionInfoHandler = (override?: Partial<VersionInfo>) => http.get("*/version", () => HttpResponse.json(createVersionInfo(override)));

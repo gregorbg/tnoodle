@@ -90,7 +90,7 @@ export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: 
     const tnoodleApiClient = useTNoodleApi();
 
     return useQuery({
-        queryKey: getWcifQueryKey(),
+        queryKey: getWcifQueryKey(wcifParams),
         queryFn: async ({ client, signal }) => {
             const wcif = await wcaApiClient.getWcif(wcifParams!, { signal });
 
@@ -131,18 +131,22 @@ export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: 
                         ),
                     };
 
-                    return setExtensionLazily(
-                        setExtensionLazily(
-                            roundsExtended,
-                            fmcTranslationsExtensionId,
-                            () => buildFmcExtension(fmcTranslations),
-                        ),
-                        mbldCubesExtensionId,
-                        () =>
-                            buildMbldExtension(
-                                mbldScrambleCount.attempted,
-                            ),
+                    const fmcExtended = setExtensionLazily(
+                        roundsExtended,
+                        fmcTranslationsExtensionId,
+                        () => buildFmcExtension(fmcTranslations),
                     );
+
+                    if (mbldScrambleCount !== null) {
+                        return setExtensionLazily(
+                            fmcExtended,
+                            mbldCubesExtensionId,
+                            () =>
+                                buildMbldExtension(mbldScrambleCount.attempted),
+                        );
+                    }
+
+                    return fmcExtended;
                 }),
             };
         },

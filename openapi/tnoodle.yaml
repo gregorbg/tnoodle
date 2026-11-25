@@ -563,7 +563,9 @@ components:
                 - personalBests
 
         MbldAttempt:
-            type: object
+            type:
+                - object
+                - "null"
             properties:
                 solved:
                     type: integer

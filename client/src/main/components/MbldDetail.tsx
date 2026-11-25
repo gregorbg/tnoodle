@@ -35,7 +35,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
                 { body: wcif.persons },
                 options,
             ),
-        select: (data) => data.attempted,
+        select: (data) => data?.attempted,
     });
 
     const mbld = useMemo(() => {
