@@ -17,7 +17,7 @@ import {
     mbldCubesExtensionId,
     setExtensionLazily,
 } from "./extension.util.ts";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { Wcif, WcifEvent, WcifPerson } from "../api/wca.schemas.ts";
 import { useTNoodleApi, useTNoodleQueries, useWcaApi } from "../api/client.ts";
 import type { GetWcifVariables } from "../api/wca.ts";
@@ -157,25 +157,29 @@ export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: 
     });
 };
 
-export const useCompetitionWcifDispatch = (competitionId?: string) => {
+const useCompetitionWcifDispatch = (competitionId?: string, formatVersion?: string) => {
     const queryClient = useQueryClient();
+
+    const wcifParams = useMemo(() => {
+        return getWcifParams(competitionId, formatVersion);
+    }, [competitionId, formatVersion]);
 
     return useCallback(
         (updater: (wcif: Wcif) => Wcif) => {
             return queryClient.setQueryData(
-                getWcifQueryKey(getWcifParams(competitionId)),
+                getWcifQueryKey(wcifParams),
                 (wcif: Wcif) => ({
                     ...wcif,
                     ...updater(wcif),
                 }),
             );
         },
-        [queryClient, competitionId],
+        [queryClient, wcifParams],
     );
 };
 
-export const useSetCompetitionName = (competitionId?: string) => {
-    const dispatch = useCompetitionWcifDispatch(competitionId);
+export const useSetCompetitionName = (wcif: Wcif) => {
+    const dispatch = useCompetitionWcifDispatch(wcif.id, wcif.formatVersion);
 
     return useCallback(
         (name: string) => {
@@ -190,8 +194,8 @@ export const useSetCompetitionName = (competitionId?: string) => {
     );
 };
 
-export const useSetWcifEvent = (competitionId?: string) => {
-    const dispatch = useCompetitionWcifDispatch(competitionId);
+export const useSetWcifEvent = (wcif: Wcif) => {
+    const dispatch = useCompetitionWcifDispatch(wcif.id, wcif.formatVersion);
 
     return useCallback(
         (event: WcifEvent) => {
@@ -209,8 +213,8 @@ export const useSetWcifEvent = (competitionId?: string) => {
     );
 };
 
-export const useSetEventExtension = (competitionId?: string) => {
-    const setWcifEvent = useSetWcifEvent(competitionId);
+export const useSetEventExtension = (wcif: Wcif) => {
+    const setWcifEvent = useSetWcifEvent(wcif);
 
     return useCallback(
         <T extends WcifEvent>(

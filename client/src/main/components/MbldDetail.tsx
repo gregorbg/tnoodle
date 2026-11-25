@@ -47,7 +47,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         );
     }, [mbldWcifEvent, bestMbldAttempt]);
 
-    const setEventExtension = useSetEventExtension(wcif.id)
+    const setEventExtension = useSetEventExtension(wcif);
 
     const updateEventMbld = useCallback(
         (mbld: number) => {

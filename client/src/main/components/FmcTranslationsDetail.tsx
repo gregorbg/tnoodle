@@ -50,7 +50,7 @@ const FmcTranslationsDetail = ({
         );
     }, [fmcWcifEvent, suggestedFmcTranslations]);
 
-    const setEventExtension = useSetEventExtension(wcif.id);
+    const setEventExtension = useSetEventExtension(wcif);
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {

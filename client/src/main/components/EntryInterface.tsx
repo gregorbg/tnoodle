@@ -24,7 +24,7 @@ const EntryInterface = () => {
     const isManualGeneration = useIsManualGeneration();
 
     const dispatch = useDispatch();
-    const setCompetitionName = useSetCompetitionName(wcif.id);
+    const setCompetitionName = useSetCompetitionName(wcif);
 
     const handlePasswordChange = (password: string) =>
         dispatch(setPassword(password));

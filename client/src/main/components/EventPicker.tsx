@@ -119,8 +119,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         [fetchScrambleQuery],
     );
 
-    const setWcifEvent = useSetWcifEvent(wcif.id);
-    const setWcifEventExtension = useSetEventExtension(wcif.id);
+    const setWcifEvent = useSetWcifEvent(wcif);
+    const setWcifEventExtension = useSetEventExtension(wcif);
 
     const updateEventRounds = (rounds: WcifRound[]) => {
         setWcifEvent({
