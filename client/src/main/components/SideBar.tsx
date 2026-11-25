@@ -7,7 +7,7 @@ import {
     setFileZip,
     setIsManualSelection,
 } from "../redux/slice/ScramblingSlice";
-import { setCompetitionName, setWcif } from "../redux/slice/WcifSlice";
+import { setWcif } from "../redux/slice/WcifSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
     deleteParameter,
@@ -20,8 +20,7 @@ import type { Wcif } from "../api/wca.schemas";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
-import { client as wcaClient, configure } from "../api/wca";
-import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
+import { useTNoodleQueries, useWcaApi, useWcaQueries } from "../api/client.ts";
 import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
@@ -106,7 +105,6 @@ const SideBar = () => {
     const handleManualSelection = () => {
         dispatch(setIsManualSelection(true));
         dispatch(setWcif({ ...defaultWcif }));
-        dispatch(setCompetitionName(getDefaultCompetitionName()));
         dispatch(setFileZip());
 
         deleteParameter("competitionId");
@@ -121,6 +119,8 @@ const SideBar = () => {
         [dispatch],
     );
 
+    const wcaApiClient = useWcaApi();
+
     const loadCompetition = useCallback(
         (competitionId: string | null) => {
             if (competitionId === null) {
@@ -132,12 +132,9 @@ const SideBar = () => {
             }
 
             if (!!backendWcifVersion) {
-                const wcaToken = oidcAuth.user!.access_token;
-                configure({ auth: { bearer: wcaToken } });
-
                 setLoadingCompetitionInfo(true);
 
-                wcaClient
+                wcaApiClient
                     .getWcif({
                         path: {
                             competitionId,
@@ -149,11 +146,10 @@ const SideBar = () => {
             }
         },
         [
-            dispatch,
             wcif.id,
             backendWcifVersion,
+            wcaApiClient,
             updateWcif,
-            oidcAuth.user,
         ],
     );
 

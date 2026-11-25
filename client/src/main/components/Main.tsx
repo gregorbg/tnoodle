@@ -20,7 +20,6 @@ import { convertToBlob } from "../util/data.util.ts";
 import { frontendStatusExtensionId } from "../util/extension.util.ts";
 
 const Main = () => {
-    const [competitionNameFileZip, setCompetitionNameFileZip] = useState("");
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
@@ -62,9 +61,7 @@ const Main = () => {
         dispatch(setScramblingProgressCurrentEvent(eventId));
 
     const generateZip = () => {
-        setCompetitionNameFileZip(wcif.name);
-
-        let scrambleClient = new ScrambleClient(
+        const scrambleClient = new ScrambleClient(
             onScrambleHandShake,
             onScrambleProgress,
         );
@@ -100,7 +97,7 @@ const Main = () => {
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") +
-            competitionNameFileZip +
+            wcif.id +
             ".zip";
 
         const link = document.createElement("a");

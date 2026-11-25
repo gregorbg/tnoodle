@@ -3,11 +3,12 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
 import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
-import { setCompetitionName } from "../redux/slice/WcifSlice";
+import { useSetCompetitionName } from "../util/wcif.util.ts";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
+    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
     );
@@ -22,13 +23,7 @@ const EntryInterface = () => {
     );
 
     const dispatch = useDispatch();
-
-    const handleCompetitionNameChange = (name: string) => {
-        dispatch(setCompetitionName(name));
-
-        // Require another zip with the new name.
-        dispatch(setFileZip());
-    };
+    const setCompetitionName = useSetCompetitionName(wcif.id);
 
     const handlePasswordChange = (password: string) => {
         dispatch(setPassword(password));
@@ -51,7 +46,7 @@ const EntryInterface = () => {
                     className="form-control"
                     placeholder="Competition Name"
                     onChange={(e) =>
-                        handleCompetitionNameChange(e.target.value)
+                        setCompetitionName(e.target.value)
                     }
                     value={competitionName}
                     disabled={!isManualSelection || generatingScrambles}
