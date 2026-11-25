@@ -7,17 +7,17 @@ import store from "./main/redux/Store";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "react-oidc-context";
 import oidcConfig, { gotoPreLoginPath } from "./main/api/wca.oidc";
-import { configure as configureWca } from "./main/api/wca";
-import { configure as configureTnoodle } from "./main/api/tnoodle";
-import axiosAdapter from "./main/api/fetch.axios.ts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const root = createRoot(document.getElementById("root") as HTMLDivElement);
 
-configureWca({ fetch: axiosAdapter });
-configureTnoodle({ fetch: axiosAdapter });
-
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: Infinity,
+        },
+    },
+});
 
 root.render(
     <QueryClientProvider client={queryClient}>
