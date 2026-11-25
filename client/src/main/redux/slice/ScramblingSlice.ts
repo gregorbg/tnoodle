@@ -4,7 +4,6 @@ import type WebsocketBlobResult from "../../model/WebsocketBlobResult";
 interface ScramblingState {
     competitionId?: string
     fileZip?: WebsocketBlobResult;
-    isManualSelection: boolean;
     generatingScrambles: boolean;
     password: string;
     scramblingProgressCurrent: Record<string, number>;
@@ -14,7 +13,6 @@ interface ScramblingState {
 export const initialState: ScramblingState = {
     competitionId: undefined,
     fileZip: undefined,
-    isManualSelection: true,
     generatingScrambles: false,
     password: "",
     scramblingProgressCurrent: {},
@@ -33,9 +31,6 @@ export const scramblingSlice = createSlice({
             action: PayloadAction<WebsocketBlobResult | undefined>,
         ) => {
             state.fileZip = action.payload;
-        },
-        setIsManualSelection: (state, action: PayloadAction<boolean>) => {
-            state.isManualSelection = action.payload;
         },
         setGeneratingScrambles: (state, action: PayloadAction<boolean>) => {
             state.generatingScrambles = action.payload;
@@ -65,7 +60,6 @@ export const scramblingSlice = createSlice({
 export const {
     setCompetitionId,
     setFileZip,
-    setIsManualSelection,
     setPassword,
     setGeneratingScrambles,
     resetScramblingProgressCurrent,

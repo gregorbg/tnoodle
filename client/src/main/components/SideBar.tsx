@@ -6,7 +6,6 @@ import type RootState from "../model/RootState";
 import {
     setCompetitionId,
     setFileZip,
-    setIsManualSelection,
 } from "../redux/slice/ScramblingSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
@@ -104,7 +103,6 @@ const SideBar = () => {
         string + (number > 1 ? "s" : "");
 
     const handleManualSelection = () => {
-        dispatch(setIsManualSelection(true));
         dispatch(setCompetitionId(undefined));
         dispatch(setFileZip());
 

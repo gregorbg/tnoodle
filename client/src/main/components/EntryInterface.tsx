@@ -15,9 +15,6 @@ const EntryInterface = () => {
     const competitionId = useSelector(
         (state: RootState) => state.scramblingSlice.competitionId,
     );
-    const isManualSelection = useSelector(
-        (state: RootState) => state.scramblingSlice.isManualSelection,
-    );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
@@ -54,7 +51,7 @@ const EntryInterface = () => {
                         setCompetitionName(e.target.value)
                     }
                     value={wcif.name}
-                    disabled={!isManualSelection || generatingScrambles}
+                    disabled={!!competitionId || generatingScrambles}
                     required
                 />
             </div>

@@ -27,9 +27,6 @@ const Main = () => {
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
-    const isManualSelection = useSelector(
-        (state: RootState) => state.scramblingSlice.isManualSelection,
-    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
@@ -98,7 +95,7 @@ const Main = () => {
         let officialZipStatus = isValidSignedBuild && isAllowedVersion;
 
         let isUnofficialZip =
-            !officialZipStatus || (!isManualSelection && isUsingStaging());
+            !officialZipStatus || (!!competitionId && isUsingStaging());
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") +
@@ -146,7 +143,7 @@ const Main = () => {
         );
 
         let isLoggedCompSelection =
-            !isManualSelection && oidcAuth.isAuthenticated;
+            !!competitionId && oidcAuth.isAuthenticated;
         let isOnlineLocked = appOnlineMode && !isLoggedCompSelection;
 
         let disableScrambleButton = !anyEventHasRounds || isOnlineLocked;
