@@ -44,7 +44,7 @@ export const useWcaApi = () => {
             >(WCA_OPERATIONS, { serverUrl: getWcaOrigin(), auth: { bearer: auth.user?.access_token } });
         }
 
-        return createTNoodleClient<
+        return createWcaClient<
             WcaOps,
             WcaOperationId,
             WcaOperationPath

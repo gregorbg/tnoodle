@@ -18,7 +18,8 @@ import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
 import { useWcaQueries } from "../api/client.ts";
-import { useIsMutating, useQuery } from "@tanstack/react-query";
+import { useIsMutating, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getCompetitionsQueryKey, getMeQueryKey } from "../api/wca.tanstack.ts";
 
 const SideBar = () => {
     const showColorPicker = useSelector(
@@ -44,6 +45,16 @@ const SideBar = () => {
     }, [handleIsOpen]);
 
     const oidcAuth = useAuth();
+    const queryClient = useQueryClient();
+
+    // analog cleanup after logout: The user identity is not encoded
+    //   into the endpoint query keys (it is implicit via auth token)
+    //   so we need to make sure Tanstack Query flushes after logging out.
+    if (!oidcAuth.isAuthenticated) {
+        queryClient.removeQueries({ queryKey: getMeQueryKey(), exact: true });
+        queryClient.removeQueries({ queryKey: getCompetitionsQueryKey() });
+    }
+
     const wcaQueries = useWcaQueries();
 
     const { data: user, isLoading: loadingUser } = useQuery({
@@ -51,14 +62,20 @@ const SideBar = () => {
         enabled: oidcAuth.isAuthenticated,
     });
 
+    const startDate = useMemo(() => {
+        const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        // Don't need millisecond precision, WCA only stores competition dates.
+        cutoff.setUTCHours(0, 0, 0, 0);
+
+        return cutoff;
+    }, []);
+
     const { data: upcomingCompetitions, isLoading: loadingCompetitions } =
         useQuery({
             ...wcaQueries.getCompetitionsOptions({
                 query: {
                     managed_by_me: true,
-                    start: new Date(
-                        Date.now() - 7 * 24 * 60 * 60 * 1000,
-                    ).toISOString(),
+                    start: startDate.toISOString(),
                     sort: "start_date",
                 },
             }),
