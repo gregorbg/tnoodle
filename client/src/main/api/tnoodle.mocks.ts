@@ -417,7 +417,7 @@ export const getDefaultColorSchemeHandler = (override?: Partial<ColorScheme>) =>
 
 export const getRandomScrambleHandler = () => http.get("*/frontend/puzzle/:puzzleId/scramble", () => HttpResponse.json("R U R' U' R' F R2 U' R' U' R U R' F'"));
 
-export const paintScrambleHandler = () => http.post("*/frontend/puzzle/:puzzleId/svg", () => HttpResponse.json("\u003Csvg\u003E\u003C/svg\u003E"));
+export const paintScrambleHandler = () => http.get("*/frontend/puzzle/:puzzleId/svg", () => HttpResponse.json("\u003Csvg\u003E\u003C/svg\u003E"));
 
 export const getFmcSheetLanguagesHandler = () => http.get("*/frontend/fmc/languages/available", () => HttpResponse.json([
     {

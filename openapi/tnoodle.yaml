@@ -264,7 +264,7 @@ paths:
                                 type: string
                                 example: "R U R' U' R' F R2 U' R' U' R U R' F'"
     /frontend/puzzle/{puzzleId}/svg:
-        post:
+        get:
             summary: Paint a given scramble into SVG for a given color scheme
             operationId: paintScramble
             parameters:
@@ -279,12 +279,14 @@ paths:
                   schema:
                       type: string
                   description: Optional scramble to paint (otherwise paints solved puzzle)
-            requestBody:
-                description: The color scheme to paint
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ColorScheme'
+                - in: query
+                  name: colorScheme
+                  schema:
+                      $ref: '#/components/schemas/ColorScheme'
+                  required: false
+                  style: deepObject
+                  explode: true
+                  description: Optional color scheme to paint (otherwise paints default WCA colors)
             responses:
                 '200':
                     description: The SVG of the puzzle
@@ -489,6 +491,7 @@ components:
             type: object
             additionalProperties:
                 type: string
+                pattern: '^#?[0-9a-fA-F]{6}$'
             example:
                 U: "#FFFFFF"
                 F: "#00FF00"

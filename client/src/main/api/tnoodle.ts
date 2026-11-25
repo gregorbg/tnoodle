@@ -57,14 +57,15 @@ export type PaintScrambleQuery = {
      * Optional scramble to paint (otherwise paints solved puzzle)
      */
     scramble?: string;
+    /**
+     * Optional color scheme to paint (otherwise paints default WCA colors)
+     */
+    colorScheme?: ColorScheme;
 };
-
-export type PaintScrambleBody = ColorScheme;
 
 export type PaintScrambleVariables = {
     path: PaintScramblePath;
     query?: PaintScrambleQuery;
-    body?: PaintScrambleBody;
 };
 
 export type GetFmcSheetLanguagesResult = FmcLanguage[];
@@ -122,7 +123,6 @@ export type Ops = {
         args: {
             path: PaintScramblePath;
             query?: PaintScrambleQuery;
-            body?: PaintScrambleBody;
         };
         result: PaintScrambleResult;
     };
@@ -156,7 +156,7 @@ export const OPERATIONS = {
     getBackendWcifVersion: { id: "getBackendWcifVersion", method: "GET", path: "/frontend/data/wcif-version" },
     getDefaultColorScheme: { id: "getDefaultColorScheme", method: "GET", path: "/frontend/puzzle/{puzzleId}/colors", params: [{ name: "puzzleId", in: "path" }] },
     getRandomScramble: { id: "getRandomScramble", method: "GET", path: "/frontend/puzzle/{puzzleId}/scramble", params: [{ name: "puzzleId", in: "path" }] },
-    paintScramble: { id: "paintScramble", method: "POST", path: "/frontend/puzzle/{puzzleId}/svg", params: [{ name: "puzzleId", in: "path" }, { name: "scramble", in: "query" }], body: { contentType: "application/json" }, responseKind: "blob" },
+    paintScramble: { id: "paintScramble", method: "GET", path: "/frontend/puzzle/{puzzleId}/svg", params: [{ name: "puzzleId", in: "path" }, { name: "scramble", in: "query" }, { name: "colorScheme", in: "query", style: "deepObject", explode: true }], responseKind: "blob" },
     getFmcSheetLanguages: { id: "getFmcSheetLanguages", method: "GET", path: "/frontend/fmc/languages/available" },
     calculateSuggestedFmcTranslations: { id: "calculateSuggestedFmcTranslations", method: "POST", path: "/frontend/fmc/languages/competitors", body: { contentType: "application/json" } },
     calculateMbldBest: { id: "calculateMbldBest", method: "POST", path: "/frontend/mbld/best", body: { contentType: "application/json" } }

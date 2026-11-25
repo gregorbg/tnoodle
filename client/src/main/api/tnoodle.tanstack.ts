@@ -11,6 +11,8 @@ export const getDefaultColorSchemeQueryKey = (vars?: GetDefaultColorSchemeVariab
     vars === undefined ? (["getDefaultColorScheme"] as const) : (["getDefaultColorScheme", vars] as const);
 export const getRandomScrambleQueryKey = (vars?: GetRandomScrambleVariables) =>
     vars === undefined ? (["getRandomScramble"] as const) : (["getRandomScramble", vars] as const);
+export const paintScrambleQueryKey = (vars?: PaintScrambleVariables) =>
+    vars === undefined ? (["paintScramble"] as const) : (["paintScramble", vars] as const);
 export const getFmcSheetLanguagesQueryKey = () => ["getFmcSheetLanguages"] as const;
 /**
  * Build the factories over a specific client instance — its config, middleware, and
@@ -42,9 +44,9 @@ export const createQueryFactories = (instance: typeof client = client) => ({
         queryKey: getRandomScrambleQueryKey(vars),
         queryFn: ({ signal }) => instance.getRandomScramble(vars, { ...init, signal, envelope: undefined }),
     }),
-    paintScrambleMutation: (init?: Omit<RequestOptions, "envelope">) => ({
-        mutationKey: ["paintScramble"] as const,
-        mutationFn: (vars: PaintScrambleVariables) => instance.paintScramble(vars, { ...init, envelope: undefined }),
+    paintScrambleOptions: (vars: PaintScrambleVariables, init?: Omit<RequestOptions, "envelope">) => queryOptions({
+        queryKey: paintScrambleQueryKey(vars),
+        queryFn: ({ signal }) => instance.paintScramble(vars, { ...init, signal, envelope: undefined }),
     }),
     getFmcSheetLanguagesOptions: (init?: Omit<RequestOptions, "envelope">) => queryOptions({
         queryKey: getFmcSheetLanguagesQueryKey(),
@@ -66,7 +68,7 @@ export const getWcaFormatsOptions = defaultFactories.getWcaFormatsOptions;
 export const getBackendWcifVersionOptions = defaultFactories.getBackendWcifVersionOptions;
 export const getDefaultColorSchemeOptions = defaultFactories.getDefaultColorSchemeOptions;
 export const getRandomScrambleOptions = defaultFactories.getRandomScrambleOptions;
-export const paintScrambleMutation = defaultFactories.paintScrambleMutation;
+export const paintScrambleOptions = defaultFactories.paintScrambleOptions;
 export const getFmcSheetLanguagesOptions = defaultFactories.getFmcSheetLanguagesOptions;
 export const calculateSuggestedFmcTranslationsMutation = defaultFactories.calculateSuggestedFmcTranslationsMutation;
 export const calculateMbldBestMutation = defaultFactories.calculateMbldBestMutation;
