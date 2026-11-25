@@ -11,7 +11,7 @@ interface ScramblingState {
     scramblingProgressTarget: Record<string, number>;
 }
 
-const initialState: ScramblingState = {
+export const initialState: ScramblingState = {
     competitionId: undefined,
     fileZip: undefined,
     isManualSelection: true,

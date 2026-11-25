@@ -153,14 +153,6 @@ const SideBar = () => {
         ],
     );
 
-    useEffect(() => {
-        const queryParamId = getQueryParameter("competitionId");
-
-        if (wcif.id !== queryParamId) {
-            loadCompetition(queryParamId);
-        }
-    }, [loadCompetition, wcif.id]);
-
     const handleCompetitionSelection = useCallback(
         (competitionId: string) => {
             setQueryParameter("competitionId", competitionId);
