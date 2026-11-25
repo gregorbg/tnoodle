@@ -151,7 +151,8 @@ const Main = () => {
                 </button>
             );
         }
-        if (!!fileZip) {
+
+        if (fileZip !== undefined && !inputsChanged) {
             return (
                 <button type="submit" className="btn btn-success form-control">
                     Download Scrambles
