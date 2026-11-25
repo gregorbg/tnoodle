@@ -1,13 +1,12 @@
 import { chunk } from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import type RootState from "../model/RootState";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
 import type { WcifEvent } from "../api/wca.schemas";
 import {
     getSuggestedFmcTranslationsKey,
+    useSetWcifEvent,
 } from "../util/wcif.util";
-import { setWcifEvent } from "../redux/slice/WcifSlice";
 import {
     findExtension,
     fmcTranslationsExtensionId,
@@ -51,7 +50,7 @@ const FmcTranslationsDetail = ({
         );
     }, [fmcWcifEvent, suggestedFmcTranslations]);
 
-    const dispatch = useDispatch();
+    const setWcifEvent = useSetWcifEvent(wcif.id);
 
     const buildFmcExtension = (selectedTranslations: string[]) => {
         return {
@@ -68,10 +67,9 @@ const FmcTranslationsDetail = ({
                 fmcTranslationsExtensionId,
                 () => buildFmcExtension(selectedTranslations),
             );
-            dispatch(setWcifEvent(extended));
-            dispatch(setFileZip());
+            setWcifEvent(extended);
         },
-        [dispatch, fmcWcifEvent],
+        [setWcifEvent, fmcWcifEvent],
     );
 
     const handleTranslation = (id: string, status: boolean) => {

@@ -22,7 +22,6 @@ const VersionInfo = () => {
     const wcaQueries = useWcaQueries();
     const { data: wcaVersionInfo } = useQuery(wcaQueries.getScrambleProgramOptions());
 
-    // what we make of it
     const runningVersion = !!tnoodleVersionInfo?.project_name && !!tnoodleVersionInfo.project_version ? `${tnoodleVersionInfo.project_name}-${tnoodleVersionInfo.project_version}` : "";
 
     const signatureValid = tnoodleVersionInfo?.is_signed_build && tnoodleVersionInfo?.signature_key_bytes === wcaVersionInfo?.publicKeyBytes;

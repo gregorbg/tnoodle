@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Wcif, WcifEvent } from "../../api/wca.schemas";
+import type { Wcif } from "../../api/wca.schemas";
 import { competitionName2Id } from "../../util/competition.name.util";
 import {
     copiesExtensionId,
@@ -32,17 +32,6 @@ export const wcifSlice = createSlice({
                 id,
             };
         },
-        setWcifEvent: (state, action: PayloadAction<WcifEvent>) => {
-            state.wcif = {
-                ...state.wcif,
-                events: [
-                    ...state.wcif.events.filter(
-                        (wcaEvent) => wcaEvent.id !== action.payload.id,
-                    ),
-                    action.payload,
-                ],
-            };
-        },
         setWcif: (state, action: PayloadAction<Wcif>) => {
             state.wcif = {
                 ...action.payload,
@@ -72,6 +61,5 @@ export const wcifSlice = createSlice({
 
 export const {
     setCompetitionName,
-    setWcifEvent,
     setWcif,
 } = wcifSlice.actions;

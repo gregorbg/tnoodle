@@ -1,11 +1,9 @@
 import { OverlayTrigger, ProgressBar, Tooltip } from "react-bootstrap";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { MAX_WCA_ROUNDS, MBLD_DEFAULT } from "../constants/wca.constants";
 import type RootState from "../model/RootState";
 import type { WcaEvent } from "../api/tnoodle.schemas";
 import type { WcifEvent, WcifRound } from "../api/wca.schemas";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
-import { setWcifEvent } from "../redux/slice/WcifSlice";
 import {
     setExtensionLazily,
     findExtension,
@@ -25,6 +23,7 @@ import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTNoodleQueries } from "../api/client.ts";
+import { useSetWcifEvent } from "../util/wcif.util.ts";
 
 interface EventPickerProps {
     wcaEvent: WcaEvent;
@@ -32,8 +31,8 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
-    const wcifEvents = useSelector(
-        (state: RootState) => state.wcifSlice.wcif.events,
+    const wcif = useSelector(
+        (state: RootState) => state.wcifSlice.wcif,
     );
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
@@ -112,23 +111,13 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         [fetchScrambleQuery],
     );
 
-    const dispatch = useDispatch();
-
-    const dispatchWcifEvent = useCallback(
-        (newWcifEvent: WcifEvent) => {
-            dispatch(setWcifEvent(newWcifEvent));
-            dispatch(setFileZip());
-        },
-        [dispatch],
-    );
+    const setWcifEvent = useSetWcifEvent(wcif.id);
 
     const updateEventRounds = (rounds: WcifRound[]) => {
-        let event = {
+        setWcifEvent({
             ...wcifEvent,
             rounds,
-        };
-
-        dispatchWcifEvent(event);
+        });
     };
 
     const updateEventColorScheme = (colorScheme: Record<string, string>) => {
@@ -136,7 +125,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
             wcifEvent,
             colorSchemeExtensionId,
             () => buildColorSchemeExtension(colorScheme),
-            dispatchWcifEvent,
+            setWcifEvent,
         );
     };
 
@@ -237,7 +226,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
             : "-";
 
     const updateForeignColorScheme = (wcaEvent: WcaEvent) => {
-        let wcifEvent = wcifEvents.find(
+        const wcifEvent = wcif.events.find(
             (wcifEvent) => wcifEvent.id === wcaEvent.id,
         );
 
@@ -246,7 +235,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                 wcifEvent,
                 colorSchemeExtensionId,
                 () => buildColorSchemeExtension(colorScheme),
-                dispatchWcifEvent,
+                setWcifEvent,
             );
         }
     };

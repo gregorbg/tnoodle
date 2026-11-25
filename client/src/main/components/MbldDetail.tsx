@@ -1,12 +1,8 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import type RootState from "../model/RootState";
-import { setWcifEvent } from "../redux/slice/WcifSlice";
-import { setFileZip } from "../redux/slice/ScramblingSlice";
 import type { WcifEvent } from "../api/wca.schemas";
-import {
-    getBestMbldAttemptKey,
-} from "../util/wcif.util";
+import { getBestMbldAttemptKey, useSetWcifEvent } from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
     buildMbldExtension,
@@ -49,7 +45,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         );
     }, [mbldWcifEvent, bestMbldAttempt]);
 
-    const dispatch = useDispatch();
+    const setWcifEvent = useSetWcifEvent(wcif.id);
 
     const updateEventMbld = useCallback(
         (mbld: number) => {
@@ -68,10 +64,9 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
                 }),
             };
 
-            dispatch(setWcifEvent(updatedWithRounds));
-            dispatch(setFileZip());
+            setWcifEvent(updatedWithRounds);
         },
-        [dispatch, mbldWcifEvent],
+        [mbldWcifEvent, setWcifEvent],
     );
 
     return (
