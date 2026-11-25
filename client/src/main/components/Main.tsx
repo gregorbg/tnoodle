@@ -116,7 +116,7 @@ const Main = () => {
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") +
-            wcif.id +
+            variables?.submitWcif.id +
             ".zip";
 
         const link = document.createElement("a");
