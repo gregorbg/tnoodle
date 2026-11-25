@@ -31,10 +31,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
     const { data: bestMbldAttempt } = useQuery({
         queryKey: getBestMbldAttemptKey(wcif.persons),
         queryFn: (options) =>
-            tnoodleApiClient.calculateMbldBest(
-                { body: wcif.persons },
-                options,
-            ),
+            tnoodleApiClient.calculateMbldBest({ body: wcif.persons }, options),
         select: (data) => data?.attempted,
     });
 

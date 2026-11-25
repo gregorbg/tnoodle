@@ -20,9 +20,13 @@ import { useAuth } from "react-oidc-context";
 
 export const useTNoodleApi = () => {
     return useMemo(() => {
-        return createTNoodleClient<TNoodleOps, TNoodleOperationId, TNoodleOperationPath>(TNOODLE_OPERATIONS, { serverUrl: "http://localhost:2014" })
+        return createTNoodleClient<
+            TNoodleOps,
+            TNoodleOperationId,
+            TNoodleOperationPath
+        >(TNOODLE_OPERATIONS, { serverUrl: "http://localhost:2014" });
     }, []);
-}
+};
 
 export const useTNoodleQueries = () => {
     const tnoodleApi = useTNoodleApi();
@@ -30,25 +34,26 @@ export const useTNoodleQueries = () => {
     return useMemo(() => {
         return createTNoodleQueryFactories(tnoodleApi);
     }, [tnoodleApi]);
-}
+};
 
 export const useWcaApi = () => {
     const auth = useAuth();
 
     return useMemo(() => {
         if (auth.isAuthenticated) {
-            return createWcaClient<
-                WcaOps,
-                WcaOperationId,
-                WcaOperationPath
-            >(WCA_OPERATIONS, { serverUrl: getWcaOrigin(), auth: { bearer: auth.user?.access_token } });
+            return createWcaClient<WcaOps, WcaOperationId, WcaOperationPath>(
+                WCA_OPERATIONS,
+                {
+                    serverUrl: getWcaOrigin(),
+                    auth: { bearer: auth.user?.access_token },
+                },
+            );
         }
 
-        return createWcaClient<
-            WcaOps,
-            WcaOperationId,
-            WcaOperationPath
-        >(WCA_OPERATIONS, { serverUrl: getWcaOrigin() });
+        return createWcaClient<WcaOps, WcaOperationId, WcaOperationPath>(
+            WCA_OPERATIONS,
+            { serverUrl: getWcaOrigin() },
+        );
     }, [auth.isAuthenticated, auth.user]);
 };
 

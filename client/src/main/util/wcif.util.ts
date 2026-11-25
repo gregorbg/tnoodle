@@ -53,8 +53,15 @@ export const defaultWcif: Wcif = {
     extensions: [],
 };
 
-const getWcifParams = (competitionId?: string, formatVersion?: string): GetWcifVariables | undefined => {
-    if (competitionId === undefined || formatVersion === undefined || competitionId === defaultId) {
+const getWcifParams = (
+    competitionId?: string,
+    formatVersion?: string,
+): GetWcifVariables | undefined => {
+    if (
+        competitionId === undefined ||
+        formatVersion === undefined ||
+        competitionId === defaultId
+    ) {
         return undefined;
     }
 
@@ -67,10 +74,12 @@ export const useIsManualGeneration = () => {
     );
 
     return competitionId === undefined || competitionId === defaultId;
-}
+};
 
-export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) => ["suggestedFmcTranslations", persons] as const;
-export const getBestMbldAttemptKey = (persons: WcifPerson[]) => ["bestMbldAttempt", persons] as const;
+export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) =>
+    ["suggestedFmcTranslations", persons] as const;
+export const getBestMbldAttemptKey = (persons: WcifPerson[]) =>
+    ["bestMbldAttempt", persons] as const;
 
 export const useCompetitionWcif = () => {
     const competitionId = useSelector(
@@ -78,12 +87,17 @@ export const useCompetitionWcif = () => {
     );
 
     const tnoodleQueries = useTNoodleQueries();
-    const { data: backendFormatVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions())
+    const { data: backendFormatVersion } = useQuery(
+        tnoodleQueries.getBackendWcifVersionOptions(),
+    );
 
     return useCompetitionWcifQuery(competitionId, backendFormatVersion);
-}
+};
 
-export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: string) => {
+export const useCompetitionWcifQuery = (
+    competitionId?: string,
+    formatVersion?: string,
+) => {
     const wcaApiClient = useWcaApi();
     const wcifParams = getWcifParams(competitionId, formatVersion);
 
@@ -95,12 +109,18 @@ export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: 
             const wcif = await wcaApiClient.getWcif(wcifParams!, { signal });
 
             const [fmcTranslations, mbldScrambleCount] = await Promise.all([
-                tnoodleApiClient.calculateSuggestedFmcTranslations({
-                    body: wcif.persons,
-                }, { signal }),
-                tnoodleApiClient.calculateMbldBest({
-                    body: wcif.persons,
-                }, { signal }),
+                tnoodleApiClient.calculateSuggestedFmcTranslations(
+                    {
+                        body: wcif.persons,
+                    },
+                    { signal },
+                ),
+                tnoodleApiClient.calculateMbldBest(
+                    {
+                        body: wcif.persons,
+                    },
+                    { signal },
+                ),
             ]);
 
             client.setQueryData(
@@ -157,7 +177,10 @@ export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: 
     });
 };
 
-const useCompetitionWcifDispatch = (competitionId?: string, formatVersion?: string) => {
+const useCompetitionWcifDispatch = (
+    competitionId?: string,
+    formatVersion?: string,
+) => {
     const queryClient = useQueryClient();
 
     const wcifParams = useMemo(() => {

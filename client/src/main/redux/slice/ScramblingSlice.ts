@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface ScramblingState {
-    competitionId?: string
+    competitionId?: string;
     password: string;
     scramblingProgressCurrent: Record<string, number>;
     scramblingProgressTarget: Record<string, number>;
@@ -18,7 +18,10 @@ export const scramblingSlice = createSlice({
     name: "scramblingSlice",
     initialState,
     reducers: {
-        setCompetitionId: (state, action: PayloadAction<string | undefined>) => {
+        setCompetitionId: (
+            state,
+            action: PayloadAction<string | undefined>,
+        ) => {
             state.competitionId = action.payload;
         },
         setPassword: (state, action: PayloadAction<string>) => {

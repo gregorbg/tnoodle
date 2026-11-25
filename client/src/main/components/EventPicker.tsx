@@ -60,7 +60,9 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
 
     const tnoodleQueries = useTNoodleQueries();
 
-    const { data: wcaFormats } = useQuery(tnoodleQueries.getWcaFormatsOptions());
+    const { data: wcaFormats } = useQuery(
+        tnoodleQueries.getWcaFormatsOptions(),
+    );
     const { data: wcaEvents } = useQuery(tnoodleQueries.getWcaEventsOptions());
 
     const { data: defaultColorScheme } = useQuery({
@@ -130,10 +132,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     };
 
     const updateEventColorScheme = (colorScheme: Record<string, string>) => {
-        setWcifEventExtension(
-            wcifEvent,
-            colorSchemeExtensionId,
-            () => buildColorSchemeExtension(colorScheme),
+        setWcifEventExtension(wcifEvent, colorSchemeExtensionId, () =>
+            buildColorSchemeExtension(colorScheme),
         );
     };
 
@@ -239,10 +239,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         );
 
         if (wcifEvent !== undefined && colorScheme !== undefined) {
-            setWcifEventExtension(
-                wcifEvent,
-                colorSchemeExtensionId,
-                () => buildColorSchemeExtension(colorScheme),
+            setWcifEventExtension(wcifEvent, colorSchemeExtensionId, () =>
+                buildColorSchemeExtension(colorScheme),
             );
         }
     };

@@ -5,7 +5,8 @@ import type RootState from "../model/RootState";
 import { setPassword } from "../redux/slice/ScramblingSlice";
 import {
     defaultWcif,
-    useCompetitionWcif, useIsManualGeneration,
+    useCompetitionWcif,
+    useIsManualGeneration,
     useSetCompetitionName,
 } from "../util/wcif.util.ts";
 import { useIsMutating } from "@tanstack/react-query";
@@ -42,9 +43,7 @@ const EntryInterface = () => {
                     id="competition-name"
                     className="form-control"
                     placeholder="Competition Name"
-                    onChange={(e) =>
-                        setCompetitionName(e.target.value)
-                    }
+                    onChange={(e) => setCompetitionName(e.target.value)}
                     value={wcif.name}
                     disabled={!isManualGeneration || generatingScrambles}
                     required

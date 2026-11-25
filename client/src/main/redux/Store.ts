@@ -1,5 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { initialState as initialScramblingState, scramblingSlice } from "./slice/ScramblingSlice";
+import {
+    initialState as initialScramblingState,
+    scramblingSlice,
+} from "./slice/ScramblingSlice";
 import { settingsSlice } from "./slice/SettingsSlice";
 import { getQueryParameter } from "../util/query.param.util.ts";
 
@@ -13,8 +16,8 @@ export const createStore = () =>
             scramblingSlice: {
                 ...initialScramblingState,
                 competitionId: getQueryParameter("competitionId") ?? undefined,
-            }
-        }
+            },
+        },
     });
 
 export type AppStore = ReturnType<typeof createStore>;

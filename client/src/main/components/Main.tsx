@@ -67,10 +67,13 @@ const Main = () => {
                 onScrambleProgress,
             );
 
-            return scrambleClient.loadScrambles({
-                wcif: submitWcif,
-                zipPassword: !submitPassword ? null : submitPassword,
-            }, submitWcif.id);
+            return scrambleClient.loadScrambles(
+                {
+                    wcif: submitWcif,
+                    zipPassword: !submitPassword ? null : submitPassword,
+                },
+                submitWcif.id,
+            );
         },
         onError: interceptorRef.current?.updateMessage,
         onSettled: onScrambleCompleted,

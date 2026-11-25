@@ -5,8 +5,8 @@ import type RootState from "../model/RootState";
 import EventPicker from "./EventPicker";
 import type { WcaEvent } from "../api/tnoodle.schemas";
 import { MBLD_DEFAULT } from "../constants/wca.constants";
-import {useTNoodleQueries} from "../api/client.ts";
-import {useQuery} from "@tanstack/react-query";
+import { useTNoodleQueries } from "../api/client.ts";
+import { useQuery } from "@tanstack/react-query";
 import { buildMbldExtension } from "../util/extension.util.ts";
 import { defaultWcif, useCompetitionWcif } from "../util/wcif.util.ts";
 

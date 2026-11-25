@@ -3,14 +3,25 @@ import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
 
 const VersionInfo = () => {
     const tnoodleQueries = useTNoodleQueries();
-    const { data: tnoodleVersionInfo } = useQuery(tnoodleQueries.getVersionInfoOptions());
+    const { data: tnoodleVersionInfo } = useQuery(
+        tnoodleQueries.getVersionInfoOptions(),
+    );
 
     const wcaQueries = useWcaQueries();
-    const { data: wcaVersionInfo } = useQuery(wcaQueries.getScrambleProgramOptions());
+    const { data: wcaVersionInfo } = useQuery(
+        wcaQueries.getScrambleProgramOptions(),
+    );
 
-    const runningVersion = !!tnoodleVersionInfo?.project_name && !!tnoodleVersionInfo.project_version ? `${tnoodleVersionInfo.project_name}-${tnoodleVersionInfo.project_version}` : "";
+    const runningVersion =
+        !!tnoodleVersionInfo?.project_name &&
+        !!tnoodleVersionInfo.project_version
+            ? `${tnoodleVersionInfo.project_name}-${tnoodleVersionInfo.project_version}`
+            : "";
 
-    const signatureValid = tnoodleVersionInfo?.is_signed_build && tnoodleVersionInfo?.signature_key_bytes === wcaVersionInfo?.publicKeyBytes;
+    const signatureValid =
+        tnoodleVersionInfo?.is_signed_build &&
+        tnoodleVersionInfo?.signature_key_bytes ===
+            wcaVersionInfo?.publicKeyBytes;
     const versionAllowed = wcaVersionInfo?.allowed?.includes(runningVersion);
 
     // We cannot analyze TNoodle version here. We do not bother the user.

@@ -30,13 +30,19 @@ const FmcTranslationsDetail = ({
     const { data: wcif = defaultWcif } = useCompetitionWcif();
 
     const tnoodleQueries = useTNoodleQueries();
-    const { data: availableTranslations } = useQuery(tnoodleQueries.getFmcSheetLanguagesOptions());
+    const { data: availableTranslations } = useQuery(
+        tnoodleQueries.getFmcSheetLanguagesOptions(),
+    );
 
     const tnoodleApiClient = useTNoodleApi();
 
     const { data: suggestedFmcTranslations } = useQuery({
         queryKey: getSuggestedFmcTranslationsKey(wcif.persons),
-        queryFn: (options) => tnoodleApiClient.calculateSuggestedFmcTranslations({ body: wcif.persons }, options),
+        queryFn: (options) =>
+            tnoodleApiClient.calculateSuggestedFmcTranslations(
+                { body: wcif.persons },
+                options,
+            ),
     });
 
     const [showTranslations, setShowTranslations] = useState(false);
@@ -54,10 +60,8 @@ const FmcTranslationsDetail = ({
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
-            setEventExtension(
-                fmcWcifEvent,
-                fmcTranslationsExtensionId,
-                () => buildFmcExtension(selectedTranslations),
+            setEventExtension(fmcWcifEvent, fmcTranslationsExtensionId, () =>
+                buildFmcExtension(selectedTranslations),
             );
         },
         [setEventExtension, fmcWcifEvent],

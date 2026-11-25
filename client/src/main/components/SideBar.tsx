@@ -3,9 +3,7 @@ import { Collapse, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
-import {
-    setCompetitionId,
-} from "../redux/slice/ScramblingSlice";
+import { setCompetitionId } from "../redux/slice/ScramblingSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
     deleteParameter,
@@ -29,7 +27,8 @@ const SideBar = () => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif, isLoading: loadingCompetitionInfo } = useCompetitionWcif()
+    const { data: wcif = defaultWcif, isLoading: loadingCompetitionInfo } =
+        useCompetitionWcif();
 
     const [isOpen, setIsOpen] = useState(true);
 
