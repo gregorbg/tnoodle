@@ -1,6 +1,4 @@
-import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
-import type RootState from "../model/RootState";
 import type { WcifEvent } from "../api/wca.schemas";
 import {
     defaultWcif,
@@ -23,10 +21,6 @@ interface MbldDetailProps {
 }
 
 const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
-    );
-
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
@@ -53,7 +47,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         );
     }, [mbldWcifEvent, bestMbldAttempt]);
 
-    const setEventExtension = useSetEventExtension(competitionId)
+    const setEventExtension = useSetEventExtension(wcif.id)
 
     const updateEventMbld = useCallback(
         (mbld: number) => {

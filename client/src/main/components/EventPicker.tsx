@@ -28,7 +28,9 @@ import {
 import { useTNoodleQueries } from "../api/client.ts";
 import {
     defaultWcif,
-    useCompetitionWcif, useSetEventExtension,
+    useCompetitionWcif,
+    useIsManualGeneration,
+    useSetEventExtension,
     useSetWcifEvent,
 } from "../util/wcif.util.ts";
 
@@ -38,9 +40,6 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
-    const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
-    );
     const scramblingProgressCurrent = useSelector(
         (state: RootState) => state.scramblingSlice.scramblingProgressCurrent,
     );
@@ -51,10 +50,13 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
 
+    const { data: wcif = defaultWcif } = useCompetitionWcif();
+
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif();
+    const isManualGeneration = useIsManualGeneration();
+    const isUiLocked = !isManualGeneration || generatingScrambles;
 
     const tnoodleQueries = useTNoodleQueries();
 
@@ -117,8 +119,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         [fetchScrambleQuery],
     );
 
-    const setWcifEvent = useSetWcifEvent(competitionId);
-    const setWcifEventExtension = useSetEventExtension(competitionId);
+    const setWcifEvent = useSetWcifEvent(wcif.id);
+    const setWcifEventExtension = useSetEventExtension(wcif.id);
 
     const updateEventRounds = (rounds: WcifRound[]) => {
         setWcifEvent({
@@ -136,7 +138,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     };
 
     const buildColorSchemeExtension = (colorScheme: Record<string, string>) => {
-        let isDefaultColorScheme = _.isEqual(colorScheme, defaultColorScheme);
+        const isDefaultColorScheme = _.isEqual(colorScheme, defaultColorScheme);
 
         if (isDefaultColorScheme) {
             return null;
@@ -167,7 +169,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         rounds: WcifRound[],
     ) => {
         let newRounds = [...rounds];
-        // Ajust the number of rounds in case we have to remove
+        // Adjust the number of rounds in case we have to remove
         while (newRounds.length > numberOfRounds) {
             newRounds.pop();
         }
@@ -402,10 +404,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                             "format",
                                         )
                                     }
-                                    disabled={
-                                        !!competitionId ||
-                                        generatingScrambles
-                                    }
+                                    disabled={isUiLocked}
                                 >
                                     {wcaEvent.format_ids.map((format) => (
                                         <option key={format} value={format}>
@@ -430,10 +429,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                     }
                                     min={1}
                                     required
-                                    disabled={
-                                        !!competitionId ||
-                                        generatingScrambles
-                                    }
+                                    disabled={isUiLocked}
                                 />
                             </td>
                             <td>
@@ -571,7 +567,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
                                     wcifEvent.rounds,
                                 )
                             }
-                            disabled={!!competitionId || generatingScrambles}
+                            disabled={isUiLocked}
                         >
                             {Array.from(
                                 { length: MAX_WCA_ROUNDS + 1 },

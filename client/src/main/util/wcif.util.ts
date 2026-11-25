@@ -39,13 +39,14 @@ const default333: WcifEvent = {
     extensions: [],
 };
 
-const name = getDefaultCompetitionName();
+export const defaultId = "%DEFAULT%";
+export const defaultName = getDefaultCompetitionName();
 
 export const defaultWcif: Wcif = {
     formatVersion: "1.0",
-    name,
-    shortName: name,
-    id: "",
+    name: defaultName,
+    shortName: defaultName,
+    id: defaultId,
     events: [default333],
     persons: [],
     schedule: { numberOfDays: 0, venues: [] },
@@ -53,12 +54,20 @@ export const defaultWcif: Wcif = {
 };
 
 const getWcifParams = (competitionId?: string, formatVersion?: string): GetWcifVariables | undefined => {
-    if (competitionId === undefined || formatVersion === undefined) {
+    if (competitionId === undefined || formatVersion === undefined || competitionId === defaultId) {
         return undefined;
     }
 
     return { path: { competitionId, formatVersion } };
 };
+
+export const useIsManualGeneration = () => {
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
+
+    return competitionId === undefined || competitionId === defaultId;
+}
 
 export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) => ["suggestedFmcTranslations", persons] as const;
 export const getBestMbldAttemptKey = (persons: WcifPerson[]) => ["bestMbldAttempt", persons] as const;

@@ -16,20 +16,22 @@ import VersionInfo from "./VersionInfo";
 import { useAuth } from "react-oidc-context";
 import { convertToBlob } from "../util/data.util.ts";
 import { frontendStatusExtensionId } from "../util/extension.util.ts";
-import { defaultWcif, useCompetitionWcif } from "../util/wcif.util.ts";
+import {
+    defaultWcif,
+    useCompetitionWcif,
+    useIsManualGeneration,
+} from "../util/wcif.util.ts";
 import type { Wcif } from "../api/wca.schemas.ts";
 import { useMutation } from "@tanstack/react-query";
 import _ from "lodash";
 
 const Main = () => {
-    const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
-    );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();
+    const isManualGeneration = useIsManualGeneration();
 
     const interceptorRef = useRef<Interceptor>(null);
 
@@ -112,7 +114,7 @@ const Main = () => {
         let officialZipStatus = isValidSignedBuild && isAllowedVersion;
 
         let isUnofficialZip =
-            !officialZipStatus || (!!competitionId && isUsingStaging());
+            !officialZipStatus || (!isManualGeneration && isUsingStaging());
 
         let fileName =
             (isUnofficialZip ? "[UNOFFICIAL] " : "") +
@@ -160,7 +162,7 @@ const Main = () => {
         );
 
         let isLoggedCompSelection =
-            !!competitionId && oidcAuth.isAuthenticated;
+            !isManualGeneration && oidcAuth.isAuthenticated;
         let isOnlineLocked = appOnlineMode && !isLoggedCompSelection;
 
         let disableScrambleButton = !anyEventHasRounds || isOnlineLocked;

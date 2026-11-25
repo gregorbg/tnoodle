@@ -5,7 +5,7 @@ import type RootState from "../model/RootState";
 import { setPassword } from "../redux/slice/ScramblingSlice";
 import {
     defaultWcif,
-    useCompetitionWcif,
+    useCompetitionWcif, useIsManualGeneration,
     useSetCompetitionName,
 } from "../util/wcif.util.ts";
 import { useIsMutating } from "@tanstack/react-query";
@@ -13,9 +13,6 @@ import { useIsMutating } from "@tanstack/react-query";
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
-    );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
@@ -24,9 +21,10 @@ const EntryInterface = () => {
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();
+    const isManualGeneration = useIsManualGeneration();
 
     const dispatch = useDispatch();
-    const setCompetitionName = useSetCompetitionName(competitionId);
+    const setCompetitionName = useSetCompetitionName(wcif.id);
 
     const handlePasswordChange = (password: string) =>
         dispatch(setPassword(password));
@@ -48,7 +46,7 @@ const EntryInterface = () => {
                         setCompetitionName(e.target.value)
                     }
                     value={wcif.name}
-                    disabled={!!competitionId || generatingScrambles}
+                    disabled={!isManualGeneration || generatingScrambles}
                     required
                 />
             </div>

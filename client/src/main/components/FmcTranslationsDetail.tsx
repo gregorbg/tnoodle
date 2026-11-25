@@ -1,7 +1,5 @@
 import { chunk } from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
-import type RootState from "../model/RootState";
 import type { WcifEvent } from "../api/wca.schemas";
 import {
     defaultWcif,
@@ -26,10 +24,6 @@ interface FmcTranslationsDetailProps {
 const FmcTranslationsDetail = ({
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
-    );
-
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
@@ -56,7 +50,7 @@ const FmcTranslationsDetail = ({
         );
     }, [fmcWcifEvent, suggestedFmcTranslations]);
 
-    const setEventExtension = useSetEventExtension(competitionId);
+    const setEventExtension = useSetEventExtension(wcif.id);
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
