@@ -8,14 +8,19 @@ import { MBLD_DEFAULT } from "../constants/wca.constants";
 import {useTNoodleQueries} from "../api/client.ts";
 import {useQuery} from "@tanstack/react-query";
 import { buildMbldExtension } from "../util/extension.util.ts";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util.ts";
 
 const EVENTS_PER_LINE = 2;
 
 const EventPickerTable = () => {
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
     );
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+
+    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const tnoodleQueries = useTNoodleQueries();
     const { data: wcaEvents } = useQuery(tnoodleQueries.getWcaEventsOptions());

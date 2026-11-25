@@ -23,7 +23,11 @@ import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTNoodleQueries } from "../api/client.ts";
-import { useSetWcifEvent } from "../util/wcif.util.ts";
+import {
+    defaultWcif,
+    useCompetitionWcif,
+    useSetWcifEvent,
+} from "../util/wcif.util.ts";
 
 interface EventPickerProps {
     wcaEvent: WcaEvent;
@@ -31,9 +35,8 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
-    const competitionId = useSelector((state: RootState) => state.scramblingSlice.competitionId);
-    const wcif = useSelector(
-        (state: RootState) => state.wcifSlice.wcif,
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
     );
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
@@ -50,6 +53,8 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
+
+    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const tnoodleQueries = useTNoodleQueries();
 

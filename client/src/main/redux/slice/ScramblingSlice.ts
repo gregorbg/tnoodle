@@ -25,7 +25,7 @@ export const scramblingSlice = createSlice({
     name: "scramblingSlice",
     initialState,
     reducers: {
-        setCompetitionId: (state, action: PayloadAction<string>) => {
+        setCompetitionId: (state, action: PayloadAction<string | undefined>) => {
             state.competitionId = action.payload;
         },
         setFileZip: (

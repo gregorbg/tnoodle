@@ -1,21 +1,7 @@
-import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setWcif } from "../redux/slice/WcifSlice";
-import type RootState from "../model/RootState";
-import {
-    frontendStatusExtensionId,
-    setExtensionLazily,
-} from "../util/extension.util";
-import { isUsingStaging } from "../api/wca.oidc";
 import { useQuery } from "@tanstack/react-query";
 import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
 
 const VersionInfo = () => {
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
-    const isManualSelection = useSelector(
-        (state: RootState) => state.scramblingSlice.isManualSelection,
-    );
-
     const tnoodleQueries = useTNoodleQueries();
     const { data: tnoodleVersionInfo } = useQuery(tnoodleQueries.getVersionInfoOptions());
 
@@ -26,30 +12,6 @@ const VersionInfo = () => {
 
     const signatureValid = tnoodleVersionInfo?.is_signed_build && tnoodleVersionInfo?.signature_key_bytes === wcaVersionInfo?.publicKeyBytes;
     const versionAllowed = wcaVersionInfo?.allowed?.includes(runningVersion);
-
-    const dispatch = useDispatch();
-
-    const buildFrontendStatusExtension = useCallback(() => {
-        return {
-            id: frontendStatusExtensionId,
-            specUrl: "",
-            data: {
-                isStaging: isUsingStaging(),
-                isManual: isManualSelection,
-                isSignedBuild: signatureValid,
-                isAllowedVersion: versionAllowed,
-            },
-        };
-    }, [isManualSelection, signatureValid, versionAllowed]);
-
-    useEffect(() => {
-        setExtensionLazily(
-            wcif,
-            frontendStatusExtensionId,
-            buildFrontendStatusExtension,
-            (wcif) => dispatch(setWcif(wcif)),
-        );
-    }, [dispatch, wcif, buildFrontendStatusExtension]);
 
     // We cannot analyze TNoodle version here. We do not bother the user.
     if (!tnoodleVersionInfo || !wcaVersionInfo) {

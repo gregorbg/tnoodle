@@ -2,7 +2,12 @@ import { useSelector } from "react-redux";
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import type RootState from "../model/RootState";
 import type { WcifEvent } from "../api/wca.schemas";
-import { getBestMbldAttemptKey, useSetWcifEvent } from "../util/wcif.util";
+import {
+    defaultWcif,
+    getBestMbldAttemptKey,
+    useCompetitionWcif,
+    useSetWcifEvent,
+} from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
     buildMbldExtension,
@@ -19,10 +24,14 @@ interface MbldDetailProps {
 }
 
 const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const tnoodleApiClient = useTNoodleApi();
 

@@ -4,29 +4,28 @@ import { useDispatch, useSelector } from "react-redux";
 import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
 import {
+    setCompetitionId,
     setFileZip,
     setIsManualSelection,
 } from "../redux/slice/ScramblingSlice";
-import { setWcif } from "../redux/slice/WcifSlice";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
     deleteParameter,
     getQueryParameter,
     setQueryParameter,
 } from "../util/query.param.util";
-import { defaultWcif } from "../util/wcif.util";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
 import "./SideBar.css";
-import type { Wcif } from "../api/wca.schemas";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
-import { useTNoodleQueries, useWcaApi, useWcaQueries } from "../api/client.ts";
+import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
 import { useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
-    const [loadingCompetitionInfo, setLoadingCompetitionInfo] = useState(false);
-
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
@@ -38,6 +37,8 @@ const SideBar = () => {
     const wcaQueries = useWcaQueries();
 
     const { data: backendWcifVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions());
+
+    const { data: wcif = defaultWcif, isLoading: loadingCompetitionInfo } = useCompetitionWcif(competitionId, backendWcifVersion)
 
     const [isOpen, setIsOpen] = useState(true);
 
@@ -104,61 +105,18 @@ const SideBar = () => {
 
     const handleManualSelection = () => {
         dispatch(setIsManualSelection(true));
-        dispatch(setWcif({ ...defaultWcif }));
+        dispatch(setCompetitionId(undefined));
         dispatch(setFileZip());
 
         deleteParameter("competitionId");
     };
 
-    const updateWcif = useCallback(
-        (wcif: Wcif) => {
-            dispatch(setIsManualSelection(false));
-            dispatch(setWcif(wcif));
-            dispatch(setFileZip());
-        },
-        [dispatch],
-    );
-
-    const wcaApiClient = useWcaApi();
-
-    const loadCompetition = useCallback(
-        (competitionId: string | null) => {
-            if (competitionId === null) {
-                return;
-            }
-
-            if (wcif.id === competitionId) {
-                return;
-            }
-
-            if (!!backendWcifVersion) {
-                setLoadingCompetitionInfo(true);
-
-                wcaApiClient
-                    .getWcif({
-                        path: {
-                            competitionId,
-                            formatVersion: backendWcifVersion,
-                        },
-                    })
-                    .then(updateWcif)
-                    .finally(() => setLoadingCompetitionInfo(false));
-            }
-        },
-        [
-            wcif.id,
-            backendWcifVersion,
-            wcaApiClient,
-            updateWcif,
-        ],
-    );
-
     const handleCompetitionSelection = useCallback(
         (competitionId: string) => {
             setQueryParameter("competitionId", competitionId);
-            loadCompetition(competitionId);
+            dispatch(setCompetitionId(competitionId));
         },
-        [loadCompetition],
+        [dispatch],
     );
 
     const logInButton = () => {

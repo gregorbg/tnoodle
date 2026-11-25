@@ -1,4 +1,4 @@
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ScrambleClient } from "../api/tnoodle.socket";
 import { isUsingStaging } from "../api/wca.oidc";
@@ -18,12 +18,15 @@ import VersionInfo from "./VersionInfo";
 import { useAuth } from "react-oidc-context";
 import { convertToBlob } from "../util/data.util.ts";
 import { frontendStatusExtensionId } from "../util/extension.util.ts";
+import { defaultWcif, useCompetitionWcif } from "../util/wcif.util.ts";
 
 const Main = () => {
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
     );
@@ -33,6 +36,8 @@ const Main = () => {
     const fileZip = useSelector(
         (state: RootState) => state.scramblingSlice.fileZip,
     );
+
+    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const interceptorRef = useRef<Interceptor>(null);
 

@@ -3,24 +3,29 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
 import { setFileZip, setPassword } from "../redux/slice/ScramblingSlice";
-import { useSetCompetitionName } from "../util/wcif.util.ts";
+import {
+    defaultWcif,
+    useCompetitionWcif,
+    useSetCompetitionName,
+} from "../util/wcif.util.ts";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const competitionId = useSelector((state: RootState) => state.scramblingSlice.competitionId);
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
     );
     const password = useSelector(
         (state: RootState) => state.scramblingSlice.password,
     );
-    const competitionName = useSelector(
-        (state: RootState) => state.wcifSlice.wcif.name,
-    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const dispatch = useDispatch();
     const setCompetitionName = useSetCompetitionName(competitionId);
@@ -48,7 +53,7 @@ const EntryInterface = () => {
                     onChange={(e) =>
                         setCompetitionName(e.target.value)
                     }
-                    value={competitionName}
+                    value={wcif.name}
                     disabled={!isManualSelection || generatingScrambles}
                     required
                 />

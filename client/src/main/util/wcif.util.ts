@@ -61,9 +61,9 @@ const getWcifParams = (competitionId?: string, formatVersion?: string): GetWcifV
 export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) => ["suggestedFmcTranslations", persons] as const;
 export const getBestMbldAttemptKey = (persons: WcifPerson[]) => ["bestMbldAttempt", persons] as const;
 
-export const useCompetitionWcif = (competitionId?: string) => {
+export const useCompetitionWcif = (competitionId?: string, formatVersion?: string) => {
     const wcaApiClient = useWcaApi();
-    const wcifParams = getWcifParams(competitionId);
+    const wcifParams = getWcifParams(competitionId, formatVersion);
 
     const tnoodleApiClient = useTNoodleApi();
 

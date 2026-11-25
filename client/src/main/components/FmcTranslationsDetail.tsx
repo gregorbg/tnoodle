@@ -4,7 +4,9 @@ import { useSelector } from "react-redux";
 import type RootState from "../model/RootState";
 import type { WcifEvent } from "../api/wca.schemas";
 import {
+    defaultWcif,
     getSuggestedFmcTranslationsKey,
+    useCompetitionWcif,
     useSetWcifEvent,
 } from "../util/wcif.util";
 import {
@@ -24,10 +26,14 @@ interface FmcTranslationsDetailProps {
 const FmcTranslationsDetail = ({
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
     const generatingScrambles = useSelector(
         (state: RootState) => state.scramblingSlice.generatingScrambles,
     );
+
+    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
 
     const tnoodleQueries = useTNoodleQueries();
     const { data: availableTranslations } = useQuery(tnoodleQueries.getFmcSheetLanguagesOptions());
