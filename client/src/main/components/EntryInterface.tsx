@@ -8,7 +8,7 @@ import { useSetCompetitionName } from "../util/wcif.util.ts";
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const wcif = useSelector((state: RootState) => state.wcifSlice.wcif);
+    const competitionId = useSelector((state: RootState) => state.scramblingSlice.competitionId);
     const isManualSelection = useSelector(
         (state: RootState) => state.scramblingSlice.isManualSelection,
     );
@@ -23,7 +23,7 @@ const EntryInterface = () => {
     );
 
     const dispatch = useDispatch();
-    const setCompetitionName = useSetCompetitionName(wcif.id);
+    const setCompetitionName = useSetCompetitionName(competitionId);
 
     const handlePasswordChange = (password: string) => {
         dispatch(setPassword(password));

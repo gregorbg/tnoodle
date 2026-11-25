@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type WebsocketBlobResult from "../../model/WebsocketBlobResult";
 
 interface ScramblingState {
+    competitionId?: string
     fileZip?: WebsocketBlobResult;
     isManualSelection: boolean;
     generatingScrambles: boolean;
@@ -11,6 +12,7 @@ interface ScramblingState {
 }
 
 const initialState: ScramblingState = {
+    competitionId: undefined,
     fileZip: undefined,
     isManualSelection: true,
     generatingScrambles: false,
@@ -23,6 +25,9 @@ export const scramblingSlice = createSlice({
     name: "scramblingSlice",
     initialState,
     reducers: {
+        setCompetitionId: (state, action: PayloadAction<string>) => {
+            state.competitionId = action.payload;
+        },
         setFileZip: (
             state,
             action: PayloadAction<WebsocketBlobResult | undefined>,
@@ -58,6 +63,7 @@ export const scramblingSlice = createSlice({
 });
 
 export const {
+    setCompetitionId,
     setFileZip,
     setIsManualSelection,
     setPassword,

@@ -31,6 +31,7 @@ interface EventPickerProps {
 }
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
+    const competitionId = useSelector((state: RootState) => state.scramblingSlice.competitionId);
     const wcif = useSelector(
         (state: RootState) => state.wcifSlice.wcif,
     );
@@ -111,7 +112,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         [fetchScrambleQuery],
     );
 
-    const setWcifEvent = useSetWcifEvent(wcif.id);
+    const setWcifEvent = useSetWcifEvent(competitionId);
 
     const updateEventRounds = (rounds: WcifRound[]) => {
         setWcifEvent({
