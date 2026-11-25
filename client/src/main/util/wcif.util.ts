@@ -19,9 +19,11 @@ import {
 } from "./extension.util.ts";
 import { useCallback } from "react";
 import type { Wcif, WcifEvent, WcifPerson } from "../api/wca.schemas.ts";
-import { useTNoodleApi, useWcaApi } from "../api/client.ts";
+import { useTNoodleApi, useTNoodleQueries, useWcaApi } from "../api/client.ts";
 import type { GetWcifVariables } from "../api/wca.ts";
 import type { Extension } from "../model/Extension.ts";
+import { useSelector } from "react-redux";
+import type RootState from "../model/RootState.ts";
 
 // Add 1 round of 3x3x3
 const default333: WcifEvent = {
@@ -61,7 +63,18 @@ const getWcifParams = (competitionId?: string, formatVersion?: string): GetWcifV
 export const getSuggestedFmcTranslationsKey = (persons: WcifPerson[]) => ["suggestedFmcTranslations", persons] as const;
 export const getBestMbldAttemptKey = (persons: WcifPerson[]) => ["bestMbldAttempt", persons] as const;
 
-export const useCompetitionWcif = (competitionId?: string, formatVersion?: string) => {
+export const useCompetitionWcif = () => {
+    const competitionId = useSelector(
+        (state: RootState) => state.scramblingSlice.competitionId,
+    );
+
+    const tnoodleQueries = useTNoodleQueries();
+    const { data: backendFormatVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions())
+
+    return useCompetitionWcifQuery(competitionId, backendFormatVersion);
+}
+
+export const useCompetitionWcifQuery = (competitionId?: string, formatVersion?: string) => {
     const wcaApiClient = useWcaApi();
     const wcifParams = getWcifParams(competitionId, formatVersion);
 

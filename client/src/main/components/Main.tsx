@@ -29,7 +29,7 @@ const Main = () => {
         (state: RootState) => state.scramblingSlice.password,
     );
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif();
 
     const interceptorRef = useRef<Interceptor>(null);
 

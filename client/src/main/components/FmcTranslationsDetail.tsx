@@ -33,7 +33,7 @@ const FmcTranslationsDetail = ({
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif();
 
     const tnoodleQueries = useTNoodleQueries();
     const { data: availableTranslations } = useQuery(tnoodleQueries.getFmcSheetLanguagesOptions());

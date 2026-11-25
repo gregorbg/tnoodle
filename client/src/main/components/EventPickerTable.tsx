@@ -17,7 +17,7 @@ const EventPickerTable = () => {
         (state: RootState) => state.scramblingSlice.competitionId,
     );
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif();
 
     const tnoodleQueries = useTNoodleQueries();
     const { data: wcaEvents } = useQuery(tnoodleQueries.getWcaEventsOptions());
@@ -73,7 +73,7 @@ const EventPickerTable = () => {
     // This filters events to show only those in the competition.
     let filteredEvents = wcaEvents.filter(
         (wcaEvent) =>
-            !!competitionId ||
+            competitionId === undefined ||
             wcif.events.find((item) => item.id === wcaEvent.id),
     );
 

@@ -54,7 +54,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif();
 
     const tnoodleQueries = useTNoodleQueries();
 

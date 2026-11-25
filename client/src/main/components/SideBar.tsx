@@ -17,13 +17,10 @@ import "./SideBar.css";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
-import { useTNoodleQueries, useWcaQueries } from "../api/client.ts";
+import { useWcaQueries } from "../api/client.ts";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 
 const SideBar = () => {
-    const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
-    );
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
@@ -31,12 +28,7 @@ const SideBar = () => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const tnoodleQueries = useTNoodleQueries();
-    const wcaQueries = useWcaQueries();
-
-    const { data: backendWcifVersion } = useQuery(tnoodleQueries.getBackendWcifVersionOptions());
-
-    const { data: wcif = defaultWcif, isLoading: loadingCompetitionInfo } = useCompetitionWcif(competitionId, backendWcifVersion)
+    const { data: wcif = defaultWcif, isLoading: loadingCompetitionInfo } = useCompetitionWcif()
 
     const [isOpen, setIsOpen] = useState(true);
 
@@ -45,7 +37,14 @@ const SideBar = () => {
         [setIsOpen],
     );
 
+    useEffect(() => {
+        window.addEventListener("resize", handleIsOpen);
+
+        return () => window.removeEventListener("resize", handleIsOpen);
+    }, [handleIsOpen]);
+
     const oidcAuth = useAuth();
+    const wcaQueries = useWcaQueries();
 
     const { data: user, isLoading: loadingUser } = useQuery({
         ...wcaQueries.getMeOptions(),
@@ -65,12 +64,6 @@ const SideBar = () => {
             }),
             enabled: oidcAuth.isAuthenticated,
         });
-
-    useEffect(() => {
-        window.addEventListener("resize", handleIsOpen);
-
-        return () => window.removeEventListener("resize", handleIsOpen);
-    }, [handleIsOpen]);
 
     const competitions = useMemo(() => {
         if (

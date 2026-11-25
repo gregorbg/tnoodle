@@ -30,7 +30,7 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
     const generatingScrambles =
         useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
 
-    const { data: wcif = defaultWcif } = useCompetitionWcif(competitionId);
+    const { data: wcif = defaultWcif } = useCompetitionWcif();
 
     const tnoodleApiClient = useTNoodleApi();
 
