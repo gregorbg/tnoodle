@@ -5,7 +5,6 @@ import type RootState from "../model/RootState";
 import type { WcaEvent } from "../api/tnoodle.schemas";
 import type { WcifEvent, WcifRound } from "../api/wca.schemas";
 import {
-    setExtensionLazily,
     findExtension,
     colorSchemeExtensionId,
     getDefaultCopiesExtension,
@@ -29,7 +28,7 @@ import {
 import { useTNoodleQueries } from "../api/client.ts";
 import {
     defaultWcif,
-    useCompetitionWcif,
+    useCompetitionWcif, useSetEventExtension,
     useSetWcifEvent,
 } from "../util/wcif.util.ts";
 
@@ -119,6 +118,7 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     );
 
     const setWcifEvent = useSetWcifEvent(competitionId);
+    const setWcifEventExtension = useSetEventExtension(competitionId);
 
     const updateEventRounds = (rounds: WcifRound[]) => {
         setWcifEvent({
@@ -128,11 +128,10 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     };
 
     const updateEventColorScheme = (colorScheme: Record<string, string>) => {
-        setExtensionLazily(
+        setWcifEventExtension(
             wcifEvent,
             colorSchemeExtensionId,
             () => buildColorSchemeExtension(colorScheme),
-            setWcifEvent,
         );
     };
 
@@ -238,11 +237,10 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         );
 
         if (wcifEvent !== undefined && colorScheme !== undefined) {
-            setExtensionLazily(
+            setWcifEventExtension(
                 wcifEvent,
                 colorSchemeExtensionId,
                 () => buildColorSchemeExtension(colorScheme),
-                setWcifEvent,
             );
         }
     };

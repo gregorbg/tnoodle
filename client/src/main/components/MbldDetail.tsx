@@ -6,14 +6,13 @@ import {
     defaultWcif,
     getBestMbldAttemptKey,
     useCompetitionWcif,
-    useSetWcifEvent,
+    useSetEventExtension,
 } from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
     buildMbldExtension,
     findExtension,
     mbldCubesExtensionId,
-    setExtensionLazily,
     upsertExtension,
 } from "../util/extension.util";
 import { useTNoodleApi } from "../api/client.ts";
@@ -54,28 +53,25 @@ const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
         );
     }, [mbldWcifEvent, bestMbldAttempt]);
 
-    const setWcifEvent = useSetWcifEvent(wcif.id);
+    const setEventExtension = useSetEventExtension(competitionId)
 
     const updateEventMbld = useCallback(
         (mbld: number) => {
-            const updatedEvent = setExtensionLazily(
+            setEventExtension(
                 mbldWcifEvent,
                 mbldCubesExtensionId,
                 () => buildMbldExtension(mbld),
-            );
+                (newWcifEvent) => ({
+                    ...newWcifEvent,
+                    rounds: newWcifEvent.rounds.map((wcifRound) => {
+                        const overrideExtension = buildMbldExtension(mbld);
 
-            const updatedWithRounds = {
-                ...updatedEvent,
-                rounds: updatedEvent.rounds.map((wcifRound) => {
-                    const overrideExtension = buildMbldExtension(mbld);
-
-                    return upsertExtension(wcifRound, overrideExtension);
+                        return upsertExtension(wcifRound, overrideExtension);
+                    }),
                 }),
-            };
-
-            setWcifEvent(updatedWithRounds);
+            );
         },
-        [mbldWcifEvent, setWcifEvent],
+        [setEventExtension, mbldWcifEvent],
     );
 
     return (

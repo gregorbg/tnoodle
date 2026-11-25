@@ -7,12 +7,12 @@ import {
     defaultWcif,
     getSuggestedFmcTranslationsKey,
     useCompetitionWcif,
-    useSetWcifEvent,
+    useSetEventExtension,
 } from "../util/wcif.util";
 import {
+    buildFmcExtension,
     findExtension,
     fmcTranslationsExtensionId,
-    setExtensionLazily,
 } from "../util/extension.util";
 import { useIsMutating, useQuery } from "@tanstack/react-query";
 import { useTNoodleApi, useTNoodleQueries } from "../api/client.ts";
@@ -56,26 +56,17 @@ const FmcTranslationsDetail = ({
         );
     }, [fmcWcifEvent, suggestedFmcTranslations]);
 
-    const setWcifEvent = useSetWcifEvent(wcif.id);
-
-    const buildFmcExtension = (selectedTranslations: string[]) => {
-        return {
-            id: fmcTranslationsExtensionId,
-            specUrl: "",
-            data: { languageTags: selectedTranslations },
-        };
-    };
+    const setEventExtension = useSetEventExtension(competitionId);
 
     const updateEventSelectedTranslations = useCallback(
         (selectedTranslations: string[]) => {
-            const extended = setExtensionLazily(
+            setEventExtension(
                 fmcWcifEvent,
                 fmcTranslationsExtensionId,
                 () => buildFmcExtension(selectedTranslations),
             );
-            setWcifEvent(extended);
         },
-        [setWcifEvent, fmcWcifEvent],
+        [setEventExtension, fmcWcifEvent],
     );
 
     const handleTranslation = (id: string, status: boolean) => {
