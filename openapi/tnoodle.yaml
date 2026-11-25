@@ -291,7 +291,7 @@ paths:
                 '200':
                     description: The SVG of the puzzle
                     content:
-                        image/svg+xml:
+                        application/svg+xml:
                             schema:
                                 type: string
                                 example: "<svg></svg>"

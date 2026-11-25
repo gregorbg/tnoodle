@@ -12,17 +12,16 @@ import {
     copiesExtensionId,
     getDefaultCopiesExtension,
 } from "../util/wcif.util";
-import { client as tnoodleClient } from "../api/tnoodle";
 import "./EventPicker.css";
 import FmcTranslationsDetail from "./FmcTranslationsDetail";
 import MbldDetail from "./MbldDetail";
 import "@cubing/icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import SVG from "react-inlinesvg";
 import SchemeColorPicker from "./SchemeColorPicker";
 import _ from "lodash";
 import { setExtensionLazily, findExtension } from "../util/extension.util";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTNoodleQueries } from "../api/client.ts";
 
 interface EventPickerProps {
@@ -55,10 +54,6 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const { data: wcaFormats } = useQuery(tnoodleQueries.getWcaFormatsOptions());
     const { data: wcaEvents } = useQuery(tnoodleQueries.getWcaEventsOptions());
 
-    const [solvedPuzzleSvg, setSolvedPuzzleSvg] = useState<string>();
-
-    const [scrambledPuzzleSvg, setScrambledPuzzleSvg] = useState<string>();
-
     const { data: defaultColorScheme } = useQuery({
         ...tnoodleQueries.getDefaultColorSchemeOptions({
             path: { puzzleId: wcaEvent.puzzle_id },
@@ -76,46 +71,44 @@ const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
         );
     }, [wcifEvent, defaultColorScheme]);
 
+    const { data: randomScramble, refetch: fetchScrambleQuery } = useQuery(
+        tnoodleQueries.getRandomScrambleOptions({
+            path: { puzzleId: wcaEvent.puzzle_id },
+        }),
+    );
+
+    const { data: solvedPuzzleSvg } = useQuery(
+        tnoodleQueries.paintScrambleOptions(
+            {
+                path: { puzzleId: wcaEvent.puzzle_id },
+                query: { colorScheme },
+            },
+            { parseAs: "text" },
+        ),
+    );
+
+    const { data: scrambledPuzzleSvg } = useQuery({
+        ...tnoodleQueries.paintScrambleOptions(
+            {
+                path: { puzzleId: wcaEvent.puzzle_id },
+                query: { scramble: randomScramble, colorScheme },
+            },
+            { parseAs: "text" },
+        ),
+        enabled: randomScramble !== undefined,
+        placeholderData: keepPreviousData,
+    });
+
     const fetchDisplayScramble = useCallback(
         (fetchNewScramble = true) => {
             // we need this additional boolean to make sure we can fetch only once
             // when the overlay is hidden, because its callback yields a `show` boolean.
-            if (fetchNewScramble && colorScheme !== undefined) {
-                tnoodleClient
-                    .getRandomScramble({
-                        path: { puzzleId: wcaEvent.puzzle_id },
-                    })
-                    .then((scramble) => {
-                        tnoodleClient
-                            .paintScramble({
-                                path: { puzzleId: wcaEvent.puzzle_id },
-                                query: { scramble, colorScheme },
-                            })
-                            .then((response) => response.text())
-                            .then((svgXml) => {
-                                setScrambledPuzzleSvg(svgXml);
-                            });
-                    });
+            if (fetchNewScramble) {
+                void fetchScrambleQuery();
             }
         },
-        [wcaEvent.puzzle_id, colorScheme],
+        [fetchScrambleQuery],
     );
-
-    useEffect(() => {
-        if (colorScheme !== undefined) {
-            tnoodleClient
-                .paintScramble({
-                    path: { puzzleId: wcaEvent.puzzle_id },
-                    query: { colorScheme },
-                })
-                .then((response) => response.text())
-                .then((svgXml) => {
-                    setSolvedPuzzleSvg(svgXml);
-                });
-
-            fetchDisplayScramble();
-        }
-    }, [wcaEvent.puzzle_id, colorScheme, fetchDisplayScramble]);
 
     const dispatch = useDispatch();
 
