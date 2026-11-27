@@ -6,7 +6,7 @@ import {
     setGeneratingScrambles,
     setScramblingProgressCurrentEvent,
     setScramblingProgressTarget,
-} from "../main/redux/slice/ScramblingSlice";
+} from "../main/redux/ScramblerSlice.ts";
 import { createStore } from "../main/redux/Store";
 import { getCopies, getMbldCubesCount, getRounds } from "./util/wcif.test.util";
 import { renderWithProviders, replaceValue } from "./util/render";

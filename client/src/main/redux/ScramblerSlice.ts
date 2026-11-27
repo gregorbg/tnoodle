@@ -1,20 +1,24 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-interface ScramblingState {
+interface ScramblerState {
     competitionId?: string;
     password: string;
     scramblingProgressCurrent: Record<string, number>;
     scramblingProgressTarget: Record<string, number>;
+    showColorPicker: boolean;
+    isUsingStaging: boolean;
 }
 
-export const initialState: ScramblingState = {
+export const initialState: ScramblerState = {
     competitionId: undefined,
     password: "",
     scramblingProgressCurrent: {},
     scramblingProgressTarget: {},
+    showColorPicker: true,
+    isUsingStaging: false,
 };
 
-export const scramblingSlice = createSlice({
+export const scramblerSlice = createSlice({
     name: "scramblingSlice",
     initialState,
     reducers: {
@@ -43,6 +47,12 @@ export const scramblingSlice = createSlice({
         ) => {
             state.scramblingProgressTarget = action.payload;
         },
+        setShowColorPicker: (state, action: PayloadAction<boolean>) => {
+            state.showColorPicker = action.payload;
+        },
+        setIsUsingStaging: (state, action: PayloadAction<boolean>) => {
+            state.isUsingStaging = action.payload;
+        },
     },
 });
 
@@ -52,4 +62,6 @@ export const {
     resetScramblingProgressCurrent,
     setScramblingProgressCurrentEvent,
     setScramblingProgressTarget,
-} = scramblingSlice.actions;
+    setShowColorPicker,
+    setIsUsingStaging,
+} = scramblerSlice.actions;

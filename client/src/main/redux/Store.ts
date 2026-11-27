@@ -1,21 +1,18 @@
 import { configureStore } from "@reduxjs/toolkit";
-import {
-    initialState as initialScramblingState,
-    scramblingSlice,
-} from "./slice/ScramblingSlice";
-import { settingsSlice } from "./slice/SettingsSlice";
+import { initialState, scramblerSlice } from "./ScramblerSlice.ts";
 import { getQueryParameter } from "../util/query.param.util.ts";
+import { isUsingStaging } from "../api/wca.oidc.ts";
 
 export const createStore = () =>
     configureStore({
         reducer: {
-            scramblingSlice: scramblingSlice.reducer,
-            settingsSlice: settingsSlice.reducer,
+            scramblerSlice: scramblerSlice.reducer,
         },
         preloadedState: {
-            scramblingSlice: {
-                ...initialScramblingState,
+            scramblerSlice: {
+                ...initialState,
                 competitionId: getQueryParameter("competitionId") ?? undefined,
+                isUsingStaging: isUsingStaging(),
             },
         },
     });

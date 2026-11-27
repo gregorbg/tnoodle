@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
-import { setPassword } from "../redux/slice/ScramblingSlice";
+import { setPassword } from "../redux/ScramblerSlice.ts";
 import { defaultWcif } from "../util/wcif.util.ts";
 import {
     useCompetitionWcif,
@@ -15,7 +15,7 @@ const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const password = useSelector(
-        (state: RootState) => state.scramblingSlice.password,
+        (state: RootState) => state.scramblerSlice.password,
     );
 
     const generatingScrambles = useIsGeneratingScrambles();

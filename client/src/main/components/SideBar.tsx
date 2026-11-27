@@ -3,7 +3,10 @@ import { Collapse, Spinner } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import logo from "../assets/tnoodle_logo.svg";
 import type RootState from "../model/RootState";
-import { setCompetitionId } from "../redux/slice/ScramblingSlice";
+import {
+    setCompetitionId,
+    setShowColorPicker,
+} from "../redux/ScramblerSlice.ts";
 import { getDefaultCompetitionName } from "../util/competition.name.util";
 import {
     deleteParameter,
@@ -12,7 +15,6 @@ import {
 } from "../util/query.param.util";
 import { defaultWcif } from "../util/wcif.util";
 import "./SideBar.css";
-import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
 import { useWcaQueries } from "../api/client.ts";
@@ -25,7 +27,7 @@ import {
 
 const SideBar = () => {
     const showColorPicker = useSelector(
-        (state: RootState) => state.settingsSlice.showColorPicker,
+        (state: RootState) => state.scramblerSlice.showColorPicker,
     );
 
     const generatingScrambles = useIsGeneratingScrambles();

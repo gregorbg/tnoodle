@@ -41,7 +41,7 @@ const getWcifParams = (
 
 export const useIsManualGeneration = () => {
     const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
+        (state: RootState) => state.scramblerSlice.competitionId,
     );
 
     return competitionId === undefined || competitionId === defaultId;
@@ -64,7 +64,7 @@ export const getBestMbldAttemptKey = (persons: WcifPerson[]) =>
 
 export const useCompetitionWcif = () => {
     const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
+        (state: RootState) => state.scramblerSlice.competitionId,
     );
 
     const tnoodleQueries = useTNoodleQueries();

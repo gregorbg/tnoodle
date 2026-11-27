@@ -38,13 +38,13 @@ interface EventPickerProps {
 
 const EventPicker = ({ wcaEvent, wcifEvent }: EventPickerProps) => {
     const scramblingProgressCurrent = useSelector(
-        (state: RootState) => state.scramblingSlice.scramblingProgressCurrent,
+        (state: RootState) => state.scramblerSlice.scramblingProgressCurrent,
     );
     const scramblingProgressTarget = useSelector(
-        (state: RootState) => state.scramblingSlice.scramblingProgressTarget,
+        (state: RootState) => state.scramblerSlice.scramblingProgressTarget,
     );
     const showColorPicker = useSelector(
-        (state: RootState) => state.settingsSlice.showColorPicker,
+        (state: RootState) => state.scramblerSlice.showColorPicker,
     );
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();

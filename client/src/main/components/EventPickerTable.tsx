@@ -15,7 +15,7 @@ const EVENTS_PER_LINE = 2;
 
 const EventPickerTable = () => {
     const competitionId = useSelector(
-        (state: RootState) => state.scramblingSlice.competitionId,
+        (state: RootState) => state.scramblerSlice.competitionId,
     );
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();

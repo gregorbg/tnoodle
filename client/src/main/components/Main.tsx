@@ -7,7 +7,7 @@ import {
     resetScramblingProgressCurrent,
     setScramblingProgressCurrentEvent,
     setScramblingProgressTarget,
-} from "../redux/slice/ScramblingSlice";
+} from "../redux/ScramblerSlice.ts";
 import EntryInterface from "./EntryInterface";
 import EventPickerTable from "./EventPickerTable";
 import Interceptor from "./Interceptor";
@@ -28,7 +28,7 @@ import {
 
 const Main = () => {
     const password = useSelector(
-        (state: RootState) => state.scramblingSlice.password,
+        (state: RootState) => state.scramblerSlice.password,
     );
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();
