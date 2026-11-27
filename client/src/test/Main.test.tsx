@@ -1,7 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import type { UserEvent } from "@testing-library/user-event";
 import Main from "../main/components/Main";
-import { setSuggestedFmcTranslations } from "../main/redux/slice/EventDataSlice";
 import { createStore } from "../main/redux/Store";
 import { getFmcLanguageTags } from "./util/wcif.test.util";
 import { renderWithProviders } from "./util/render";

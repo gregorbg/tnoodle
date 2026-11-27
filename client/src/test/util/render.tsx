@@ -4,11 +4,24 @@ import React, { type ReactElement } from "react";
 import { Provider } from "react-redux";
 import { type AppStore, createStore } from "../../main/redux/Store";
 import MockAuthContext from "../mock/MockAuthContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface RenderOptions {
     store?: AppStore;
+    queryClient?: QueryClient;
     isAuthenticated?: boolean;
 }
+
+// Sane defaults as per https://tanstack.com/query/latest/docs/framework/react/guides/testing
+export const createQueryClient = () =>
+    new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+                gcTime: Infinity,
+            },
+        },
+    });
 
 /**
  * Renders `ui` inside the app's providers with a fresh store,
@@ -16,7 +29,11 @@ interface RenderOptions {
  */
 export const renderWithProviders = async (
     ui: ReactElement,
-    { store = createStore(), isAuthenticated = false }: RenderOptions = {},
+    {
+        store = createStore(),
+        queryClient = createQueryClient(),
+        isAuthenticated = false,
+    }: RenderOptions = {},
 ) => {
     const user = userEvent.setup();
 
@@ -25,16 +42,18 @@ export const renderWithProviders = async (
     const result = await act(async () =>
         render(
             <React.StrictMode>
-                <Provider store={store}>
-                    <MockAuthContext isAuthenticated={isAuthenticated}>
-                        {ui}
-                    </MockAuthContext>
-                </Provider>
+                <QueryClientProvider client={queryClient}>
+                    <Provider store={store}>
+                        <MockAuthContext isAuthenticated={isAuthenticated}>
+                            {ui}
+                        </MockAuthContext>
+                    </Provider>
+                </QueryClientProvider>
             </React.StrictMode>,
         ),
     );
 
-    return { store, user, ...result };
+    return { store, queryClient, user, ...result };
 };
 
 /** Replaces the whole content of an input, like selecting it and typing over it. */

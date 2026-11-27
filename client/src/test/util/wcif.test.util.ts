@@ -1,10 +1,10 @@
 import type { Wcif } from "../../main/api/wca.schemas";
-import { findExtension } from "../../main/util/extension.util";
 import {
     copiesExtensionId,
+    findExtension,
     fmcTranslationsExtensionId,
     mbldCubesExtensionId,
-} from "../../main/util/wcif.util";
+} from "../../main/util/extension.util";
 
 const findEvent = (wcif: Wcif, eventId: string) =>
     wcif.events.find((event) => event.id === eventId);

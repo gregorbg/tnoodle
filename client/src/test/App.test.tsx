@@ -1,8 +1,11 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import type { UserEvent } from "@testing-library/user-event";
 import App from "../App";
-import { findExtension } from "../main/util/extension.util";
-import { defaultWcif, frontendStatusExtensionId } from "../main/util/wcif.util";
+import {
+    findExtension,
+    frontendStatusExtensionId,
+} from "../main/util/extension.util";
+import { defaultWcif } from "../main/util/wcif.util";
 import { httpSpy, testMockServer, websocketSpy } from "./mock/api.mock";
 import { mockCompetitions } from "./mock/wcif.mock.ts";
 import {
@@ -15,6 +18,8 @@ import {
 import { renderWithProviders, replaceValue } from "./util/render";
 import { delay, http } from "msw";
 import type { Mock } from "vitest";
+import type { Wcif } from "../main/api/wca.schemas.ts";
+import { getWcifQueryKey } from "../main/api/wca.tanstack.ts";
 
 const lastZipRequest = (routeSpy: Mock) => {
     const [websocketPayload] = routeSpy.mock.lastCall!;
@@ -175,7 +180,7 @@ describe("logged in", () => {
     });
 
     it("restores the default events when going back to manual selection", async () => {
-        const { user, store } = await renderWithProviders(<App />, {
+        const { user, queryClient } = await renderWithProviders(<App />, {
             isAuthenticated: true,
         });
 
@@ -184,9 +189,11 @@ describe("logged in", () => {
             screen.getByRole("button", { name: "Manual Selection" }),
         );
 
-        expect(store.getState().wcifSlice.wcif.events).toStrictEqual(
-            defaultWcif.events,
-        );
+        // { path: { competitionId: firstCompetition.id, formatVersion: testServerWcifVersion } }
+        const wcif = queryClient.getQueryData<Wcif>(getWcifQueryKey());
+        expect(wcif).not.toBeUndefined();
+        expect(wcif!.events).toStrictEqual(defaultWcif.events);
+
         expect(screen.queryByText(/Found \d+ event/)).not.toBeInTheDocument();
     });
 

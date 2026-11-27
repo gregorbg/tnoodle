@@ -1,8 +1,10 @@
 import { screen } from "@testing-library/react";
 import EntryInterface from "../main/components/EntryInterface";
-import { setIsManualSelection } from "../main/redux/slice/InformationSlice";
+import { setCompetitionId } from "../main/redux/ScramblerSlice.ts";
 import { createStore } from "../main/redux/Store";
 import { renderWithProviders, replaceValue } from "./util/render";
+import type { Wcif } from "../main/api/wca.schemas.ts";
+import { getWcifQueryKey } from "../main/api/wca.tanstack.ts";
 
 describe("competition name", () => {
     it("defaults to today's date", async () => {
@@ -15,7 +17,7 @@ describe("competition name", () => {
     });
 
     it("renames the competition when edited", async () => {
-        const { store, user } = await renderWithProviders(<EntryInterface />);
+        const { queryClient, user } = await renderWithProviders(<EntryInterface />);
 
         await replaceValue(
             user,
@@ -23,14 +25,16 @@ describe("competition name", () => {
             "Competition Name 2020",
         );
 
-        const { wcif } = store.getState().wcifSlice;
-        expect(wcif.name).toBe("Competition Name 2020");
-        expect(wcif.shortName).toBe("Competition Name 2020");
+        const wcif = queryClient.getQueryData<Wcif>(getWcifQueryKey());
+        expect(wcif).not.toBeUndefined();
+
+        expect(wcif!.name).toBe("Competition Name 2020");
+        expect(wcif!.shortName).toBe("Competition Name 2020");
     });
 
     it("cannot be edited for a competition selected from the WCA", async () => {
         const store = createStore();
-        store.dispatch(setIsManualSelection(false));
+        store.dispatch(setCompetitionId("AmazingCompetition2026"));
 
         await renderWithProviders(<EntryInterface />, { store });
 
@@ -55,10 +59,10 @@ describe("password", () => {
     it("is stored as it is typed", async () => {
         const { store, user } = await renderWithProviders(<EntryInterface />);
 
-        expect(store.getState().scramblingSlice.password).toBe("");
+        expect(store.getState().scramblerSlice.password).toBe("");
 
         await user.type(screen.getByLabelText("Password"), "123456");
 
-        expect(store.getState().scramblingSlice.password).toBe("123456");
+        expect(store.getState().scramblerSlice.password).toBe("123456");
     });
 });

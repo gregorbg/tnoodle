@@ -1,9 +1,7 @@
 import { act, screen, within } from "@testing-library/react";
 import EventPickerTable from "../main/components/EventPickerTable";
-import { setBestMbldAttempt } from "../main/redux/slice/EventDataSlice";
-import { setIsManualSelection } from "../main/redux/slice/InformationSlice";
 import {
-    setGeneratingScrambles,
+    setCompetitionId,
     setScramblingProgressCurrentEvent,
     setScramblingProgressTarget,
 } from "../main/redux/ScramblerSlice.ts";
@@ -66,7 +64,7 @@ describe("rounds", () => {
 
     it("only allows changing copies for a competition selected from the WCA", async () => {
         const store = createStore();
-        store.dispatch(setIsManualSelection(false));
+        store.dispatch(setCompetitionId("AmazingCompetition2026"));
 
         await renderEvents(store);
         const cube = within(await eventTable("3x3x3"));

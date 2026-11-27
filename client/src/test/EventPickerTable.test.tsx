@@ -1,6 +1,5 @@
 import { screen } from "@testing-library/react";
 import EventPickerTable from "../main/components/EventPickerTable";
-import { setIsManualSelection } from "../main/redux/slice/InformationSlice";
 import { setWcif } from "../main/redux/slice/WcifSlice";
 import { createStore } from "../main/redux/Store";
 import type { Wcif } from "../main/api/wca.schemas";
@@ -8,11 +7,12 @@ import { defaultWcif } from "../main/util/wcif.util";
 import { eventsWithNames, mockCompetitions } from "./mock/wcif.mock.ts";
 import { renderWithProviders } from "./util/render";
 import { getWcaOrigin } from "../main/api/wca.oidc";
+import { setCompetitionId } from "../main/redux/ScramblerSlice.ts";
 
 const competitionStore = (wcif: Wcif) => {
     const store = createStore();
     store.dispatch(setWcif(wcif));
-    store.dispatch(setIsManualSelection(false));
+    store.dispatch(setCompetitionId(wcif.id));
     return store;
 };
 
