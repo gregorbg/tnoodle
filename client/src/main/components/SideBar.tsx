@@ -10,22 +10,25 @@ import {
     getQueryParameter,
     setQueryParameter,
 } from "../util/query.param.util";
-import { defaultWcif, useCompetitionWcif } from "../util/wcif.util";
+import { defaultWcif } from "../util/wcif.util";
 import "./SideBar.css";
 import { setShowColorPicker } from "../redux/slice/SettingsSlice";
 import { useAuth } from "react-oidc-context";
 import type { CustomAuthState } from "../api/wca.oidc";
 import { useWcaQueries } from "../api/client.ts";
-import { useIsMutating, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCompetitionsQueryKey, getMeQueryKey } from "../api/wca.tanstack.ts";
+import {
+    useCompetitionWcif,
+    useIsGeneratingScrambles,
+} from "../api/queries.ts";
 
 const SideBar = () => {
     const showColorPicker = useSelector(
         (state: RootState) => state.settingsSlice.showColorPicker,
     );
 
-    const generatingScrambles =
-        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
+    const generatingScrambles = useIsGeneratingScrambles();
 
     const { data: wcif = defaultWcif, isLoading: loadingCompetitionInfo } =
         useCompetitionWcif();

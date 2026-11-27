@@ -3,13 +3,13 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import type RootState from "../model/RootState";
 import { setPassword } from "../redux/slice/ScramblingSlice";
+import { defaultWcif } from "../util/wcif.util.ts";
 import {
-    defaultWcif,
     useCompetitionWcif,
+    useIsGeneratingScrambles,
     useIsManualGeneration,
     useSetCompetitionName,
-} from "../util/wcif.util.ts";
-import { useIsMutating } from "@tanstack/react-query";
+} from "../api/queries.ts";
 
 const EntryInterface = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -18,11 +18,10 @@ const EntryInterface = () => {
         (state: RootState) => state.scramblingSlice.password,
     );
 
-    const generatingScrambles =
-        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
+    const generatingScrambles = useIsGeneratingScrambles();
+    const isManualGeneration = useIsManualGeneration();
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();
-    const isManualGeneration = useIsManualGeneration();
 
     const dispatch = useDispatch();
     const setCompetitionName = useSetCompetitionName(wcif);

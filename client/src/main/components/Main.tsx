@@ -16,14 +16,15 @@ import VersionInfo from "./VersionInfo";
 import { useAuth } from "react-oidc-context";
 import { convertToBlob } from "../util/data.util.ts";
 import { frontendStatusExtensionId } from "../util/extension.util.ts";
-import {
-    defaultWcif,
-    useCompetitionWcif,
-    useIsManualGeneration,
-} from "../util/wcif.util.ts";
+import { defaultWcif } from "../util/wcif.util.ts";
 import type { Wcif } from "../api/wca.schemas.ts";
 import { useMutation } from "@tanstack/react-query";
 import _ from "lodash";
+import {
+    SCRAMBLING_MUTATION_KEY,
+    useCompetitionWcif,
+    useIsManualGeneration,
+} from "../api/queries.ts";
 
 const Main = () => {
     const password = useSelector(
@@ -54,7 +55,7 @@ const Main = () => {
         isPending: generatingScrambles,
         variables,
     } = useMutation({
-        mutationKey: ["scramble-zip"] as const,
+        mutationKey: SCRAMBLING_MUTATION_KEY,
         mutationFn: async ({
             submitWcif,
             submitPassword,

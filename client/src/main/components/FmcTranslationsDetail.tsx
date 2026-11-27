@@ -1,19 +1,20 @@
 import { chunk } from "lodash";
 import React, { useCallback, useMemo, useState } from "react";
 import type { WcifEvent } from "../api/wca.schemas";
-import {
-    defaultWcif,
-    getSuggestedFmcTranslationsKey,
-    useCompetitionWcif,
-    useSetEventExtension,
-} from "../util/wcif.util";
+import { defaultWcif } from "../util/wcif.util";
 import {
     buildFmcExtension,
     findExtension,
     fmcTranslationsExtensionId,
 } from "../util/extension.util";
-import { useIsMutating, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useTNoodleApi, useTNoodleQueries } from "../api/client.ts";
+import {
+    getSuggestedFmcTranslationsKey,
+    useCompetitionWcif,
+    useIsGeneratingScrambles,
+    useSetEventExtension,
+} from "../api/queries.ts";
 
 const TRANSLATIONS_PER_LINE = 3;
 
@@ -24,8 +25,7 @@ interface FmcTranslationsDetailProps {
 const FmcTranslationsDetail = ({
     fmcWcifEvent,
 }: FmcTranslationsDetailProps) => {
-    const generatingScrambles =
-        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
+    const generatingScrambles = useIsGeneratingScrambles();
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();
 

@@ -1,11 +1,6 @@
 import { MBLD_DEFAULT, MBLD_MIN } from "../constants/wca.constants";
 import type { WcifEvent } from "../api/wca.schemas";
-import {
-    defaultWcif,
-    getBestMbldAttemptKey,
-    useCompetitionWcif,
-    useSetEventExtension,
-} from "../util/wcif.util";
+import { defaultWcif } from "../util/wcif.util";
 import { useCallback, useMemo } from "react";
 import {
     buildMbldExtension,
@@ -14,15 +9,20 @@ import {
     upsertExtension,
 } from "../util/extension.util";
 import { useTNoodleApi } from "../api/client.ts";
-import { useIsMutating, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import {
+    getBestMbldAttemptKey,
+    useCompetitionWcif,
+    useIsGeneratingScrambles,
+    useSetEventExtension,
+} from "../api/queries.ts";
 
 interface MbldDetailProps {
     mbldWcifEvent: WcifEvent;
 }
 
 const MbldDetail = ({ mbldWcifEvent }: MbldDetailProps) => {
-    const generatingScrambles =
-        useIsMutating({ mutationKey: ["scramble-zip"] }) > 0;
+    const generatingScrambles = useIsGeneratingScrambles();
 
     const { data: wcif = defaultWcif } = useCompetitionWcif();
 

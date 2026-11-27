@@ -8,7 +8,8 @@ import { MBLD_DEFAULT } from "../constants/wca.constants";
 import { useTNoodleQueries } from "../api/client.ts";
 import { useQuery } from "@tanstack/react-query";
 import { buildMbldExtension } from "../util/extension.util.ts";
-import { defaultWcif, useCompetitionWcif } from "../util/wcif.util.ts";
+import { defaultWcif } from "../util/wcif.util.ts";
+import { useCompetitionWcif } from "../api/queries.ts";
 
 const EVENTS_PER_LINE = 2;
 
